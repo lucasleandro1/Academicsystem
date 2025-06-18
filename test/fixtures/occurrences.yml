@@ -1,0 +1,19 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  student: one
+  description: MyText
+  occurrence_type: MyString
+  author: one
+  author_type: Author
+  date: 2025-06-18
+  school: one
+
+two:
+  student: two
+  description: MyText
+  occurrence_type: MyString
+  author: two
+  author_type: Author
+  date: 2025-06-18
+  school: two
