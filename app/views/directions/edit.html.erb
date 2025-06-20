@@ -1,0 +1,12 @@
+<% content_for :title, "Editing direction" %>
+
+<h1>Editing direction</h1>
+
+<%= render "form", direction: @direction %>
+
+<br>
+
+<div>
+  <%= link_to "Show this direction", @direction %> |
+  <%= link_to "Back to directions", directions_path %>
+</div>

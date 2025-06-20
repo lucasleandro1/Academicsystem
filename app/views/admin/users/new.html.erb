@@ -1,0 +1,14 @@
+<h1>Novo Usuário Direção</h1>
+<%= form_with model: @user, url: admin_users_path, local: true do |f| %>
+  <p><%= f.label :email %><br><%= f.email_field :email %></p>
+  <p><%= f.label :password %><br><%= f.password_field :password %></p>
+  <p>
+    <%= f.label :user_type %><br>
+    <%= f.select :user_type, options_for_select([['Direção', 'direcao']]) %>
+  </p>
+  <p>
+    <%= f.label :school_id %><br>
+    <%= f.collection_select :school_id, School.all, :id, :nome %>
+  </p>
+  <p><%= f.submit 'Criar Direção' %></p>
+<% end %>

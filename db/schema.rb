@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_06_18_193557) do
+ActiveRecord::Schema[8.0].define(version: 2025_06_20_153837) do
   create_table "absences", force: :cascade do |t|
     t.integer "student_id", null: false
     t.integer "subject_id", null: false
@@ -209,6 +209,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_18_193557) do
     t.boolean "active"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "admin"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
     t.index ["school_id"], name: "index_users_on_school_id"

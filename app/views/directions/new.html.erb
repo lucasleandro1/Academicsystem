@@ -1,0 +1,11 @@
+<% content_for :title, "New direction" %>
+
+<h1>New direction</h1>
+
+<%= render "form", direction: @direction %>
+
+<br>
+
+<div>
+  <%= link_to "Back to directions", directions_path %>
+</div>

@@ -1,0 +1,9 @@
+<h1>Nova Escola</h1>
+<%= form_with model: @school, url: admin_schools_path, local: true do |f| %>
+  <p><%= f.label :nome %><br><%= f.text_field :nome %></p>
+  <p><%= f.label :cnpj %><br><%= f.text_field :cnpj %></p>
+  <p><%= f.label :endereco %><br><%= f.text_field :endereco %></p>
+  <p><%= f.label :telefone %><br><%= f.text_field :telefone %></p>
+  <p><%= f.label :logo %><br><%= f.text_field :logo %></p>
+  <p><%= f.submit 'Criar Escola' %></p>
+<% end %>
