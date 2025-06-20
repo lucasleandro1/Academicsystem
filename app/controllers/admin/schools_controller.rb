@@ -18,10 +18,6 @@ class Admin::SchoolsController < ApplicationController
   private
 
   def school_params
-    params.require(:school).permit(:nome, :cnpj, :endereco, :telefone, :logo)
-  end
-
-  def authorize_superadmin!
-    redirect_to root_path, alert: "Acesso não autorizado." unless current_user&.superadmin?
+    params.require(:school).permit(:name, :cnpj, :address, :phone, :logo)
   end
 end

@@ -4,11 +4,12 @@
   <p><%= f.label :password %><br><%= f.password_field :password %></p>
   <p>
     <%= f.label :user_type %><br>
-    <%= f.select :user_type, options_for_select([['Direção', 'direcao']]) %>
+    <%= f.select :user_type, options_for_select( [ [ "Direção", "direction" ], [ "Professor", "teacher" ], [ "Aluno", "student" ] ] ) %>
   </p>
   <p>
     <%= f.label :school_id %><br>
-    <%= f.collection_select :school_id, School.all, :id, :nome %>
+    <%= f.collection_select :school_id, School.all, :id, :name %>
   </p>
   <p><%= f.submit 'Criar Direção' %></p>
 <% end %>
+<%= link_to "Sair", destroy_user_session_path, method: :delete %>

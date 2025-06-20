@@ -3,7 +3,7 @@ class ApplicationController < ActionController::Base
   allow_browser versions: :modern
 
   def authorize_superadmin!
-    unless current_user&.superadmin?
+    unless current_user&.admin?
       redirect_to root_path, alert: "Acesso não autorizado."
     end
   end
@@ -12,7 +12,7 @@ class ApplicationController < ActionController::Base
     if resource.admin?
       new_admin_school_path
     else
-      root_path
+      new_user_session_path
     end
   end
 end

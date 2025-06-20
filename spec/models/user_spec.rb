@@ -1,15 +1,29 @@
-# spec/models/user_spec.rb
 require 'rails_helper'
 
-RSpec.describe User, type: :model do
-  it "is valid with email, password and user_type" do
-    school = School.create!(name: "Escola A", cnpj: "111", address: "Rua 1", phone: "8799")
-    user = User.new(email: "diretor@teste.com", password: "123456", user_type: "direction", school: school, active: true)
-    expect(user).to be_valid
+RSpec.describe User do
+  describe "enum user_type" do
+    it "acept valid types" do
+      expect(build(:user, :student).user_type).to eq("student")
+      expect(build(:user, :teacher).user_type).to eq("teacher")
+      expect(build(:user, :direction).user_type).to eq("direction")
+      expect(build(:user, :admin).user_type).to eq("admin")
+    end
   end
 
-  it "is invalid without email" do
-    user = User.new(email: nil)
-    expect(user).not_to be_valid
+  describe "auto associations with after_create" do
+    it "when user_type direction" do
+      user = create(:user, :direction)
+      expect(user.direction).to be_present
+    end
+
+    it "when user_type teacher" do
+      user = create(:user, :teacher)
+      expect(user.teacher).to be_present
+    end
+
+    it "when user_type student" do
+      user = create(:user, :student)
+      expect(user.student).to be_present
+    end
   end
 end

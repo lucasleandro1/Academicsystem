@@ -20,8 +20,4 @@ class Admin::UsersController < ApplicationController
   def user_params
     params.require(:user).permit(:email, :password, :user_type, :school_id, :active)
   end
-
-  def authorize_superadmin!
-    redirect_to root_path, alert: "Acesso não autorizado." unless current_user&.superadmin?
-  end
 end
