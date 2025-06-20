@@ -1,4 +1,4 @@
-class TeachersController < ApplicationController
+class Direction::TeachersController < ApplicationController
   def index
     @directions = Direction.all
   end
