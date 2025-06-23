@@ -1,0 +1,15 @@
+<h1>Novo Usuário professor</h1>
+<%= form_with model: @user, url: direction_teachers_path do |f| %>
+  <p><%= f.label :email %><br><%= f.text_field :email %><p>
+  <p><%= f.label :password %><br><%= f.password_field :password %><p>
+
+  <p><%= f.label :school_id %><br><p>
+  <%= f.select :school_id, School.all.collect { |s| [s.name, s.id] } %>
+
+  <p><%= f.label :position %><br><%= f.text_field :position %><p>
+
+  <p><%= f.label :specialization %><br><%= f.text_field :specialization %><p>
+
+  <%= f.submit "Criar Professor" %>
+<% end %>
+<%= link_to "Sair", destroy_user_session_path, method: :delete %>

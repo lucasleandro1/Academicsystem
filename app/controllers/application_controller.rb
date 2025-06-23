@@ -11,6 +11,8 @@ class ApplicationController < ActionController::Base
   def after_sign_in_path_for(resource)
     if resource.admin?
       new_admin_school_path
+    elsif resource.direction?
+      new_direction_teacher_path
     else
       new_user_session_path
     end
