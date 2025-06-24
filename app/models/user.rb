@@ -5,25 +5,17 @@ class User < ApplicationRecord
          :recoverable, :rememberable, :validatable
 
   belongs_to :school, optional: true
-  has_one :teacher
-  has_one :student
-  has_one :direction, dependent: :destroy
   enum :user_type, student: "student", teacher: "teacher", direction: "direction", admin: "admin"
 
   validates :email, presence: true, uniqueness: true
 
-  after_create :create_association_type
+  with_options if: :teacher? do
+    validates :position, presence: true
+    validates :specialization, presence: true
+  end
 
-  private
-
-  def create_association_type
-    case user_type
-    when "direction"
-      create_direction!
-    when "teacher"
-      create_teacher!
-    when "student"
-      create_student!
-    end
+  with_options if: :student? do
+    validates :registration_number, presence: true
+    validates :birth_date, presence: true
   end
 end

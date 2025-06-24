@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_06_20_153837) do
+ActiveRecord::Schema[8.0].define(version: 2025_06_24_153522) do
   create_table "absences", force: :cascade do |t|
     t.integer "student_id", null: false
     t.integer "subject_id", null: false
@@ -69,13 +69,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_20_153837) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["school_id"], name: "index_classrooms_on_school_id"
-  end
-
-  create_table "directions", force: :cascade do |t|
-    t.integer "user_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["user_id"], name: "index_directions_on_user_id"
   end
 
   create_table "documents", force: :cascade do |t|
@@ -151,16 +144,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_20_153837) do
     t.datetime "updated_at", null: false
   end
 
-  create_table "students", force: :cascade do |t|
-    t.integer "user_id", null: false
-    t.string "registration_number"
-    t.date "birth_date"
-    t.string "guardian_name"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["user_id"], name: "index_students_on_user_id"
-  end
-
   create_table "subjects", force: :cascade do |t|
     t.string "name"
     t.integer "classroom_id", null: false
@@ -189,15 +172,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_20_153837) do
     t.index ["student_id"], name: "index_submissions_on_student_id"
   end
 
-  create_table "teachers", force: :cascade do |t|
-    t.integer "user_id", null: false
-    t.string "position"
-    t.string "specialization"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["user_id"], name: "index_teachers_on_user_id"
-  end
-
   create_table "users", force: :cascade do |t|
     t.string "email", default: "", null: false
     t.string "encrypted_password", default: "", null: false
@@ -210,6 +184,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_20_153837) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "admin"
+    t.string "registration_number"
+    t.date "birth_date"
+    t.string "guardian_name"
+    t.string "position"
+    t.string "specialization"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
     t.index ["school_id"], name: "index_users_on_school_id"
@@ -225,7 +204,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_20_153837) do
   add_foreign_key "class_schedules", "schools"
   add_foreign_key "class_schedules", "subjects"
   add_foreign_key "classrooms", "schools"
-  add_foreign_key "directions", "users"
   add_foreign_key "documents", "schools"
   add_foreign_key "documents", "students"
   add_foreign_key "documents", "teachers"
@@ -236,12 +214,10 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_20_153837) do
   add_foreign_key "grades", "subjects"
   add_foreign_key "occurrences", "schools"
   add_foreign_key "occurrences", "students"
-  add_foreign_key "students", "users"
   add_foreign_key "subjects", "classrooms"
   add_foreign_key "subjects", "schools"
   add_foreign_key "subjects", "teachers"
   add_foreign_key "submissions", "activities"
   add_foreign_key "submissions", "schools"
   add_foreign_key "submissions", "students"
-  add_foreign_key "teachers", "users"
 end
