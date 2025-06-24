@@ -10,30 +10,30 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_06_24_153522) do
+ActiveRecord::Schema[8.0].define(version: 2025_06_25_120000) do
   create_table "absences", force: :cascade do |t|
-    t.integer "student_id", null: false
     t.integer "subject_id", null: false
     t.date "date"
     t.boolean "justified"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["student_id"], name: "index_absences_on_student_id"
+    t.integer "user_id", null: false
     t.index ["subject_id"], name: "index_absences_on_subject_id"
+    t.index ["user_id"], name: "index_absences_on_user_id"
   end
 
   create_table "activities", force: :cascade do |t|
     t.integer "subject_id", null: false
-    t.integer "teacher_id", null: false
     t.string "title"
     t.text "description"
     t.datetime "due_date"
     t.integer "school_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "user_id", null: false
     t.index ["school_id"], name: "index_activities_on_school_id"
     t.index ["subject_id"], name: "index_activities_on_subject_id"
-    t.index ["teacher_id"], name: "index_activities_on_teacher_id"
+    t.index ["user_id"], name: "index_activities_on_user_id"
   end
 
   create_table "attachments", force: :cascade do |t|
@@ -75,24 +75,22 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_24_153522) do
     t.string "title"
     t.string "document_type"
     t.text "description"
-    t.integer "student_id", null: false
-    t.integer "teacher_id", null: false
     t.integer "school_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "user_id", null: false
     t.index ["school_id"], name: "index_documents_on_school_id"
-    t.index ["student_id"], name: "index_documents_on_student_id"
-    t.index ["teacher_id"], name: "index_documents_on_teacher_id"
+    t.index ["user_id"], name: "index_documents_on_user_id"
   end
 
   create_table "enrollments", force: :cascade do |t|
-    t.integer "student_id", null: false
     t.integer "classroom_id", null: false
     t.string "status"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "user_id", null: false
     t.index ["classroom_id"], name: "index_enrollments_on_classroom_id"
-    t.index ["student_id"], name: "index_enrollments_on_student_id"
+    t.index ["user_id"], name: "index_enrollments_on_user_id"
   end
 
   create_table "events", force: :cascade do |t|
@@ -108,19 +106,18 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_24_153522) do
   end
 
   create_table "grades", force: :cascade do |t|
-    t.integer "student_id", null: false
     t.integer "subject_id", null: false
     t.integer "bimester"
     t.decimal "value"
     t.string "grade_type"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["student_id"], name: "index_grades_on_student_id"
+    t.integer "user_id", null: false
     t.index ["subject_id"], name: "index_grades_on_subject_id"
+    t.index ["user_id"], name: "index_grades_on_user_id"
   end
 
   create_table "occurrences", force: :cascade do |t|
-    t.integer "student_id", null: false
     t.text "description"
     t.string "occurrence_type"
     t.string "author_type", null: false
@@ -129,9 +126,10 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_24_153522) do
     t.integer "school_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "user_id", null: false
     t.index ["author_type", "author_id"], name: "index_occurrences_on_author"
     t.index ["school_id"], name: "index_occurrences_on_school_id"
-    t.index ["student_id"], name: "index_occurrences_on_student_id"
+    t.index ["user_id"], name: "index_occurrences_on_user_id"
   end
 
   create_table "schools", force: :cascade do |t|
@@ -147,19 +145,18 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_24_153522) do
   create_table "subjects", force: :cascade do |t|
     t.string "name"
     t.integer "classroom_id", null: false
-    t.integer "teacher_id", null: false
     t.integer "workload"
     t.integer "school_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "user_id", null: false
     t.index ["classroom_id"], name: "index_subjects_on_classroom_id"
     t.index ["school_id"], name: "index_subjects_on_school_id"
-    t.index ["teacher_id"], name: "index_subjects_on_teacher_id"
+    t.index ["user_id"], name: "index_subjects_on_user_id"
   end
 
   create_table "submissions", force: :cascade do |t|
     t.integer "activity_id", null: false
-    t.integer "student_id", null: false
     t.text "answer"
     t.datetime "submission_date"
     t.decimal "teacher_grade"
@@ -167,9 +164,10 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_24_153522) do
     t.integer "school_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "user_id", null: false
     t.index ["activity_id"], name: "index_submissions_on_activity_id"
     t.index ["school_id"], name: "index_submissions_on_school_id"
-    t.index ["student_id"], name: "index_submissions_on_student_id"
+    t.index ["user_id"], name: "index_submissions_on_user_id"
   end
 
   create_table "users", force: :cascade do |t|
@@ -194,30 +192,29 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_24_153522) do
     t.index ["school_id"], name: "index_users_on_school_id"
   end
 
-  add_foreign_key "absences", "students"
   add_foreign_key "absences", "subjects"
+  add_foreign_key "absences", "users"
   add_foreign_key "activities", "schools"
   add_foreign_key "activities", "subjects"
-  add_foreign_key "activities", "teachers"
+  add_foreign_key "activities", "users"
   add_foreign_key "attachments", "schools"
   add_foreign_key "class_schedules", "classrooms"
   add_foreign_key "class_schedules", "schools"
   add_foreign_key "class_schedules", "subjects"
   add_foreign_key "classrooms", "schools"
   add_foreign_key "documents", "schools"
-  add_foreign_key "documents", "students"
-  add_foreign_key "documents", "teachers"
+  add_foreign_key "documents", "users"
   add_foreign_key "enrollments", "classrooms"
-  add_foreign_key "enrollments", "students"
+  add_foreign_key "enrollments", "users"
   add_foreign_key "events", "schools"
-  add_foreign_key "grades", "students"
   add_foreign_key "grades", "subjects"
+  add_foreign_key "grades", "users"
   add_foreign_key "occurrences", "schools"
-  add_foreign_key "occurrences", "students"
+  add_foreign_key "occurrences", "users"
   add_foreign_key "subjects", "classrooms"
   add_foreign_key "subjects", "schools"
-  add_foreign_key "subjects", "teachers"
+  add_foreign_key "subjects", "users"
   add_foreign_key "submissions", "activities"
   add_foreign_key "submissions", "schools"
-  add_foreign_key "submissions", "students"
+  add_foreign_key "submissions", "users"
 end
