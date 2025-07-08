@@ -15,7 +15,6 @@ class User < ApplicationRecord
   end
 
   with_options if: :student? do
-    validates :registration_number, presence: true
     validates :birth_date, presence: true
   end
 end

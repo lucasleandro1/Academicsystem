@@ -9,5 +9,6 @@ Rails.application.routes.draw do
 
   namespace :direction do
     resources :teachers
+    resources :students
   end
 end
