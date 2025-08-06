@@ -1,0 +1,352 @@
+<% content_for :title, "Nova Disciplina" %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1><i class="fas fa-book"></i> Nova Disciplina</h1>
+  <%= link_to direction_subjects_path, class: "btn btn-outline-secondary" do %>
+    <i class="fas fa-arrow-left"></i> Voltar
+  <% end %>
+</div>
+
+<div class="row">
+  <div class="col-lg-8 mx-auto">
+    <%= form_with model: [:direction, @subject], local: true, class: "needs-validation", novalidate: true do |form| %>
+      
+      <!-- Informações Básicas -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="fas fa-info-circle"></i> Informações Básicas</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-8 mb-3">
+              <%= form.label :name, "Nome da Disciplina *", class: "form-label" %>
+              <%= form.text_field :name, class: "form-control", 
+                                 placeholder: "Ex: Matemática, Língua Portuguesa, História", required: true %>
+              <div class="invalid-feedback">
+                Por favor, informe o nome da disciplina.
+              </div>
+              <div class="form-text">
+                Nome completo da disciplina
+              </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+              <%= form.label :code, "Código da Disciplina", class: "form-label" %>
+              <%= form.text_field :code, class: "form-control", placeholder: "Ex: MAT, PORT, HIST" %>
+              <div class="form-text">
+                Código único para identificação
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <%= form.label :area, "Área do Conhecimento *", class: "form-label" %>
+              <%= form.select :area, 
+                              options_for_select([
+                                ['Selecione...', ''],
+                                ['Linguagens', 'languages'],
+                                ['Matemática', 'mathematics'],
+                                ['Ciências da Natureza', 'natural_sciences'],
+                                ['Ciências Humanas', 'human_sciences'],
+                                ['Ensino Religioso', 'religious_education'],
+                                ['Educação Física', 'physical_education'],
+                                ['Artes', 'arts'],
+                                ['Tecnologia', 'technology']
+                              ], @subject.area),
+                              {}, { class: "form-select", required: true } %>
+              <div class="invalid-feedback">
+                Por favor, selecione a área do conhecimento.
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <%= form.label :workload, "Carga Horária Semanal", class: "form-label" %>
+              <div class="input-group">
+                <%= form.number_field :workload, class: "form-control", min: 1, max: 40, placeholder: "4" %>
+                <span class="input-group-text">horas/semana</span>
+              </div>
+              <div class="form-text">
+                Número de aulas por semana
+              </div>
+            </div>
+
+            <div class="col-12 mb-3">
+              <%= form.label :description, "Descrição da Disciplina", class: "form-label" %>
+              <%= form.text_area :description, class: "form-control", rows: 4, 
+                                placeholder: "Descrição dos objetivos, conteúdos e metodologia da disciplina..." %>
+              <div class="form-text">
+                Informações detalhadas sobre a disciplina
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Configurações Pedagógicas -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="fas fa-graduation-cap"></i> Configurações Pedagógicas</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <%= form.label :grade_levels, "Níveis de Ensino", class: "form-label" %>
+              <div class="form-check-group">
+                <% [
+                  ['Fundamental I (1º ao 5º ano)', 'elementary_1'],
+                  ['Fundamental II (6º ao 9º ano)', 'elementary_2'],
+                  ['Ensino Médio (1º ao 3º ano)', 'high_school']
+                ].each do |level_name, level_value| %>
+                  <div class="form-check">
+                    <%= form.check_box :grade_levels, { multiple: true, class: "form-check-input" }, level_value, "" %>
+                    <%= form.label "grade_levels_#{level_value}", level_name, class: "form-check-label" %>
+                  </div>
+                <% end %>
+              </div>
+              <div class="form-text">
+                Níveis em que a disciplina é oferecida
+              </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+              <%= form.label :evaluation_type, "Tipo de Avaliação", class: "form-label" %>
+              <%= form.select :evaluation_type, 
+                              options_for_select([
+                                ['Numérica (0-10)', 'numeric'],
+                                ['Conceitual (A, B, C, D)', 'conceptual'],
+                                ['Percentual (0-100%)', 'percentage'],
+                                ['Satisfatório/Insatisfatório', 'binary']
+                              ], 'numeric'),
+                              {}, { class: "form-select" } %>
+              <div class="form-text">
+                Sistema de avaliação da disciplina
+              </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+              <%= form.label :minimum_grade, "Nota Mínima para Aprovação", class: "form-label" %>
+              <%= form.number_field :minimum_grade, class: "form-control", 
+                                   step: 0.1, min: 0, max: 10, value: 6.0 %>
+              <div class="form-text">
+                Nota mínima necessária para aprovação
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <%= form.label :objectives, "Objetivos de Aprendizagem", class: "form-label" %>
+              <%= form.text_area :objectives, class: "form-control", rows: 3,
+                                placeholder: "Principais objetivos que os alunos devem alcançar..." %>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <%= form.label :methodology, "Metodologia de Ensino", class: "form-label" %>
+              <%= form.text_area :methodology, class: "form-control", rows: 3,
+                                placeholder: "Métodos e estratégias de ensino utilizados..." %>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Professor e Recursos -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="fas fa-user-tie"></i> Professor e Recursos</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <%= form.label :user_id, "Professor Responsável", class: "form-label" %>
+              <%= form.select :user_id, 
+                              options_from_collection_for_select(
+                                User.where(user_type: 'teacher'), 
+                                :id, :name
+                              ),
+                              { prompt: "Selecione um professor..." }, 
+                              { class: "form-select" } %>
+              <div class="form-text">
+                Professor que ministrará a disciplina (pode ser alterado depois)
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <%= form.label :required_materials, "Materiais Necessários", class: "form-label" %>
+              <%= form.text_area :required_materials, class: "form-control", rows: 3,
+                                placeholder: "Liste os materiais necessários para as aulas..." %>
+              <div class="form-text">
+                Materiais que os alunos precisam ter
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <%= form.label :classroom_requirements, "Requisitos da Sala", class: "form-label" %>
+              <%= form.text_area :classroom_requirements, class: "form-control", rows: 3,
+                                placeholder: "Ex: laboratório, projetor, computadores..." %>
+              <div class="form-text">
+                Recursos físicos necessários
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <%= form.label :bibliography, "Bibliografia", class: "form-label" %>
+              <%= form.text_area :bibliography, class: "form-control", rows: 3,
+                                placeholder: "Livros e materiais de referência..." %>
+              <div class="form-text">
+                Livros didáticos e materiais de apoio
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Configurações Avançadas -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="fas fa-cog"></i> Configurações Avançadas</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <div class="form-check form-switch">
+                <%= form.check_box :active, class: "form-check-input", checked: true %>
+                <%= form.label :active, "Disciplina Ativa", class: "form-check-label" %>
+              </div>
+              <div class="form-text">
+                Disciplinas inativas não aparecem nas listagens
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <div class="form-check form-switch">
+                <%= form.check_box :mandatory, class: "form-check-input", checked: true %>
+                <%= form.label :mandatory, "Disciplina Obrigatória", class: "form-check-label" %>
+              </div>
+              <div class="form-text">
+                Disciplina obrigatória ou optativa
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <div class="form-check form-switch">
+                <%= form.check_box :allow_recovery, class: "form-check-input", checked: true %>
+                <%= form.label :allow_recovery, "Permitir Recuperação", class: "form-check-label" %>
+              </div>
+              <div class="form-text">
+                Permite atividades de recuperação
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <div class="form-check form-switch">
+                <%= form.check_box :requires_lab, class: "form-check-input" %>
+                <%= form.label :requires_lab, "Requer Laboratório", class: "form-check-label" %>
+              </div>
+              <div class="form-text">
+                Disciplina necessita de laboratório específico
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <%= form.label :max_absences, "Máximo de Faltas Permitidas", class: "form-label" %>
+              <%= form.number_field :max_absences, class: "form-control", min: 0, max: 50, value: 15 %>
+              <div class="form-text">
+                Número máximo de faltas antes da reprovação
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <%= form.label :academic_year, "Ano Letivo", class: "form-label" %>
+              <%= form.number_field :academic_year, class: "form-control", 
+                                   value: Date.current.year, min: 2020, max: 2030 %>
+              <div class="form-text">
+                Ano letivo da disciplina
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ações -->
+      <div class="card">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <%= link_to direction_subjects_path, class: "btn btn-outline-secondary" do %>
+              <i class="fas fa-times"></i> Cancelar
+            <% end %>
+            
+            <div>
+              <%= form.submit "Salvar Rascunho", name: "draft", class: "btn btn-outline-primary me-2" %>
+              <%= form.submit "Criar Disciplina", class: "btn btn-primary" do %>
+                <i class="fas fa-save"></i> Criar Disciplina
+              <% end %>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    <% end %>
+  </div>
+</div>
+
+<!-- Modal de Ajuda -->
+<div class="modal fade" id="helpModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="fas fa-question-circle"></i> Ajuda - Nova Disciplina</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <h6>Informações Básicas</h6>
+        <ul>
+          <li><strong>Nome:</strong> Nome completo da disciplina (ex: Matemática, Língua Portuguesa)</li>
+          <li><strong>Código:</strong> Abreviação única para identificação rápida</li>
+          <li><strong>Área:</strong> Classificação segundo diretrizes curriculares</li>
+          <li><strong>Carga Horária:</strong> Aulas por semana (geralmente 2-6 horas)</li>
+        </ul>
+        
+        <h6>Configurações Pedagógicas</h6>
+        <ul>
+          <li><strong>Níveis de Ensino:</strong> Em quais séries a disciplina é oferecida</li>
+          <li><strong>Avaliação:</strong> Sistema de notas utilizado</li>
+          <li><strong>Nota Mínima:</strong> Critério para aprovação</li>
+        </ul>
+        
+        <h6>Dicas Importantes</h6>
+        <ul>
+          <li>Use nomes padronizados conforme Base Nacional Comum Curricular</li>
+          <li>Defina claramente os objetivos de aprendizagem</li>
+          <li>Liste todos os materiais necessários</li>
+          <li>Configure corretamente os níveis de ensino</li>
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Link para abrir ajuda -->
+<div class="position-fixed bottom-0 end-0 p-3">
+  <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#helpModal">
+    <i class="fas fa-question-circle"></i> Ajuda
+  </button>
+</div>
+
+<script>
+// Validação do formulário
+(function() {
+  'use strict';
+  window.addEventListener('load', function() {
+    var forms = document.getElementsByClassName('needs-validation');
+    var validation = Array.prototype.filter.call(forms, function(form) {
+      form.addEventListener('submit', function(event) {
+        if (form.checkValidity() === false) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+      }, false);
+    });
+  }, false);
+})();
+</script>

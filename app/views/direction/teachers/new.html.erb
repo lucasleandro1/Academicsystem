@@ -1,20 +1,166 @@
-<h1>Novo Usuário professor</h1>
-<%= form_with model: @user, url: direction_teachers_path do |f| %>
-<p><%= f.label :email %><br><%= f.text_field :email %>
-<p>
-<p><%= f.label :password %><br><%= f.password_field :password %>
-<p>
+<% content_for :title, "Novo Professor" %>
 
-<p><%= f.label :school_id %><br>
-<p>
-  <%= f.select :school_id, School.all.collect { |s| [s.name, s.id] } %>
-
-<p><%= f.label :position %><br><%= f.text_field :position %>
-<p>
-
-<p><%= f.label :specialization %><br><%= f.text_field :specialization %>
-<p>
-
-  <%= f.submit "Criar Professor" %>
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1><i class="fas fa-user-plus"></i> Cadastrar Novo Professor</h1>
+  <%= link_to direction_teachers_path, class: "btn btn-outline-secondary" do %>
+    <i class="fas fa-arrow-left"></i> Voltar
   <% end %>
-  <%= link_to "Sair", destroy_user_session_path, method: :delete %>
+</div>
+
+<div class="row">
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-header">
+        <h5><i class="fas fa-user"></i> Dados do Professor</h5>
+      </div>
+      <div class="card-body">
+        <%= form_with model: [@user], url: direction_teachers_path, local: true do |form| %>
+          <% if @user.errors.any? %>
+            <div class="alert alert-danger">
+              <h6><i class="fas fa-exclamation-triangle"></i> Corrija os seguintes erros:</h6>
+              <ul class="mb-0">
+                <% @user.errors.full_messages.each do |message| %>
+                  <li><%= message %></li>
+                <% end %>
+              </ul>
+            </div>
+          <% end %>
+
+          <!-- Dados Pessoais -->
+          <div class="mb-4">
+            <h6 class="text-muted border-bottom pb-2">Dados Pessoais</h6>
+            
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <%= form.label :first_name, "Nome", class: "form-label" %>
+                <%= form.text_field :first_name, class: "form-control", required: true %>
+              </div>
+              <div class="col-md-6 mb-3">
+                <%= form.label :last_name, "Sobrenome", class: "form-label" %>
+                <%= form.text_field :last_name, class: "form-control", required: true %>
+              </div>
+            </div>
+            
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <%= form.label :email, "E-mail", class: "form-label" %>
+                <%= form.email_field :email, class: "form-control", required: true %>
+              </div>
+              <div class="col-md-6 mb-3">
+                <%= form.label :phone, "Telefone", class: "form-label" %>
+                <%= form.tel_field :phone, class: "form-control" %>
+              </div>
+            </div>
+            
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <%= form.label :birth_date, "Data de Nascimento", class: "form-label" %>
+                <%= form.date_field :birth_date, class: "form-control" %>
+              </div>
+              <div class="col-md-6 mb-3">
+                <%= form.label :cpf, "CPF", class: "form-label" %>
+                <%= form.text_field :cpf, class: "form-control" %>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dados Profissionais -->
+          <div class="mb-4">
+            <h6 class="text-muted border-bottom pb-2">Dados Profissionais</h6>
+            
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <%= form.label :position, "Cargo/Posição", class: "form-label" %>
+                <%= form.text_field :position, class: "form-control", placeholder: "Ex: Professor, Coordenador" %>
+              </div>
+              <div class="col-md-6 mb-3">
+                <%= form.label :specialization, "Especialização", class: "form-label" %>
+                <%= form.text_field :specialization, class: "form-control", placeholder: "Ex: Matemática, História" %>
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <%= form.label :qualification, "Formação", class: "form-label" %>
+              <%= form.text_area :qualification, class: "form-control", rows: 3, 
+                                placeholder: "Descreva a formação acadêmica do professor" %>
+            </div>
+          </div>
+
+          <!-- Dados de Acesso -->
+          <div class="mb-4">
+            <h6 class="text-muted border-bottom pb-2">Dados de Acesso</h6>
+            
+            <%= form.hidden_field :school_id, value: current_user.school.id %>
+            <%= form.hidden_field :user_type, value: 'teacher' %>
+            
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <%= form.label :password, "Senha", class: "form-label" %>
+                <%= form.password_field :password, class: "form-control", required: true %>
+                <div class="form-text">Mínimo de 6 caracteres</div>
+              </div>
+              <div class="col-md-6 mb-3">
+                <%= form.label :password_confirmation, "Confirmar Senha", class: "form-label" %>
+                <%= form.password_field :password_confirmation, class: "form-control", required: true %>
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-between">
+            <%= link_to direction_teachers_path, class: "btn btn-secondary" do %>
+              <i class="fas fa-times"></i> Cancelar
+            <% end %>
+            <%= form.submit "Cadastrar Professor", class: "btn btn-primary" do %>
+              <i class="fas fa-save"></i> Cadastrar Professor
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-lg-4">
+    <!-- Ajuda -->
+    <div class="card">
+      <div class="card-header">
+        <h6><i class="fas fa-info-circle"></i> Informações Importantes</h6>
+      </div>
+      <div class="card-body">
+        <ul class="list-unstyled small">
+          <li class="mb-2">
+            <i class="fas fa-check text-success"></i>
+            O professor receberá um e-mail com as credenciais de acesso
+          </li>
+          <li class="mb-2">
+            <i class="fas fa-check text-success"></i>
+            Após o cadastro, você poderá atribuir disciplinas ao professor
+          </li>
+          <li class="mb-2">
+            <i class="fas fa-check text-success"></i>
+            O professor poderá alterar a senha no primeiro acesso
+          </li>
+          <li class="mb-2">
+            <i class="fas fa-check text-success"></i>
+            Todos os campos podem ser editados posteriormente
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Próximos Passos -->
+    <div class="card mt-3">
+      <div class="card-header">
+        <h6><i class="fas fa-list-ol"></i> Próximos Passos</h6>
+      </div>
+      <div class="card-body">
+        <ol class="small">
+          <li>Cadastrar o professor</li>
+          <li>Atribuir disciplinas</li>
+          <li>Definir horários de aula</li>
+          <li>Configurar turmas</li>
+          <li>Enviar credenciais por e-mail</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</div>

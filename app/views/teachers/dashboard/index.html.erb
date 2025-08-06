@@ -1,0 +1,336 @@
+<%# Page Title %>
+<% content_for :title, "Dashboard - Professor" %>
+
+<!-- Welcome Header -->
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <div>
+    <h1 class="h2">
+      <i class="fas fa-chalkboard-teacher text-info me-2"></i>
+      Meu Dashboard
+    </h1>
+    <p class="text-muted mb-0">
+      Bem-vindo(a), Professor(a) <%= current_user.full_name %>! 
+      Gerencie suas turmas e atividades.
+    </p>
+  </div>
+  <div class="btn-toolbar mb-2 mb-md-0">
+    <div class="btn-group me-2">
+      <%= link_to "teachers/activities/new", class: "btn btn-sm btn-outline-primary" do %>
+        <i class="fas fa-plus"></i> Nova Atividade
+      <% end %>
+      <%= link_to "teachers/grades/new", class: "btn btn-sm btn-outline-success" do %>
+        <i class="fas fa-clipboard-check"></i> Lançar Nota
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<!-- Teacher Statistics -->
+<div class="row mb-4">
+  <div class="col-xl-3 col-md-6 mb-4">
+    <div class="card card-stat border-left-primary shadow h-100 py-2">
+      <div class="card-body">
+        <div class="row no-gutters align-items-center">
+          <div class="col mr-2">
+            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+              Minhas Turmas
+            </div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800">
+              <%= current_user.classrooms.count %>
+            </div>
+          </div>
+          <div class="col-auto">
+            <i class="fas fa-users fa-2x text-gray-300"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xl-3 col-md-6 mb-4">
+    <div class="card card-stat border-left-success shadow h-100 py-2">
+      <div class="card-body">
+        <div class="row no-gutters align-items-center">
+          <div class="col mr-2">
+            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+              Total de Alunos
+            </div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800">
+              <%= current_user.classrooms.joins(:enrollments).count %>
+            </div>
+          </div>
+          <div class="col-auto">
+            <i class="fas fa-user-graduate fa-2x text-gray-300"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xl-3 col-md-6 mb-4">
+    <div class="card card-stat border-left-info shadow h-100 py-2">
+      <div class="card-body">
+        <div class="row no-gutters align-items-center">
+          <div class="col mr-2">
+            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+              Atividades Criadas
+            </div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800">
+              <%= Activity.where(user: current_user).count %>
+            </div>
+          </div>
+          <div class="col-auto">
+            <i class="fas fa-tasks fa-2x text-gray-300"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xl-3 col-md-6 mb-4">
+    <div class="card card-stat border-left-warning shadow h-100 py-2">
+      <div class="card-body">
+        <div class="row no-gutters align-items-center">
+          <div class="col mr-2">
+            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+              Notas Lançadas
+            </div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800">
+              <%= Grade.joins(:subject).where(subjects: { user: current_user }).count %>
+            </div>
+          </div>
+          <div class="col-auto">
+            <i class="fas fa-clipboard-check fa-2x text-gray-300"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- My Classes and Activities -->
+<div class="row">
+  <div class="col-lg-8 mb-4">
+    <div class="card shadow mb-4">
+      <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">
+          <i class="fas fa-chalkboard me-2"></i>
+          Minhas Turmas
+        </h6>
+      </div>
+      <div class="card-body">
+        <% if current_user.classrooms.any? %>
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Turma</th>
+                  <th>Alunos</th>
+                  <th>Próxima Aula</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% current_user.classrooms.includes(:enrollments, :class_schedules).limit(5).each do |classroom| %>
+                  <tr>
+                    <td>
+                      <div>
+                        <strong><%= classroom.name %></strong>
+                        <br>
+                        <small class="text-muted"><%= classroom.school.name %></small>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="badge bg-info">
+                        <%= classroom.enrollments.count %> alunos
+                      </span>
+                    </td>
+                    <td>
+                      <% next_schedule = classroom.class_schedules.order(:day_of_week, :start_time).first %>
+                      <% if next_schedule %>
+                        <small>
+                          <%= Date::DAYNAMES[next_schedule.day_of_week] %>
+                          <br>
+                          <%= next_schedule.start_time.strftime("%H:%M") %> - <%= next_schedule.end_time.strftime("%H:%M") %>
+                        </small>
+                      <% else %>
+                        <small class="text-muted">Não agendada</small>
+                      <% end %>
+                    </td>
+                    <td>
+                      <div class="btn-group btn-group-sm">
+                        <%= link_to "#", class: "btn btn-outline-primary btn-sm", title: "Ver turma" do %>
+                          <i class="fas fa-eye"></i>
+                        <% end %>
+                        <%= link_to "#", class: "btn btn-outline-success btn-sm", title: "Lista de presença" do %>
+                          <i class="fas fa-clipboard-list"></i>
+                        <% end %>
+                      </div>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        <% else %>
+          <div class="text-center text-muted py-4">
+            <i class="fas fa-chalkboard fa-3x mb-3"></i>
+            <p>Você ainda não possui turmas atribuídas</p>
+            <small>Entre em contato com a direção da escola</small>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4 mb-4">
+    <div class="card shadow mb-4">
+      <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">
+          <i class="fas fa-calendar-alt me-2"></i>
+          Próximas Atividades
+        </h6>
+      </div>
+      <div class="card-body">
+        <% upcoming_activities = Activity.where(user: current_user, due_date: Date.current..1.month.from_now).order(:due_date).limit(5) %>
+        <% if upcoming_activities.any? %>
+          <% upcoming_activities.each do |activity| %>
+            <div class="d-flex align-items-center mb-3 p-2 border rounded">
+              <div class="me-3">
+                <div class="rounded-circle bg-<%= activity.due_date < Date.current ? 'danger' : activity.due_date <= 1.week.from_now ? 'warning' : 'success' %> text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                  <i class="fas fa-tasks"></i>
+                </div>
+              </div>
+              <div class="flex-grow-1">
+                <h6 class="mb-0"><%= truncate(activity.title, length: 30) %></h6>
+                <small class="text-muted">
+                  Vence em <%= time_ago_in_words(activity.due_date) %>
+                  <br>
+                  <%= activity.subject.name %>
+                </small>
+              </div>
+            </div>
+          <% end %>
+        <% else %>
+          <div class="text-center text-muted py-4">
+            <i class="fas fa-tasks fa-2x mb-3"></i>
+            <p>Nenhuma atividade próxima</p>
+            <%= link_to "Criar Atividade", "teachers/activities/new", class: "btn btn-primary btn-sm" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Recent Activity and Messages -->
+<div class="row">
+  <div class="col-lg-6 mb-4">
+    <div class="card shadow mb-4">
+      <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">
+          <i class="fas fa-history me-2"></i>
+          Atividade Recente
+        </h6>
+      </div>
+      <div class="card-body">
+        <% recent_grades = Grade.joins(:subject).where(subjects: { user: current_user }).order(created_at: :desc).limit(5) %>
+        <% if recent_grades.any? %>
+          <% recent_grades.each do |grade| %>
+            <div class="d-flex align-items-center mb-3">
+              <div class="me-3">
+                <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center" style="width: 30px; height: 30px;">
+                  <i class="fas fa-check"></i>
+                </div>
+              </div>
+              <div class="flex-grow-1">
+                <small>
+                  <strong>Nota lançada:</strong> <%= grade.student.full_name %>
+                  <br>
+                  <%= grade.subject.name %> - Nota: <%= grade.score %>
+                  <br>
+                  <span class="text-muted"><%= time_ago_in_words(grade.created_at) %> atrás</span>
+                </small>
+              </div>
+            </div>
+          <% end %>
+        <% else %>
+          <div class="text-center text-muted py-3">
+            <p>Nenhuma atividade recente</p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6 mb-4">
+    <div class="card shadow mb-4">
+      <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+        <h6 class="m-0 font-weight-bold text-primary">
+          <i class="fas fa-comments me-2"></i>
+          Mensagens Recentes
+        </h6>
+        <% unread_count = current_user.received_messages.unread.count %>
+        <% if unread_count > 0 %>
+          <span class="badge bg-danger"><%= unread_count %></span>
+        <% end %>
+      </div>
+      <div class="card-body">
+        <% recent_messages = current_user.received_messages.order(created_at: :desc).limit(3) %>
+        <% if recent_messages.any? %>
+          <% recent_messages.each do |message| %>
+            <div class="d-flex align-items-start mb-3 <%= 'bg-light' if message.unread? %> p-2 rounded">
+              <div class="me-3">
+                <div class="rounded-circle bg-info text-white d-flex align-items-center justify-content-center" style="width: 35px; height: 35px;">
+                  <i class="fas fa-user"></i>
+                </div>
+              </div>
+              <div class="flex-grow-1">
+                <h6 class="mb-1">
+                  <%= message.sender.full_name %>
+                  <% if message.unread? %>
+                    <span class="badge bg-primary ms-1">Nova</span>
+                  <% end %>
+                </h6>
+                <p class="mb-1"><%= truncate(message.content, length: 60) %></p>
+                <small class="text-muted"><%= time_ago_in_words(message.created_at) %> atrás</small>
+              </div>
+            </div>
+          <% end %>
+          <div class="text-center mt-3">
+            <%= link_to "Ver todas as mensagens", "#", class: "btn btn-sm btn-outline-primary" %>
+          </div>
+        <% else %>
+          <div class="text-center text-muted py-3">
+            <i class="fas fa-comments fa-2x mb-2"></i>
+            <p>Nenhuma mensagem</p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .border-left-primary {
+    border-left: 0.25rem solid #4e73df !important;
+  }
+  .border-left-success {
+    border-left: 0.25rem solid #1cc88a !important;
+  }
+  .border-left-info {
+    border-left: 0.25rem solid #36b9cc !important;
+  }
+  .border-left-warning {
+    border-left: 0.25rem solid #f6c23e !important;
+  }
+  .text-xs {
+    font-size: 0.7rem;
+  }
+  .text-gray-800 {
+    color: #5a5c69 !important;
+  }
+  .text-gray-300 {
+    color: #dddfeb !important;
+  }
+</style>

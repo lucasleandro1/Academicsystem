@@ -1,0 +1,192 @@
+<% content_for :title, "Minhas Turmas" %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1><i class="fas fa-users"></i> Minhas Turmas</h1>
+  <div class="text-muted">
+    <small>Ano letivo: <%= Date.current.year %></small>
+  </div>
+</div>
+
+<!-- Filtros -->
+<div class="card mb-4">
+  <div class="card-body">
+    <%= form_with url: teachers_classrooms_path, method: :get, local: true, class: "row g-3" do |form| %>
+      <div class="col-md-4">
+        <%= form.select :subject_id, 
+                        options_from_collection_for_select(current_user.subjects, :id, :name, params[:subject_id]),
+                        { prompt: "Todas as disciplinas" }, { class: "form-select" } %>
+      </div>
+      <div class="col-md-3">
+        <%= form.select :shift, 
+                        options_for_select([['Todos os turnos', ''], ['Manhã', 'morning'], ['Tarde', 'afternoon'], ['Noite', 'night']], params[:shift]),
+                        {}, { class: "form-select" } %>
+      </div>
+      <div class="col-md-3">
+        <%= form.select :level, 
+                        options_for_select([['Todos os níveis', ''], ['Fundamental', 'elementary'], ['Médio', 'high_school']], params[:level]),
+                        {}, { class: "form-select" } %>
+      </div>
+      <div class="col-md-2">
+        <div class="d-grid">
+          <%= form.submit "Filtrar", class: "btn btn-outline-secondary" %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<!-- Lista de Turmas -->
+<div class="row">
+  <% if @classrooms.any? %>
+    <% @classrooms.each do |classroom| %>
+      <div class="col-lg-6 col-md-12 mb-4">
+        <div class="card h-100">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+              <i class="fas fa-users text-primary"></i> 
+              <%= classroom.name %>
+            </h5>
+            <div class="badge bg-<%= classroom.shift == 'morning' ? 'warning' : classroom.shift == 'afternoon' ? 'info' : 'dark' %>">
+              <%= classroom.shift.humanize %>
+            </div>
+          </div>
+          <div class="card-body">
+            <!-- Informações básicas -->
+            <div class="row mb-3">
+              <div class="col-6">
+                <small class="text-muted">Nível:</small>
+                <br>
+                <strong><%= classroom.level.humanize %></strong>
+              </div>
+              <div class="col-6">
+                <small class="text-muted">Ano Letivo:</small>
+                <br>
+                <strong><%= classroom.academic_year %></strong>
+              </div>
+            </div>
+
+            <!-- Disciplinas que leciono nesta turma -->
+            <div class="mb-3">
+              <small class="text-muted">Minhas Disciplinas:</small>
+              <div class="mt-1">
+                <% my_subjects = current_user.subjects.where(classroom: classroom) %>
+                <% my_subjects.each do |subject| %>
+                  <span class="badge bg-primary me-1"><%= subject.name %></span>
+                <% end %>
+              </div>
+            </div>
+
+            <!-- Estatísticas da turma -->
+            <div class="row text-center mb-3">
+              <div class="col-4">
+                <h5 class="text-primary mb-0"><%= classroom.enrollments.where(status: 'active').count %></h5>
+                <small class="text-muted">Alunos</small>
+              </div>
+              <div class="col-4">
+                <h5 class="text-success mb-0"><%= classroom.subjects.count %></h5>
+                <small class="text-muted">Disciplinas</small>
+              </div>
+              <div class="col-4">
+                <h5 class="text-info mb-0">
+                  <%= Activity.joins(:subject).where(subjects: { classroom: classroom, teacher: current_user }).count %>
+                </h5>
+                <small class="text-muted">Atividades</small>
+              </div>
+            </div>
+
+            <!-- Próxima aula -->
+            <% next_class = classroom.class_schedules.joins(:subject).where(subjects: { teacher: current_user }).where('day_of_week = ? AND start_time > ?', Date.current.wday, Time.current.strftime("%H:%M")).first %>
+            <% if next_class %>
+              <div class="alert alert-info mb-3">
+                <small><strong>Próxima aula:</strong></small>
+                <br>
+                <small>
+                  <%= next_class.subject.name %> - 
+                  <%= next_class.start_time.strftime("%H:%M") %> às <%= next_class.end_time.strftime("%H:%M") %>
+                </small>
+              </div>
+            <% end %>
+          </div>
+          <div class="card-footer">
+            <div class="row g-1">
+              <div class="col-6">
+                <%= link_to teachers_classroom_students_path(classroom), class: "btn btn-sm btn-outline-primary w-100" do %>
+                  <i class="fas fa-users"></i> Alunos
+                <% end %>
+              </div>
+              <div class="col-6">
+                <%= link_to teachers_classroom_schedule_path(classroom), class: "btn btn-sm btn-outline-success w-100" do %>
+                  <i class="fas fa-calendar"></i> Horários
+                <% end %>
+              </div>
+            </div>
+            <div class="row g-1 mt-1">
+              <div class="col-6">
+                <%= link_to teachers_classroom_grades_path(classroom), class: "btn btn-sm btn-outline-warning w-100" do %>
+                  <i class="fas fa-star"></i> Notas
+                <% end %>
+              </div>
+              <div class="col-6">
+                <%= link_to teachers_classroom_activities_path(classroom), class: "btn btn-sm btn-outline-info w-100" do %>
+                  <i class="fas fa-tasks"></i> Atividades
+                <% end %>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  <% else %>
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body text-center py-5">
+          <i class="fas fa-users fa-3x text-muted mb-3"></i>
+          <h5 class="text-muted">Nenhuma turma encontrada</h5>
+          <p class="text-muted">
+            Você ainda não possui turmas atribuídas ou nenhuma turma corresponde aos filtros selecionados.
+          </p>
+          <p class="text-muted">
+            Entre em contato com a direção da escola para verificar suas atribuições.
+          </p>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>
+
+<!-- Resumo geral -->
+<% if @classrooms.any? %>
+  <div class="row mt-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h5><i class="fas fa-chart-bar"></i> Resumo Geral</h5>
+        </div>
+        <div class="card-body">
+          <div class="row text-center">
+            <div class="col-md-3">
+              <h4 class="text-primary"><%= @classrooms.count %></h4>
+              <small class="text-muted">Turmas Atribuídas</small>
+            </div>
+            <div class="col-md-3">
+              <h4 class="text-success">
+                <%= @classrooms.joins(:enrollments).where(enrollments: { status: 'active' }).count %>
+              </h4>
+              <small class="text-muted">Total de Alunos</small>
+            </div>
+            <div class="col-md-3">
+              <h4 class="text-info"><%= current_user.subjects.count %></h4>
+              <small class="text-muted">Disciplinas Ministradas</small>
+            </div>
+            <div class="col-md-3">
+              <h4 class="text-warning">
+                <%= Activity.joins(:subject).where(subjects: { teacher: current_user }).count %>
+              </h4>
+              <small class="text-muted">Atividades Criadas</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>

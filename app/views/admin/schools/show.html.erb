@@ -1,0 +1,165 @@
+<% content_for :title, @school.name %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1><i class="fas fa-school"></i> <%= @school.name %></h1>
+  <div class="btn-group">
+    <%= link_to edit_admin_school_path(@school), class: "btn btn-outline-primary" do %>
+      <i class="fas fa-edit"></i> Editar
+    <% end %>
+    <%= link_to admin_schools_path, class: "btn btn-outline-secondary" do %>
+      <i class="fas fa-arrow-left"></i> Voltar
+    <% end %>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-8">
+    <!-- Informações da Escola -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5><i class="fas fa-info-circle"></i> Informações da Escola</h5>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-3">
+            <% if @school.logo.present? %>
+              <%= image_tag @school.logo, class: "img-fluid rounded", style: "max-height: 120px;" %>
+            <% else %>
+              <div class="bg-light rounded d-flex align-items-center justify-content-center" 
+                   style="height: 120px;">
+                <i class="fas fa-school fa-3x text-muted"></i>
+              </div>
+            <% end %>
+          </div>
+          <div class="col-md-9">
+            <table class="table table-borderless">
+              <tr>
+                <th width="120">Nome:</th>
+                <td><%= @school.name %></td>
+              </tr>
+              <tr>
+                <th>CNPJ:</th>
+                <td><%= @school.cnpj %></td>
+              </tr>
+              <tr>
+                <th>Endereço:</th>
+                <td><%= @school.address %></td>
+              </tr>
+              <% if @school.phone.present? %>
+                <tr>
+                  <th>Telefone:</th>
+                  <td><%= @school.phone %></td>
+                </tr>
+              <% end %>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Direção da Escola -->
+    <div class="card mb-4">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5><i class="fas fa-user-tie"></i> Direção</h5>
+        <% unless @school.direction.present? %>
+          <%= link_to new_admin_direction_path(school_id: @school.id), class: "btn btn-sm btn-primary" do %>
+            <i class="fas fa-plus"></i> Cadastrar Diretor
+          <% end %>
+        <% end %>
+      </div>
+      <div class="card-body">
+        <% if @school.direction.present? %>
+          <div class="d-flex align-items-center">
+            <div class="bg-primary rounded-circle me-3 d-flex align-items-center justify-content-center" 
+                 style="width: 50px; height: 50px;">
+              <i class="fas fa-user text-white"></i>
+            </div>
+            <div>
+              <h6 class="mb-0"><%= @school.direction.full_name %></h6>
+              <small class="text-muted"><%= @school.direction.email %></small>
+              <br>
+              <span class="badge bg-success">Ativo</span>
+            </div>
+            <div class="ms-auto">
+              <%= link_to edit_admin_user_path(@school.direction), class: "btn btn-sm btn-outline-primary" do %>
+                <i class="fas fa-edit"></i>
+              <% end %>
+            </div>
+          </div>
+        <% else %>
+          <div class="text-center py-3">
+            <i class="fas fa-user-tie fa-2x text-muted mb-2"></i>
+            <p class="text-muted mb-0">Nenhum diretor cadastrado para esta escola.</p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <!-- Estatísticas -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h6><i class="fas fa-chart-bar"></i> Estatísticas</h6>
+      </div>
+      <div class="card-body">
+        <div class="row text-center">
+          <div class="col-6">
+            <h4 class="text-primary"><%= @school.users.where(user_type: 'teacher').count %></h4>
+            <small class="text-muted">Professores</small>
+          </div>
+          <div class="col-6">
+            <h4 class="text-success"><%= @school.users.where(user_type: 'student').count %></h4>
+            <small class="text-muted">Alunos</small>
+          </div>
+        </div>
+        <hr>
+        <div class="row text-center">
+          <div class="col-6">
+            <h4 class="text-info"><%= @school.classrooms.count %></h4>
+            <small class="text-muted">Turmas</small>
+          </div>
+          <div class="col-6">
+            <h4 class="text-warning"><%= @school.subjects.count %></h4>
+            <small class="text-muted">Disciplinas</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ações -->
+    <div class="card">
+      <div class="card-header">
+        <h6><i class="fas fa-tools"></i> Ações</h6>
+      </div>
+      <div class="card-body">
+        <div class="d-grid gap-2">
+          <%= link_to edit_admin_school_path(@school), class: "btn btn-outline-primary" do %>
+            <i class="fas fa-edit"></i> Editar Escola
+          <% end %>
+          
+          <% if @school.direction.present? %>
+            <%= link_to edit_admin_user_path(@school.direction), class: "btn btn-outline-success" do %>
+              <i class="fas fa-user-edit"></i> Editar Diretor
+            <% end %>
+          <% else %>
+            <%= link_to new_admin_user_path(user_type: 'direction', school_id: @school.id), class: "btn btn-outline-success" do %>
+              <i class="fas fa-user-plus"></i> Cadastrar Diretor
+            <% end %>
+          <% end %>
+          
+          <hr>
+          
+          <%= link_to admin_school_path(@school), method: :delete, 
+                     class: "btn btn-outline-danger",
+                     data: { 
+                       confirm: "Tem certeza que deseja excluir esta escola? Esta ação não pode ser desfeita.",
+                       turbo_method: :delete 
+                     } do %>
+            <i class="fas fa-trash"></i> Excluir Escola
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

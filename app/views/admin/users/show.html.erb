@@ -1,0 +1,218 @@
+<% content_for :title, "Usuário - #{@user.full_name}" %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1><i class="fas fa-user"></i> Detalhes do Usuário</h1>
+  <div class="btn-group">
+    <%= link_to admin_users_path, class: "btn btn-outline-secondary" do %>
+      <i class="fas fa-arrow-left"></i> Voltar
+    <% end %>
+    <%= link_to edit_admin_user_path(@user), class: "btn btn-primary" do %>
+      <i class="fas fa-edit"></i> Editar
+    <% end %>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">Informações Pessoais</h5>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6">
+            <div class="mb-3">
+              <label class="form-label text-muted">Nome Completo</label>
+              <div class="fw-bold"><%= @user.full_name %></div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="mb-3">
+              <label class="form-label text-muted">E-mail</label>
+              <div><%= @user.email %></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6">
+            <div class="mb-3">
+              <label class="form-label text-muted">Tipo de Usuário</label>
+              <div>
+                <span class="badge bg-<%= @user.user_type == 'admin' ? 'danger' : @user.user_type == 'direction' ? 'warning' : @user.user_type == 'teacher' ? 'info' : 'success' %> fs-6">
+                  <%= @user.user_type.humanize %>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <% if @user.registration_number.present? %>
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label text-muted">Número de Matrícula/Registro</label>
+                <div><%= @user.registration_number %></div>
+              </div>
+            </div>
+          </div>
+        <% end %>
+
+        <% if @user.phone.present? %>
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label text-muted">Telefone</label>
+                <div><%= @user.phone %></div>
+              </div>
+            </div>
+          </div>
+        <% end %>
+
+        <% if @user.birth_date.present? %>
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label text-muted">Data de Nascimento</label>
+                <div><%= @user.birth_date.strftime("%d/%m/%Y") %></div>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Informações específicas por tipo -->
+    <% if @user.student? && @user.guardian_name.present? %>
+      <div class="card mt-4">
+        <div class="card-header">
+          <h5 class="mb-0">Informações do Aluno</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label text-muted">Nome do Responsável</label>
+                <div><%= @user.guardian_name %></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% end %>
+
+    <% if @user.teacher? && (@user.position.present? || @user.specialization.present?) %>
+      <div class="card mt-4">
+        <div class="card-header">
+          <h5 class="mb-0">Informações Profissionais</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <% if @user.position.present? %>
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label class="form-label text-muted">Cargo</label>
+                  <div><%= @user.position %></div>
+                </div>
+              </div>
+            <% end %>
+            <% if @user.specialization.present? %>
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label class="form-label text-muted">Especialização</label>
+                  <div><%= @user.specialization %></div>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">Escola</h5>
+      </div>
+      <div class="card-body">
+        <% if @user.school.present? %>
+          <div class="d-flex align-items-center">
+            <div class="bg-primary rounded-circle text-white d-flex align-items-center justify-content-center me-3" 
+                 style="width: 50px; height: 50px;">
+              <i class="fas fa-school"></i>
+            </div>
+            <div>
+              <h6 class="mb-0"><%= @user.school.name %></h6>
+              <small class="text-muted">
+                <%= @user.school.address if @user.school.address.present? %>
+              </small>
+            </div>
+          </div>
+          
+          <hr>
+          
+          <div class="row">
+            <% if @user.school.phone.present? %>
+              <div class="col-12 mb-2">
+                <small class="text-muted">Telefone:</small>
+                <div><%= @user.school.phone %></div>
+              </div>
+            <% end %>
+            <% if @user.school.email.present? %>
+              <div class="col-12 mb-2">
+                <small class="text-muted">E-mail:</small>
+                <div><%= @user.school.email %></div>
+              </div>
+            <% end %>
+          </div>
+        <% else %>
+          <div class="text-center text-muted py-3">
+            <i class="fas fa-school fa-2x mb-2"></i>
+            <p class="mb-0">Usuário não vinculado a nenhuma escola</p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="card mt-4">
+      <div class="card-header">
+        <h5 class="mb-0">Informações do Sistema</h5>
+      </div>
+      <div class="card-body">
+        <div class="mb-3">
+          <small class="text-muted">Criado em</small>
+          <div><%= @user.created_at.strftime("%d/%m/%Y às %H:%M") %></div>
+        </div>
+        <div class="mb-3">
+          <small class="text-muted">Última atualização</small>
+          <div><%= @user.updated_at.strftime("%d/%m/%Y às %H:%M") %></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mt-4">
+      <div class="card-header">
+        <h5 class="mb-0">Ações</h5>
+      </div>
+      <div class="card-body">
+        <div class="d-grid gap-2">
+          <%= link_to edit_admin_user_path(@user), class: "btn btn-primary" do %>
+            <i class="fas fa-edit"></i> Editar Usuário
+          <% end %>
+          
+          <% if @user != current_user %>
+            <%= link_to admin_user_path(@user), method: :delete, 
+                       class: "btn btn-outline-danger",
+                       data: { 
+                         confirm: "Tem certeza que deseja excluir este usuário? Esta ação não pode ser desfeita.",
+                         turbo_method: :delete 
+                       } do %>
+              <i class="fas fa-trash"></i> Excluir Usuário
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

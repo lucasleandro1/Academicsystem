@@ -1,0 +1,183 @@
+<% content_for :title, "Dados da Escola" %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1><i class="fas fa-school"></i> Dados da Escola</h1>
+  <%= link_to edit_direction_school_path, class: "btn btn-primary" do %>
+    <i class="fas fa-edit"></i> Editar Dados
+  <% end %>
+</div>
+
+<div class="row">
+  <div class="col-lg-8">
+    <!-- Informações Gerais -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5><i class="fas fa-info-circle"></i> Informações Gerais</h5>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-3 text-center">
+            <% if @school.logo.present? %>
+              <%= image_tag @school.logo, class: "img-fluid rounded shadow", style: "max-height: 150px;" %>
+            <% else %>
+              <div class="bg-light rounded d-flex align-items-center justify-content-center shadow" 
+                   style="height: 150px;">
+                <i class="fas fa-school fa-4x text-muted"></i>
+              </div>
+            <% end %>
+          </div>
+          <div class="col-md-9">
+            <table class="table table-borderless">
+              <tr>
+                <th width="120">Nome:</th>
+                <td><strong><%= @school.name %></strong></td>
+              </tr>
+              <tr>
+                <th>CNPJ:</th>
+                <td><%= @school.cnpj %></td>
+              </tr>
+              <tr>
+                <th>Endereço:</th>
+                <td><%= @school.address %></td>
+              </tr>
+              <% if @school.phone.present? %>
+                <tr>
+                  <th>Telefone:</th>
+                  <td>
+                    <i class="fas fa-phone text-muted"></i> <%= @school.phone %>
+                  </td>
+                </tr>
+              <% end %>
+              <% if @school.email.present? %>
+                <tr>
+                  <th>E-mail:</th>
+                  <td>
+                    <i class="fas fa-envelope text-muted"></i> <%= @school.email %>
+                  </td>
+                </tr>
+              <% end %>
+              <% if @school.website.present? %>
+                <tr>
+                  <th>Website:</th>
+                  <td>
+                    <i class="fas fa-globe text-muted"></i> 
+                    <%= link_to @school.website, @school.website, target: "_blank", class: "text-decoration-none" %>
+                  </td>
+                </tr>
+              <% end %>
+              <tr>
+                <th>Status:</th>
+                <td>
+                  <span class="badge bg-<%= @school.active? ? 'success' : 'danger' %>">
+                    <%= @school.active? ? 'Ativa' : 'Inativa' %>
+                  </span>
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+        
+        <% if @school.description.present? %>
+          <hr>
+          <h6>Sobre a Escola:</h6>
+          <p class="text-muted"><%= @school.description %></p>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <!-- Estatísticas da Escola -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h6><i class="fas fa-chart-pie"></i> Estatísticas</h6>
+      </div>
+      <div class="card-body">
+        <div class="row text-center mb-3">
+          <div class="col-6">
+            <h3 class="text-primary"><%= @school.users.where(user_type: 'student').count %></h3>
+            <small class="text-muted">Alunos</small>
+          </div>
+          <div class="col-6">
+            <h3 class="text-success"><%= @school.users.where(user_type: 'teacher').count %></h3>
+            <small class="text-muted">Professores</small>
+          </div>
+        </div>
+        <div class="row text-center mb-3">
+          <div class="col-6">
+            <h3 class="text-info"><%= @school.classrooms.count %></h3>
+            <small class="text-muted">Turmas</small>
+          </div>
+          <div class="col-6">
+            <h3 class="text-warning"><%= @school.subjects.count %></h3>
+            <small class="text-muted">Disciplinas</small>
+          </div>
+        </div>
+        <hr>
+        <div class="row text-center">
+          <div class="col-6">
+            <h3 class="text-secondary"><%= @school.events.count %></h3>
+            <small class="text-muted">Eventos</small>
+          </div>
+          <div class="col-6">
+            <h3 class="text-dark"><%= @school.documents.count %></h3>
+            <small class="text-muted">Documentos</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Informações Administrativas -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h6><i class="fas fa-cog"></i> Informações Administrativas</h6>
+      </div>
+      <div class="card-body">
+        <table class="table table-sm table-borderless">
+          <tr>
+            <th>Ano Letivo:</th>
+            <td><%= Date.current.year %></td>
+          </tr>
+          <tr>
+            <th>Diretor:</th>
+            <td><%= current_user.full_name %></td>
+          </tr>
+          <tr>
+            <th>Cadastro:</th>
+            <td><%= @school.created_at.strftime("%d/%m/%Y") %></td>
+          </tr>
+          <tr>
+            <th>Última Atualização:</th>
+            <td><%= @school.updated_at.strftime("%d/%m/%Y às %H:%M") %></td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- Ações Rápidas -->
+    <div class="card">
+      <div class="card-header">
+        <h6><i class="fas fa-tools"></i> Ações Rápidas</h6>
+      </div>
+      <div class="card-body">
+        <div class="d-grid gap-2">
+          <%= link_to edit_direction_school_path, class: "btn btn-outline-primary" do %>
+            <i class="fas fa-edit"></i> Editar Dados da Escola
+          <% end %>
+          
+          <%= link_to direction_reports_path, class: "btn btn-outline-info" do %>
+            <i class="fas fa-chart-bar"></i> Relatórios da Escola
+          <% end %>
+          
+          <%= link_to direction_documents_path, class: "btn btn-outline-secondary" do %>
+            <i class="fas fa-folder"></i> Documentos da Escola
+          <% end %>
+          
+          <%= link_to direction_events_path, class: "btn btn-outline-warning" do %>
+            <i class="fas fa-calendar"></i> Eventos da Escola
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

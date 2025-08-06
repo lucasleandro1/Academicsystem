@@ -1,0 +1,448 @@
+<% content_for :title, "Nova Ocorrência" %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1><i class="fas fa-exclamation-triangle"></i> Nova Ocorrência</h1>
+  <%= link_to direction_occurrences_path, class: "btn btn-outline-secondary" do %>
+    <i class="fas fa-arrow-left"></i> Voltar
+  <% end %>
+</div>
+
+<div class="row">
+  <div class="col-lg-8 mx-auto">
+    <%= form_with model: [:direction, @occurrence], local: true, class: "needs-validation", novalidate: true do |form| %>
+      
+      <!-- Informações Básicas -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="fas fa-info-circle"></i> Informações Básicas</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-8 mb-3">
+              <%= form.label :user_id, "Aluno Envolvido *", class: "form-label" %>
+              <%= form.select :user_id, 
+                              options_from_collection_for_select(
+                                User.where(user_type: 'student').order(:name), 
+                                :id, :name
+                              ),
+                              { prompt: "Selecione o aluno..." }, 
+                              { class: "form-select", required: true } %>
+              <div class="invalid-feedback">
+                Por favor, selecione o aluno envolvido.
+              </div>
+              <div class="form-text">
+                Aluno principal envolvido na ocorrência
+              </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+              <%= form.label :occurrence_type, "Tipo de Ocorrência *", class: "form-label" %>
+              <%= form.select :occurrence_type, 
+                              options_for_select([
+                                ['Selecione...', ''],
+                                ['Disciplinar', 'disciplinary'],
+                                ['Comportamental', 'behavioral'],
+                                ['Acadêmica', 'academic'],
+                                ['Saúde', 'health'],
+                                ['Outros', 'other']
+                              ], @occurrence.occurrence_type),
+                              {}, { class: "form-select", required: true } %>
+              <div class="invalid-feedback">
+                Por favor, selecione o tipo da ocorrência.
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <%= form.label :date, "Data da Ocorrência *", class: "form-label" %>
+              <%= form.date_field :date, class: "form-control", 
+                                 value: Date.current, required: true %>
+              <div class="invalid-feedback">
+                Por favor, informe a data da ocorrência.
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <%= form.label :time, "Horário da Ocorrência", class: "form-label" %>
+              <%= form.time_field :time, class: "form-control" %>
+              <div class="form-text">
+                Horário aproximado em que ocorreu o fato
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <%= form.label :location, "Local da Ocorrência", class: "form-label" %>
+              <%= form.text_field :location, class: "form-control", 
+                                 placeholder: "Ex: Sala 101, Pátio, Quadra" %>
+              <div class="form-text">
+                Onde a ocorrência aconteceu
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <%= form.label :severity, "Gravidade *", class: "form-label" %>
+              <%= form.select :severity, 
+                              options_for_select([
+                                ['Selecione...', ''],
+                                ['Leve', 'low'],
+                                ['Moderada', 'medium'],
+                                ['Grave', 'high'],
+                                ['Crítica', 'critical']
+                              ], @occurrence.severity),
+                              {}, { class: "form-select", required: true } %>
+              <div class="invalid-feedback">
+                Por favor, selecione a gravidade.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Descrição Detalhada -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="fas fa-file-alt"></i> Descrição da Ocorrência</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-12 mb-3">
+              <%= form.label :description, "Descrição Completa *", class: "form-label" %>
+              <%= form.text_area :description, class: "form-control", rows: 6, 
+                                required: true,
+                                placeholder: "Descreva detalhadamente o que aconteceu, incluindo contexto, ações do aluno, consequências..." %>
+              <div class="invalid-feedback">
+                Por favor, descreva a ocorrência.
+              </div>
+              <div class="form-text">
+                Seja o mais detalhado possível. Inclua fatos objetivos e cronologia dos eventos.
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <%= form.label :antecedents, "Antecedentes", class: "form-label" %>
+              <%= form.text_area :antecedents, class: "form-control", rows: 3,
+                                placeholder: "O que levou à situação? Contexto anterior..." %>
+              <div class="form-text">
+                Eventos ou comportamentos que precederam a ocorrência
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <%= form.label :consequences, "Consequências Imediatas", class: "form-label" %>
+              <%= form.text_area :consequences, class: "form-control", rows: 3,
+                                placeholder: "Quais foram as consequências diretas do ocorrido..." %>
+              <div class="form-text">
+                Resultados imediatos da ocorrência
+              </div>
+            </div>
+
+            <div class="col-12 mb-3">
+              <%= form.label :witnesses, "Testemunhas", class: "form-label" %>
+              <%= form.text_area :witnesses, class: "form-control", rows: 2,
+                                placeholder: "Nome de pessoas que presenciaram o ocorrido..." %>
+              <div class="form-text">
+                Liste funcionários, alunos ou outras pessoas que presenciaram
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pessoas Envolvidas -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="fas fa-users"></i> Pessoas Envolvidas</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <%= form.label :reporter_name, "Quem Está Reportando *", class: "form-label" %>
+              <%= form.text_field :reporter_name, class: "form-control", 
+                                 placeholder: "Nome do professor/funcionário", required: true %>
+              <div class="invalid-feedback">
+                Por favor, informe quem está reportando.
+              </div>
+              <div class="form-text">
+                Professor ou funcionário que presenciou ou foi comunicado
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <%= form.label :reporter_role, "Função do Relator", class: "form-label" %>
+              <%= form.select :reporter_role, 
+                              options_for_select([
+                                ['Professor', 'teacher'],
+                                ['Coordenador', 'coordinator'],
+                                ['Diretor', 'director'],
+                                ['Funcionário', 'staff'],
+                                ['Outros', 'other']
+                              ]),
+                              { prompt: "Selecione..." }, 
+                              { class: "form-select" } %>
+            </div>
+
+            <div class="col-12 mb-3">
+              <%= form.label :other_students_involved, "Outros Alunos Envolvidos", class: "form-label" %>
+              <%= form.text_area :other_students_involved, class: "form-control", rows: 2,
+                                placeholder: "Nome de outros alunos que participaram da ocorrência..." %>
+              <div class="form-text">
+                Liste outros alunos que estiveram diretamente envolvidos
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <div class="form-check form-switch">
+                <%= form.check_box :parents_notified, class: "form-check-input" %>
+                <%= form.label :parents_notified, "Pais/Responsáveis Notificados", class: "form-check-label" %>
+              </div>
+              <div class="form-text">
+                Marque se os responsáveis já foram comunicados
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <%= form.label :notification_method, "Forma de Notificação", class: "form-label" %>
+              <%= form.select :notification_method, 
+                              options_for_select([
+                                ['Não notificado', ''],
+                                ['Telefone', 'phone'],
+                                ['WhatsApp', 'whatsapp'],
+                                ['Email', 'email'],
+                                ['Pessoalmente', 'in_person'],
+                                ['Agenda do aluno', 'agenda']
+                              ]),
+                              {}, { class: "form-select" } %>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Medidas e Acompanhamento -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="fas fa-clipboard-check"></i> Medidas e Acompanhamento</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-12 mb-3">
+              <%= form.label :immediate_actions, "Ações Imediatas Tomadas", class: "form-label" %>
+              <%= form.text_area :immediate_actions, class: "form-control", rows: 3,
+                                placeholder: "Que medidas foram tomadas no momento da ocorrência..." %>
+              <div class="form-text">
+                Ações realizadas imediatamente após a ocorrência
+              </div>
+            </div>
+
+            <div class="col-12 mb-3">
+              <%= form.label :proposed_measures, "Medidas Propostas", class: "form-label" %>
+              <div class="row">
+                <% [
+                  ['Conversa individual', 'individual_talk'],
+                  ['Advertência verbal', 'verbal_warning'],
+                  ['Advertência escrita', 'written_warning'],
+                  ['Suspensão', 'suspension'],
+                  ['Encaminhamento psicológico', 'psychological_referral'],
+                  ['Reunião com responsáveis', 'parent_meeting'],
+                  ['Atividade educativa', 'educational_activity'],
+                  ['Reparação do dano', 'damage_repair']
+                ].each do |measure_name, measure_value| %>
+                  <div class="col-md-4 col-6">
+                    <div class="form-check">
+                      <%= form.check_box :proposed_measures, { multiple: true, class: "form-check-input" }, measure_value, "" %>
+                      <%= form.label "proposed_measures_#{measure_value}", measure_name, class: "form-check-label" %>
+                    </div>
+                  </div>
+                <% end %>
+              </div>
+              <div class="form-text">
+                Selecione as medidas disciplinares/educativas apropriadas
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <%= form.label :follow_up_date, "Data de Acompanhamento", class: "form-label" %>
+              <%= form.date_field :follow_up_date, class: "form-control" %>
+              <div class="form-text">
+                Quando reavaliar a situação
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <%= form.label :responsible_for_followup, "Responsável pelo Acompanhamento", class: "form-label" %>
+              <%= form.text_field :responsible_for_followup, class: "form-control",
+                                 placeholder: "Nome do professor/coordenador" %>
+            </div>
+
+            <div class="col-12 mb-3">
+              <%= form.label :additional_notes, "Observações Adicionais", class: "form-label" %>
+              <%= form.text_area :additional_notes, class: "form-control", rows: 3,
+                                placeholder: "Informações complementares, histórico do aluno, etc..." %>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Configurações -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="fas fa-cog"></i> Configurações</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <%= form.label :status, "Status Inicial", class: "form-label" %>
+              <%= form.select :status, 
+                              options_for_select([
+                                ['Aberta', 'open'],
+                                ['Em Acompanhamento', 'in_progress']
+                              ], 'open'),
+                              {}, { class: "form-select" } %>
+            </div>
+
+            <div class="col-md-4 mb-3">
+              <%= form.label :priority, "Prioridade", class: "form-label" %>
+              <%= form.select :priority, 
+                              options_for_select([
+                                ['Normal', 'normal'],
+                                ['Alta', 'high'],
+                                ['Urgente', 'urgent']
+                              ], 'normal'),
+                              {}, { class: "form-select" } %>
+            </div>
+
+            <div class="col-md-4 mb-3">
+              <%= form.label :confidentiality, "Confidencialidade", class: "form-label" %>
+              <%= form.select :confidentiality, 
+                              options_for_select([
+                                ['Normal', 'normal'],
+                                ['Restrita', 'restricted'],
+                                ['Confidencial', 'confidential']
+                              ], 'normal'),
+                              {}, { class: "form-select" } %>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <div class="form-check form-switch">
+                <%= form.check_box :requires_signature, class: "form-check-input" %>
+                <%= form.label :requires_signature, "Requer Assinatura dos Responsáveis", class: "form-check-label" %>
+              </div>
+              <div class="form-text">
+                Se os pais/responsáveis devem assinar ciência
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <div class="form-check form-switch">
+                <%= form.check_box :send_notifications, class: "form-check-input", checked: true %>
+                <%= form.label :send_notifications, "Enviar Notificações", class: "form-check-label" %>
+              </div>
+              <div class="form-text">
+                Notificar pessoas envolvidas sobre a ocorrência
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ações -->
+      <div class="card">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <%= link_to direction_occurrences_path, class: "btn btn-outline-secondary" do %>
+              <i class="fas fa-times"></i> Cancelar
+            <% end %>
+            
+            <div>
+              <%= form.submit "Salvar Rascunho", name: "draft", class: "btn btn-outline-primary me-2" %>
+              <%= form.submit "Registrar Ocorrência", class: "btn btn-primary" do %>
+                <i class="fas fa-save"></i> Registrar
+              <% end %>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    <% end %>
+  </div>
+</div>
+
+<!-- Modal de Ajuda -->
+<div class="modal fade" id="helpModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="fas fa-question-circle"></i> Ajuda - Nova Ocorrência</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <h6>Tipos de Ocorrência</h6>
+        <ul>
+          <li><strong>Disciplinar:</strong> Infrações às regras escolares, desrespeito</li>
+          <li><strong>Comportamental:</strong> Questões de conduta, relacionamento</li>
+          <li><strong>Acadêmica:</strong> Problemas de aprendizagem, falta de material</li>
+          <li><strong>Saúde:</strong> Questões médicas, acidentes</li>
+          <li><strong>Outros:</strong> Situações que não se encaixam nas categorias acima</li>
+        </ul>
+        
+        <h6>Níveis de Gravidade</h6>
+        <ul>
+          <li><strong>Leve:</strong> Situações menores, facilmente resolvidas</li>
+          <li><strong>Moderada:</strong> Requer atenção e acompanhamento</li>
+          <li><strong>Grave:</strong> Situações sérias que impactam o ambiente escolar</li>
+          <li><strong>Crítica:</strong> Emergências que requerem ação imediata</li>
+        </ul>
+        
+        <h6>Boas Práticas</h6>
+        <ul>
+          <li>Seja objetivo e factual na descrição</li>
+          <li>Evite julgamentos pessoais</li>
+          <li>Inclua todos os detalhes relevantes</li>
+          <li>Documente ações tomadas</li>
+          <li>Mantenha confidencialidade quando necessário</li>
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Link para abrir ajuda -->
+<div class="position-fixed bottom-0 end-0 p-3">
+  <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#helpModal">
+    <i class="fas fa-question-circle"></i> Ajuda
+  </button>
+</div>
+
+<script>
+// Validação do formulário
+(function() {
+  'use strict';
+  window.addEventListener('load', function() {
+    var forms = document.getElementsByClassName('needs-validation');
+    var validation = Array.prototype.filter.call(forms, function(form) {
+      form.addEventListener('submit', function(event) {
+        if (form.checkValidity() === false) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+      }, false);
+    });
+  }, false);
+})();
+
+// Lógica para notificação dos pais
+document.getElementById('occurrence_parents_notified').addEventListener('change', function() {
+  const notificationMethod = document.getElementById('occurrence_notification_method');
+  
+  if (this.checked) {
+    notificationMethod.disabled = false;
+    notificationMethod.required = true;
+  } else {
+    notificationMethod.disabled = true;
+    notificationMethod.required = false;
+    notificationMethod.value = '';
+  }
+});
+</script>

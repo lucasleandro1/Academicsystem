@@ -1,0 +1,338 @@
+<% content_for :title, "Painel do Aluno" %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h1><i class="fas fa-user-graduate"></i> Painel do Aluno</h1>
+    <p class="text-muted mb-0">Bem-vindo, <%= current_user.full_name %> - <%= current_user.school.name %></p>
+  </div>
+  <div class="text-end">
+    <small class="text-muted">
+      Hoje: <%= Date.current.strftime("%d/%m/%Y") %>
+      <br>
+      <%= Date.current.strftime("%A").capitalize %>
+    </small>
+  </div>
+</div>
+
+<!-- Informações da Matrícula -->
+<% enrollment = current_user.enrollments.where(status: 'active').first %>
+<% if enrollment&.classroom %>
+  <div class="alert alert-info mb-4">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <h6 class="mb-1">
+          <i class="fas fa-id-card"></i> 
+          Matrícula: <strong><%= current_user.registration_number %></strong>
+        </h6>
+        <small>
+          Turma: <strong><%= enrollment.classroom.name %></strong> - 
+          <%= enrollment.classroom.shift.humanize %> - 
+          Ano letivo <%= enrollment.classroom.academic_year %>
+        </small>
+      </div>
+      <div class="col-md-4 text-end">
+        <%= link_to students_profile_path, class: "btn btn-sm btn-outline-primary" do %>
+          <i class="fas fa-user"></i> Ver Perfil Completo
+        <% end %>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<!-- Cards de Status -->
+<div class="row mb-4">
+  <div class="col-lg-3 col-md-6 mb-3">
+    <div class="card card-stat bg-primary text-white">
+      <div class="card-body">
+        <div class="d-flex justify-content-between">
+          <div>
+            <h6 class="card-title">Disciplinas</h6>
+            <h2><%= @total_subjects %></h2>
+            <small>Matriculado</small>
+          </div>
+          <div class="align-self-center">
+            <i class="fas fa-book fa-2x"></i>
+          </div>
+        </div>
+      </div>
+      <div class="card-footer bg-primary bg-opacity-75">
+        <%= link_to students_grades_path, class: "text-white text-decoration-none small" do %>
+          <i class="fas fa-arrow-right"></i> Ver notas
+        <% end %>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-lg-3 col-md-6 mb-3">
+    <div class="card card-stat bg-success text-white">
+      <div class="card-body">
+        <div class="d-flex justify-content-between">
+          <div>
+            <h6 class="card-title">Frequência</h6>
+            <h2><%= @attendance_rate %>%</h2>
+            <small>Presença</small>
+          </div>
+          <div class="align-self-center">
+            <i class="fas fa-calendar-check fa-2x"></i>
+          </div>
+        </div>
+      </div>
+      <div class="card-footer bg-success bg-opacity-75">
+        <%= link_to students_attendance_path, class: "text-white text-decoration-none small" do %>
+          <i class="fas fa-arrow-right"></i> Ver detalhes
+        <% end %>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-lg-3 col-md-6 mb-3">
+    <div class="card card-stat bg-info text-white">
+      <div class="card-body">
+        <div class="d-flex justify-content-between">
+          <div>
+            <h6 class="card-title">Atividades</h6>
+            <h2><%= @pending_activities %></h2>
+            <small>Pendentes</small>
+          </div>
+          <div class="align-self-center">
+            <i class="fas fa-tasks fa-2x"></i>
+          </div>
+        </div>
+      </div>
+      <div class="card-footer bg-info bg-opacity-75">
+        <%= link_to students_activities_path, class: "text-white text-decoration-none small" do %>
+          <i class="fas fa-arrow-right"></i> Ver atividades
+        <% end %>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-lg-3 col-md-6 mb-3">
+    <div class="card card-stat bg-warning text-white">
+      <div class="card-body">
+        <div class="d-flex justify-content-between">
+          <div>
+            <h6 class="card-title">Mensagens</h6>
+            <h2><%= @unread_messages %></h2>
+            <small>Não lidas</small>
+          </div>
+          <div class="align-self-center">
+            <i class="fas fa-envelope fa-2x"></i>
+          </div>
+        </div>
+      </div>
+      <div class="card-footer bg-warning bg-opacity-75">
+        <%= link_to students_messages_path, class: "text-white text-decoration-none small" do %>
+          <i class="fas fa-arrow-right"></i> Ver mensagens
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <!-- Horários de Hoje -->
+  <div class="col-md-6 mb-4">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between">
+        <h5><i class="fas fa-calendar-day"></i> Aulas de Hoje</h5>
+        <%= link_to students_schedule_path, class: "btn btn-sm btn-outline-primary" do %>
+          <i class="fas fa-calendar-alt"></i> Grade Completa
+        <% end %>
+      </div>
+      <div class="card-body">
+        <% if enrollment&.classroom && @today_schedule.any? %>
+          <% @today_schedule.each do |schedule| %>
+            <div class="d-flex align-items-center mb-3 p-2 bg-light rounded">
+              <div class="me-3 text-center">
+                <strong><%= schedule.start_time.strftime("%H:%M") %></strong>
+                <br>
+                <small class="text-muted"><%= schedule.end_time.strftime("%H:%M") %></small>
+              </div>
+              <div class="flex-grow-1">
+                <strong><%= schedule.subject.name %></strong>
+                <br>
+                <small class="text-muted">
+                  <i class="fas fa-chalkboard-teacher"></i> 
+                  <%= schedule.subject.teacher.full_name %>
+                </small>
+              </div>
+            </div>
+          <% end %>
+        <% else %>
+          <div class="text-center py-3">
+            <i class="fas fa-calendar-day fa-2x text-muted mb-2"></i>
+            <p class="text-muted mb-0">Nenhuma aula agendada para hoje</p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Atividades Próximas ao Vencimento -->
+  <div class="col-md-6 mb-4">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between">
+        <h5><i class="fas fa-clock"></i> Atividades Próximas ao Vencimento</h5>
+        <%= link_to students_activities_path, class: "btn btn-sm btn-outline-warning" do %>
+          <i class="fas fa-eye"></i> Ver todas
+        <% end %>
+      </div>
+      <div class="card-body">
+        <% if @urgent_activities.any? %>
+          <% @urgent_activities.limit(5).each do |activity| %>
+            <div class="d-flex align-items-center justify-content-between mb-2 p-2 bg-light rounded">
+              <div>
+                <strong><%= activity.title %></strong>
+                <br>
+                <small class="text-muted">
+                  <i class="fas fa-book"></i> <%= activity.subject.name %>
+                  <br>
+                  <i class="fas fa-calendar"></i> 
+                  <span class="<%= 'text-danger' if activity.due_date < Date.current + 2.days %>">
+                    Prazo: <%= activity.due_date.strftime("%d/%m/%Y") %>
+                  </span>
+                </small>
+              </div>
+              <div>
+                <% submission = activity.submissions.find_by(user: current_user) %>
+                <% if submission %>
+                  <span class="badge bg-success">Entregue</span>
+                <% else %>
+                  <%= link_to students_activity_path(activity), class: "btn btn-sm btn-outline-primary" do %>
+                    <i class="fas fa-upload"></i> Enviar
+                  <% end %>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+        <% else %>
+          <div class="text-center py-3">
+            <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+            <p class="text-muted mb-0">Todas as atividades em dia!</p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <!-- Últimas Notas -->
+  <div class="col-md-6 mb-4">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between">
+        <h5><i class="fas fa-star"></i> Últimas Notas</h5>
+        <%= link_to students_grades_path, class: "btn btn-sm btn-outline-success" do %>
+          <i class="fas fa-eye"></i> Ver todas
+        <% end %>
+      </div>
+      <div class="card-body">
+        <% if @recent_grades.any? %>
+          <% @recent_grades.limit(5).each do |grade| %>
+            <div class="d-flex align-items-center justify-content-between mb-2 p-2 bg-light rounded">
+              <div>
+                <strong><%= grade.subject.name %></strong>
+                <br>
+                <small class="text-muted">
+                  <%= grade.grade_type.humanize %> - 
+                  <%= grade.bimester %>º Bimestre
+                </small>
+              </div>
+              <div class="text-end">
+                <h5 class="mb-0 text-<%= grade.value >= 7 ? 'success' : grade.value >= 5 ? 'warning' : 'danger' %>">
+                  <%= grade.value %>
+                </h5>
+                <small class="text-muted">
+                  <%= grade.created_at.strftime("%d/%m") %>
+                </small>
+              </div>
+            </div>
+          <% end %>
+        <% else %>
+          <div class="text-center py-3">
+            <i class="fas fa-star fa-2x text-muted mb-2"></i>
+            <p class="text-muted mb-0">Nenhuma nota lançada ainda</p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Próximos Eventos -->
+  <div class="col-md-6 mb-4">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between">
+        <h5><i class="fas fa-calendar"></i> Próximos Eventos</h5>
+        <%= link_to students_events_path, class: "btn btn-sm btn-outline-info" do %>
+          <i class="fas fa-eye"></i> Ver todos
+        <% end %>
+      </div>
+      <div class="card-body">
+        <% if @upcoming_events.any? %>
+          <% @upcoming_events.limit(3).each do |event| %>
+            <div class="d-flex align-items-center mb-2 p-2 bg-light rounded">
+              <div class="bg-info rounded-circle me-2 p-2">
+                <i class="fas fa-calendar text-white"></i>
+              </div>
+              <div>
+                <strong><%= event.title %></strong>
+                <br>
+                <small class="text-muted">
+                  <%= event.start_date.strftime("%d/%m/%Y") %>
+                  <% if event.end_date != event.start_date %>
+                    até <%= event.end_date.strftime("%d/%m/%Y") %>
+                  <% end %>
+                </small>
+              </div>
+            </div>
+          <% end %>
+        <% else %>
+          <div class="text-center py-3">
+            <i class="fas fa-calendar fa-2x text-muted mb-2"></i>
+            <p class="text-muted mb-0">Nenhum evento próximo</p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Média Geral e Desempenho -->
+<div class="row">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header">
+        <h5><i class="fas fa-chart-line"></i> Desempenho Acadêmico</h5>
+      </div>
+      <div class="card-body">
+        <div class="row text-center">
+          <div class="col-md-3">
+            <div class="border-end">
+              <h4 class="text-primary"><%= @overall_average || "N/A" %></h4>
+              <small class="text-muted">Média Geral</small>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="border-end">
+              <h4 class="text-success"><%= @attendance_rate %>%</h4>
+              <small class="text-muted">Frequência</small>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="border-end">
+              <h4 class="text-info"><%= @submitted_activities %></h4>
+              <small class="text-muted">Atividades Entregues</small>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <h4 class="text-<%= @total_occurrences > 0 ? 'warning' : 'success' %>">
+              <%= @total_occurrences %>
+            </h4>
+            <small class="text-muted">Ocorrências</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

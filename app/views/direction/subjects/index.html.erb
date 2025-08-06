@@ -1,0 +1,347 @@
+<% content_for :title, "Disciplinas" %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1><i class="fas fa-book"></i> Gerenciar Disciplinas</h1>
+  <%= link_to new_direction_subject_path, class: "btn btn-primary" do %>
+    <i class="fas fa-plus"></i> Nova Disciplina
+  <% end %>
+</div>
+
+<!-- Filtros e Busca -->
+<div class="card mb-4">
+  <div class="card-body">
+    <%= form_with url: direction_subjects_path, method: :get, local: true, class: "row g-3" do |form| %>
+      <div class="col-md-4">
+        <%= form.text_field :search, placeholder: "Buscar por nome ou código...", 
+                           value: params[:search], class: "form-control" %>
+      </div>
+      <div class="col-md-3">
+        <%= form.select :area, 
+                        options_for_select([
+                          ['Todas as áreas', ''],
+                          ['Linguagens', 'languages'],
+                          ['Matemática', 'mathematics'],
+                          ['Ciências da Natureza', 'natural_sciences'],
+                          ['Ciências Humanas', 'human_sciences'],
+                          ['Ensino Religioso', 'religious_education'],
+                          ['Educação Física', 'physical_education'],
+                          ['Artes', 'arts'],
+                          ['Tecnologia', 'technology']
+                        ], params[:area]),
+                        {}, { class: "form-select" } %>
+      </div>
+      <div class="col-md-2">
+        <%= form.select :active, 
+                        options_for_select([
+                          ['Todas', ''],
+                          ['Ativas', 'true'],
+                          ['Inativas', 'false']
+                        ], params[:active]),
+                        {}, { class: "form-select" } %>
+      </div>
+      <div class="col-md-3">
+        <div class="d-grid">
+          <%= form.submit "Filtrar", class: "btn btn-outline-secondary" %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<!-- Estatísticas Rápidas -->
+<div class="row mb-4">
+  <div class="col-md-3">
+    <div class="card text-center">
+      <div class="card-body">
+        <h3 class="text-primary"><%= @subjects.count %></h3>
+        <small class="text-muted">Total de Disciplinas</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center">
+      <div class="card-body">
+        <h3 class="text-success"><%= @subjects.where(active: true).count %></h3>
+        <small class="text-muted">Ativas</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center">
+      <div class="card-body">
+        <h3 class="text-info"><%= @subjects.joins(:user).distinct.count('users.id') %></h3>
+        <small class="text-muted">Com Professores</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center">
+      <div class="card-body">
+        <h3 class="text-warning"><%= @subjects.joins(:classrooms).distinct.count('classrooms.id') %></h3>
+        <small class="text-muted">Em Turmas</small>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Lista de Disciplinas -->
+<div class="row">
+  <% if @subjects.any? %>
+    <% @subjects.each do |subject| %>
+      <div class="col-lg-6 col-md-12 mb-4">
+        <div class="card h-100">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+              <i class="fas fa-book text-primary"></i>
+              <%= subject.name %>
+            </h5>
+            <div class="dropdown">
+              <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                <i class="fas fa-ellipsis-v"></i>
+              </button>
+              <ul class="dropdown-menu">
+                <li>
+                  <%= link_to direction_subject_path(subject), class: "dropdown-item" do %>
+                    <i class="fas fa-eye"></i> Ver Detalhes
+                  <% end %>
+                </li>
+                <li>
+                  <%= link_to edit_direction_subject_path(subject), class: "dropdown-item" do %>
+                    <i class="fas fa-edit"></i> Editar
+                  <% end %>
+                </li>
+                <li>
+                  <%= link_to "#", class: "dropdown-item", data: { bs_toggle: "modal", bs_target: "#assignTeacherModal#{subject.id}" } do %>
+                    <i class="fas fa-user-tie"></i> Atribuir Professor
+                  <% end %>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                  <%= link_to "#", class: "dropdown-item text-danger", 
+                             data: { confirm: "Tem certeza que deseja excluir esta disciplina?" } do %>
+                    <i class="fas fa-trash"></i> Excluir
+                  <% end %>
+                </li>
+              </ul>
+            </div>
+          </div>
+          
+          <div class="card-body">
+            <!-- Informações básicas -->
+            <div class="row mb-3">
+              <div class="col-6">
+                <small class="text-muted">Código:</small>
+                <br>
+                <strong><%= subject.code || 'Não definido' %></strong>
+              </div>
+              <div class="col-6">
+                <small class="text-muted">Área:</small>
+                <br>
+                <span class="badge bg-info">
+                  <%= 
+                    case subject.area
+                    when 'languages' then 'Linguagens'
+                    when 'mathematics' then 'Matemática'
+                    when 'natural_sciences' then 'Ciências da Natureza'
+                    when 'human_sciences' then 'Ciências Humanas'
+                    when 'religious_education' then 'Ensino Religioso'
+                    when 'physical_education' then 'Educação Física'
+                    when 'arts' then 'Artes'
+                    when 'technology' then 'Tecnologia'
+                    else 'Não definida'
+                    end
+                  %>
+                </span>
+              </div>
+            </div>
+
+            <!-- Professor responsável -->
+            <% if subject.user %>
+              <div class="mb-3">
+                <small class="text-muted">Professor:</small>
+                <br>
+                <div class="d-flex align-items-center">
+                  <i class="fas fa-user-tie text-success me-2"></i>
+                  <strong><%= subject.user.name %></strong>
+                </div>
+                <small class="text-muted"><%= subject.user.email %></small>
+              </div>
+            <% else %>
+              <div class="mb-3">
+                <small class="text-muted">Professor:</small>
+                <br>
+                <span class="text-warning">
+                  <i class="fas fa-exclamation-triangle"></i> Não atribuído
+                </span>
+              </div>
+            <% end %>
+
+            <!-- Carga horária -->
+            <% if subject.workload.present? %>
+              <div class="mb-3">
+                <small class="text-muted">Carga Horária:</small>
+                <br>
+                <span class="badge bg-secondary">
+                  <%= subject.workload %>h/semana
+                </span>
+              </div>
+            <% end %>
+
+            <!-- Descrição -->
+            <% if subject.description.present? %>
+              <div class="mb-3">
+                <small class="text-muted">Descrição:</small>
+                <p class="small"><%= truncate(subject.description, length: 100) %></p>
+              </div>
+            <% end %>
+
+            <!-- Estatísticas -->
+            <div class="row mb-3">
+              <div class="col-6 text-center">
+                <h4 class="text-primary"><%= subject.classrooms.count %></h4>
+                <small class="text-muted">Turmas</small>
+              </div>
+              <div class="col-6 text-center">
+                <h4 class="text-success"><%= subject.classrooms.joins(:enrollments).distinct.count('enrollments.id') %></h4>
+                <small class="text-muted">Alunos</small>
+              </div>
+            </div>
+
+            <!-- Turmas atribuídas -->
+            <% if subject.classrooms.any? %>
+              <div class="mb-2">
+                <small class="text-muted">Turmas:</small>
+                <br>
+                <% subject.classrooms.limit(3).each do |classroom| %>
+                  <span class="badge bg-light text-dark me-1"><%= classroom.name %></span>
+                <% end %>
+                <% if subject.classrooms.count > 3 %>
+                  <small class="text-muted">+<%= subject.classrooms.count - 3 %> mais</small>
+                <% end %>
+              </div>
+            <% end %>
+
+            <!-- Status -->
+            <div class="mt-3">
+              <span class="badge bg-<%= subject.active? ? 'success' : 'secondary' %>">
+                <%= subject.active? ? 'Ativa' : 'Inativa' %>
+              </span>
+            </div>
+          </div>
+
+          <div class="card-footer">
+            <div class="d-flex justify-content-between align-items-center">
+              <small class="text-muted">
+                <i class="fas fa-calendar"></i>
+                Criada em <%= subject.created_at.strftime("%d/%m/%Y") %>
+              </small>
+              <%= link_to direction_subject_path(subject), class: "btn btn-sm btn-outline-primary" do %>
+                <i class="fas fa-arrow-right"></i> Ver Mais
+              <% end %>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Atribuir Professor -->
+      <div class="modal fade" id="assignTeacherModal<%= subject.id %>" tabindex="-1">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">
+                <i class="fas fa-user-tie"></i> Atribuir Professor - <%= subject.name %>
+              </h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <%= form_with url: "#", local: true do |form| %>
+                <div class="mb-3">
+                  <%= form.label :teacher_id, "Selecionar Professor", class: "form-label" %>
+                  <%= form.select :teacher_id, 
+                                  options_from_collection_for_select(
+                                    User.where(user_type: 'teacher'), 
+                                    :id, :name, subject.user_id
+                                  ),
+                                  { prompt: "Selecione um professor..." }, 
+                                  { class: "form-select" } %>
+                </div>
+                
+                <div class="mb-3">
+                  <%= form.label :workload, "Carga Horária Semanal", class: "form-label" %>
+                  <%= form.number_field :workload, min: 1, max: 40, 
+                                       value: subject.workload, 
+                                       class: "form-control", 
+                                       placeholder: "Horas por semana" %>
+                </div>
+                
+                <div class="mb-3">
+                  <%= form.label :notes, "Observações", class: "form-label" %>
+                  <%= form.text_area :notes, class: "form-control", rows: 3,
+                                    placeholder: "Observações sobre a atribuição..." %>
+                </div>
+              <% end %>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+              <button type="button" class="btn btn-primary">
+                <i class="fas fa-save"></i> Atribuir Professor
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  <% else %>
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body text-center py-5">
+          <i class="fas fa-book fa-3x text-muted mb-3"></i>
+          <h5 class="text-muted">Nenhuma disciplina encontrada</h5>
+          <p class="text-muted">
+            <% if params.any? %>
+              Não há disciplinas que correspondam aos filtros selecionados.
+            <% else %>
+              Nenhuma disciplina foi criada ainda.
+            <% end %>
+          </p>
+          <%= link_to new_direction_subject_path, class: "btn btn-primary" do %>
+            <i class="fas fa-plus"></i> Criar Primeira Disciplina
+          <% end %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>
+
+<!-- Gráfico por Área -->
+<% if @subjects.any? %>
+  <div class="card mt-4">
+    <div class="card-header">
+      <h5><i class="fas fa-chart-pie"></i> Distribuição por Área</h5>
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <% area_stats = @subjects.group(:area).count %>
+        <% area_names = { 
+          'languages' => 'Linguagens',
+          'mathematics' => 'Matemática',
+          'natural_sciences' => 'Ciências da Natureza',
+          'human_sciences' => 'Ciências Humanas',
+          'religious_education' => 'Ensino Religioso',
+          'physical_education' => 'Educação Física',
+          'arts' => 'Artes',
+          'technology' => 'Tecnologia'
+        } %>
+        
+        <% area_stats.each do |area, count| %>
+          <div class="col-md-3 col-6 mb-3">
+            <div class="text-center">
+              <h4 class="text-primary"><%= count %></h4>
+              <small class="text-muted"><%= area_names[area] || 'Não definida' %></small>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+<% end %>

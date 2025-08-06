@@ -1,16 +1,2 @@
-<p style="color: green"><%= notice %></p>
-
-<% content_for :title, "Directions" %>
-
-<h1>Directions</h1>
-
-<div id="directions">
-  <% @directions.each do |direction| %>
-    <%= render direction %>
-    <p>
-      <%= link_to "Show this direction", direction %>
-    </p>
-  <% end %>
-</div>
-
-<%= link_to "New direction", new_direction_path %>
+<%# This should redirect to dashboard - this file seems to be generated incorrectly %>
+<% redirect_to direction_root_path %>

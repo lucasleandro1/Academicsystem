@@ -1,0 +1,274 @@
+<% content_for :title, "Editar Turma" %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1><i class="fas fa-edit"></i> Editar Turma</h1>
+  <div>
+    <%= link_to direction_classroom_path(@classroom), class: "btn btn-outline-info me-2" do %>
+      <i class="fas fa-eye"></i> Visualizar
+    <% end %>
+    <%= link_to direction_classrooms_path, class: "btn btn-outline-secondary" do %>
+      <i class="fas fa-arrow-left"></i> Voltar
+    <% end %>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-8 mx-auto">
+    <%= form_with model: [:direction, @classroom], local: true, class: "needs-validation", novalidate: true do |form| %>
+      
+      <!-- Informações Básicas -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="fas fa-info-circle"></i> Informações Básicas</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <%= form.label :name, "Nome da Turma *", class: "form-label" %>
+              <%= form.text_field :name, class: "form-control", required: true %>
+              <div class="invalid-feedback">
+                Por favor, informe o nome da turma.
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <%= form.label :code, "Código da Turma", class: "form-label" %>
+              <%= form.text_field :code, class: "form-control" %>
+            </div>
+
+            <div class="col-md-4 mb-3">
+              <%= form.label :grade, "Série/Ano *", class: "form-label" %>
+              <%= form.select :grade, 
+                              options_for_select([
+                                ['1ª Série', '1'],
+                                ['2ª Série', '2'], 
+                                ['3ª Série', '3'],
+                                ['4ª Série', '4'],
+                                ['5ª Série', '5'],
+                                ['6ª Série', '6'],
+                                ['7ª Série', '7'],
+                                ['8ª Série', '8'],
+                                ['9ª Série', '9'],
+                                ['1º Ano', '10'],
+                                ['2º Ano', '11'],
+                                ['3º Ano', '12']
+                              ], @classroom.grade),
+                              {}, { class: "form-select", required: true } %>
+              <div class="invalid-feedback">
+                Por favor, selecione a série/ano.
+              </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+              <%= form.label :shift, "Turno *", class: "form-label" %>
+              <%= form.select :shift, 
+                              options_for_select([
+                                ['Matutino', 'morning'],
+                                ['Vespertino', 'afternoon'],
+                                ['Noturno', 'evening']
+                              ], @classroom.shift),
+                              {}, { class: "form-select", required: true } %>
+              <div class="invalid-feedback">
+                Por favor, selecione o turno.
+              </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+              <%= form.label :capacity, "Capacidade Máxima", class: "form-label" %>
+              <%= form.number_field :capacity, class: "form-control", min: 1, max: 50 %>
+            </div>
+
+            <div class="col-12 mb-3">
+              <%= form.label :description, "Descrição", class: "form-label" %>
+              <%= form.text_area :description, class: "form-control", rows: 3 %>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Configurações de Horário -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="fas fa-clock"></i> Configurações de Horário</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <%= form.label :start_time, "Horário de Início", class: "form-label" %>
+              <%= form.time_field :start_time, class: "form-control" %>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <%= form.label :end_time, "Horário de Término", class: "form-label" %>
+              <%= form.time_field :end_time, class: "form-control" %>
+            </div>
+
+            <div class="col-12 mb-3">
+              <%= form.label :active_days, "Dias Ativos", class: "form-label" %>
+              <div class="row">
+                <% [
+                  ['Segunda-feira', 'monday'],
+                  ['Terça-feira', 'tuesday'], 
+                  ['Quarta-feira', 'wednesday'],
+                  ['Quinta-feira', 'thursday'],
+                  ['Sexta-feira', 'friday'],
+                  ['Sábado', 'saturday']
+                ].each do |day_name, day_value| %>
+                  <div class="col-md-4 col-6">
+                    <div class="form-check">
+                      <%= form.check_box :active_days, 
+                                        { multiple: true, class: "form-check-input", 
+                                          checked: @classroom.active_days&.include?(day_value) }, 
+                                        day_value, "" %>
+                      <%= form.label "active_days_#{day_value}", day_name, class: "form-check-label" %>
+                    </div>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Localização -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="fas fa-map-marker-alt"></i> Localização</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <%= form.label :classroom_number, "Número da Sala", class: "form-label" %>
+              <%= form.text_field :classroom_number, class: "form-control" %>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <%= form.label :building, "Prédio/Bloco", class: "form-label" %>
+              <%= form.text_field :building, class: "form-control" %>
+            </div>
+
+            <div class="col-12 mb-3">
+              <%= form.label :location_notes, "Observações de Localização", class: "form-label" %>
+              <%= form.text_area :location_notes, class: "form-control", rows: 2 %>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Status e Configurações Avançadas -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="fas fa-cog"></i> Configurações Avançadas</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <div class="form-check form-switch">
+                <%= form.check_box :active, class: "form-check-input" %>
+                <%= form.label :active, "Turma Ativa", class: "form-check-label" %>
+              </div>
+              <div class="form-text">
+                Turmas inativas não aparecem nas listagens principais
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <div class="form-check form-switch">
+                <%= form.check_box :allow_enrollments, class: "form-check-input" %>
+                <%= form.label :allow_enrollments, "Permitir Matrículas", class: "form-check-label" %>
+              </div>
+              <div class="form-text">
+                Permitir que novos alunos se matriculem nesta turma
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <%= form.label :academic_year, "Ano Letivo", class: "form-label" %>
+              <%= form.number_field :academic_year, class: "form-control", min: 2020, max: 2030 %>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <%= form.label :semester, "Semestre", class: "form-label" %>
+              <%= form.select :semester, 
+                              options_for_select([
+                                ['Anual', 'annual'],
+                                ['1º Semestre', 'first'],
+                                ['2º Semestre', 'second']
+                              ], @classroom.semester),
+                              {}, { class: "form-select" } %>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ações -->
+      <div class="card">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <%= link_to direction_classroom_path(@classroom), class: "btn btn-outline-info me-2" do %>
+                <i class="fas fa-eye"></i> Visualizar
+              <% end %>
+              <%= link_to direction_classrooms_path, class: "btn btn-outline-secondary" do %>
+                <i class="fas fa-times"></i> Cancelar
+              <% end %>
+            </div>
+            
+            <div>
+              <%= form.submit "Salvar Alterações", class: "btn btn-primary" %>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    <% end %>
+
+    <!-- Seção de Perigo -->
+    <div class="card border-danger mt-4">
+      <div class="card-header bg-danger text-white">
+        <h5 class="mb-0"><i class="fas fa-exclamation-triangle"></i> Zona de Perigo</h5>
+      </div>
+      <div class="card-body">
+        <p class="text-muted">
+          Ações irreversíveis que afetam permanentemente esta turma.
+        </p>
+        
+        <div class="d-flex gap-2">
+          <%= link_to "#", class: "btn btn-outline-warning", 
+                     data: { confirm: "Tem certeza? Isso desativará a turma." } do %>
+            <i class="fas fa-pause"></i> Desativar Turma
+          <% end %>
+          
+          <%= link_to "#", class: "btn btn-outline-danger", 
+                     data: { confirm: "ATENÇÃO: Esta ação é irreversível! Todos os dados da turma serão perdidos." } do %>
+            <i class="fas fa-trash"></i> Excluir Turma
+          <% end %>
+        </div>
+        
+        <small class="text-muted d-block mt-2">
+          <strong>Desativar:</strong> A turma ficará oculta mas os dados serão preservados.<br>
+          <strong>Excluir:</strong> Remove permanentemente a turma e todos os dados relacionados.
+        </small>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Validação do formulário
+(function() {
+  'use strict';
+  window.addEventListener('load', function() {
+    var forms = document.getElementsByClassName('needs-validation');
+    var validation = Array.prototype.filter.call(forms, function(form) {
+      form.addEventListener('submit', function(event) {
+        if (form.checkValidity() === false) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+      }, false);
+    });
+  }, false);
+})();
+</script>

@@ -1,0 +1,144 @@
+<% content_for :title, "Novo Documento" %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1><i class="fas fa-plus"></i> Adicionar Novo Documento</h1>
+  <%= link_to direction_documents_path, class: "btn btn-outline-secondary" do %>
+    <i class="fas fa-arrow-left"></i> Voltar
+  <% end %>
+</div>
+
+<div class="row">
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-header">
+        <h5><i class="fas fa-file"></i> Dados do Documento</h5>
+      </div>
+      <div class="card-body">
+        <%= form_with model: [@document], url: direction_documents_path, local: true do |form| %>
+          <% if @document.errors.any? %>
+            <div class="alert alert-danger">
+              <h6><i class="fas fa-exclamation-triangle"></i> Corrija os seguintes erros:</h6>
+              <ul class="mb-0">
+                <% @document.errors.full_messages.each do |message| %>
+                  <li><%= message %></li>
+                <% end %>
+              </ul>
+            </div>
+          <% end %>
+
+          <!-- Informações Básicas -->
+          <div class="mb-4">
+            <h6 class="text-muted border-bottom pb-2">Informações Básicas</h6>
+            
+            <div class="mb-3">
+              <%= form.label :title, "Título do Documento", class: "form-label" %>
+              <%= form.text_field :title, class: "form-control", required: true %>
+            </div>
+
+            <div class="mb-3">
+              <%= form.label :description, "Descrição", class: "form-label" %>
+              <%= form.text_area :description, class: "form-control", rows: 3 %>
+              <div class="form-text">Descrição opcional do documento</div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <%= form.label :document_type, "Tipo de Documento", class: "form-label" %>
+                <%= form.select :document_type, 
+                               options_for_select([
+                                 ['Regulamento', 'regulamento'],
+                                 ['Circular', 'circular'],
+                                 ['Comunicado', 'comunicado'],
+                                 ['Ata', 'ata'],
+                                 ['Relatório', 'relatorio'],
+                                 ['Projeto', 'projeto'],
+                                 ['Plano de Ensino', 'plano_ensino'],
+                                 ['Manual', 'manual'],
+                                 ['Outros', 'outros']
+                               ]), 
+                               { prompt: "Selecione o tipo" }, 
+                               { class: "form-select" } %>
+              </div>
+              <div class="col-md-6 mb-3">
+                <div class="form-check form-switch mt-4">
+                  <%= form.check_box :active, class: "form-check-input", checked: true %>
+                  <%= form.label :active, "Documento ativo", class: "form-check-label" %>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Upload de Arquivo -->
+          <div class="mb-4">
+            <h6 class="text-muted border-bottom pb-2">Arquivo</h6>
+            
+            <div class="mb-3">
+              <%= form.label :file, "Selecionar Arquivo", class: "form-label" %>
+              <%= form.file_field :file, class: "form-control", accept: ".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png" %>
+              <div class="form-text">
+                Formatos aceitos: PDF, DOC, DOCX, TXT, JPG, JPEG, PNG. Tamanho máximo: 10MB
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-between">
+            <%= link_to direction_documents_path, class: "btn btn-secondary" do %>
+              <i class="fas fa-times"></i> Cancelar
+            <% end %>
+            <%= form.submit "Salvar Documento", class: "btn btn-primary" do %>
+              <i class="fas fa-save"></i> Salvar Documento
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-lg-4">
+    <!-- Ajuda -->
+    <div class="card">
+      <div class="card-header">
+        <h6><i class="fas fa-info-circle"></i> Informações sobre Documentos</h6>
+      </div>
+      <div class="card-body">
+        <ul class="list-unstyled small">
+          <li class="mb-2">
+            <i class="fas fa-check text-success"></i>
+            Documentos ficam organizados por tipo
+          </li>
+          <li class="mb-2">
+            <i class="fas fa-check text-success"></i>
+            Professores e alunos podem visualizar documentos ativos
+          </li>
+          <li class="mb-2">
+            <i class="fas fa-check text-success"></i>
+            Você pode desativar documentos sem excluí-los
+          </li>
+          <li class="mb-2">
+            <i class="fas fa-check text-success"></i>
+            Histórico de upload é mantido
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Tipos de Documentos -->
+    <div class="card mt-3">
+      <div class="card-header">
+        <h6><i class="fas fa-list"></i> Tipos de Documentos</h6>
+      </div>
+      <div class="card-body">
+        <div class="small">
+          <strong>Regulamento:</strong> Normas e regras da escola<br>
+          <strong>Circular:</strong> Comunicações oficiais<br>
+          <strong>Comunicado:</strong> Avisos gerais<br>
+          <strong>Ata:</strong> Registros de reuniões<br>
+          <strong>Relatório:</strong> Relatórios institucionais<br>
+          <strong>Projeto:</strong> Projetos pedagógicos<br>
+          <strong>Plano de Ensino:</strong> Planejamentos curriculares<br>
+          <strong>Manual:</strong> Manuais e instruções<br>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

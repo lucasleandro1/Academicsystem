@@ -1,0 +1,161 @@
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1 class="h2"><%= @subject.name %></h1>
+  <div class="btn-toolbar mb-2 mb-md-0">
+    <%= link_to "Voltar", students_subjects_path, class: "btn btn-sm btn-outline-secondary" %>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-8">
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5>Informações da Disciplina</h5>
+      </div>
+      <div class="card-body">
+        <dl class="row">
+          <dt class="col-sm-3">Professor:</dt>
+          <dd class="col-sm-9"><%= @subject.user.full_name %></dd>
+          
+          <dt class="col-sm-3">Turma:</dt>
+          <dd class="col-sm-9"><%= @subject.classroom.name %></dd>
+          
+          <dt class="col-sm-3">Carga Horária:</dt>
+          <dd class="col-sm-9"><%= @subject.workload %>h</dd>
+          
+          <% if @subject.description.present? %>
+            <dt class="col-sm-3">Descrição:</dt>
+            <dd class="col-sm-9"><%= simple_format(@subject.description) %></dd>
+          <% end %>
+        </dl>
+      </div>
+    </div>
+
+    <!-- Horários -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5>Horários de Aula</h5>
+      </div>
+      <div class="card-body">
+        <% if @subject.class_schedules.any? %>
+          <div class="table-responsive">
+            <table class="table table-sm">
+              <thead>
+                <tr>
+                  <th>Dia da Semana</th>
+                  <th>Horário</th>
+                  <th>Sala</th>
+                </tr>
+              </thead>
+              <tbody>
+              <% @subject.class_schedules.includes(:classroom).each do |schedule| %>
+                  <tr>
+                    <td><%= schedule.weekday_name %></td>
+                    <td><%= schedule.time_range %></td>
+                    <td><%= schedule.classroom.name %></td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        <% else %>
+          <p class="text-muted">Nenhum horário cadastrado.</p>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Atividades -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5>Atividades</h5>
+      </div>
+      <div class="card-body">
+        <% if @subject.activities.any? %>
+          <div class="list-group">
+            <% @subject.activities.order(due_date: :asc).each do |activity| %>
+              <div class="list-group-item">
+                <div class="d-flex justify-content-between align-items-start">
+                  <div>
+                    <h6 class="mb-1"><%= activity.title %></h6>
+                    <p class="mb-1"><%= truncate(activity.description, length: 100) %></p>
+                    <small class="text-muted">
+                      Entrega: <%= activity.due_date.strftime("%d/%m/%Y") %>
+                    </small>
+                  </div>
+                  <span class="badge bg-<%= activity.due_date < Date.current ? 'danger' : 'primary' %>">
+                    <%= activity.activity_type.humanize %>
+                  </span>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        <% else %>
+          <p class="text-muted">Nenhuma atividade cadastrada.</p>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <!-- Minhas Notas nesta Disciplina -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5>Minhas Notas</h5>
+      </div>
+      <div class="card-body">
+        <% enrollment = current_user.enrollments.find_by(subject: @subject) %>
+        <% if enrollment %>
+          <% Grade.grade_types.each_key do |grade_type| %>
+            <% grade = enrollment.grades.find_by(grade_type: grade_type) %>
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span><%= grade_type.humanize %>:</span>
+              <% if grade %>
+                <span class="badge bg-<%= grade.value >= 7 ? 'success' : grade.value >= 5 ? 'warning' : 'danger' %>">
+                  <%= grade.value %>
+                </span>
+              <% else %>
+                <span class="text-muted">-</span>
+              <% end %>
+            </div>
+          <% end %>
+          
+          <hr>
+          
+          <% average = calculate_average(enrollment) %>
+          <div class="d-flex justify-content-between align-items-center">
+            <strong>Média:</strong>
+            <% if average %>
+              <strong class="text-<%= average >= 7 ? 'success' : average >= 5 ? 'warning' : 'danger' %>">
+                <%= number_with_precision(average, precision: 1) %>
+              </strong>
+            <% else %>
+              <span class="text-muted">-</span>
+            <% end %>
+          </div>
+        <% else %>
+          <p class="text-muted">Você não está matriculado nesta disciplina.</p>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Estatísticas -->
+    <div class="card">
+      <div class="card-header">
+        <h5>Estatísticas</h5>
+      </div>
+      <div class="card-body">
+        <div class="mb-3">
+          <div class="d-flex justify-content-between">
+            <span>Atividades:</span>
+            <span><%= @subject.activities.count %></span>
+          </div>
+        </div>
+        <div class="mb-3">
+          <div class="d-flex justify-content-between">
+            <span>Alunos Matriculados:</span>
+            <span><%= @subject.enrollments.count %></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

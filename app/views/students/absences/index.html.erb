@@ -1,0 +1,253 @@
+<% content_for :title, "Minhas Faltas" %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1><i class="fas fa-user-clock"></i> Minhas Faltas</h1>
+  <div class="text-muted">
+    <small>Controle de Frequência</small>
+  </div>
+</div>
+
+<!-- Resumo de Faltas -->
+<div class="row mb-4">
+  <div class="col-md-3">
+    <div class="card text-center bg-warning text-white">
+      <div class="card-body">
+        <h3><%= @absences.count %></h3>
+        <small>Total de Faltas</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center bg-danger text-white">
+      <div class="card-body">
+        <h3><%= @absences.where(justified: false).count %></h3>
+        <small>Faltas Injustificadas</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center bg-success text-white">
+      <div class="card-body">
+        <h3><%= @absences.where(justified: true).count %></h3>
+        <small>Faltas Justificadas</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center bg-info text-white">
+      <div class="card-body">
+        <h3><%= @absences.where('created_at >= ?', Date.current.beginning_of_month).count %></h3>
+        <small>Este Mês</small>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Filtros -->
+<div class="card mb-4">
+  <div class="card-body">
+    <%= form_with url: students_absences_path, method: :get, local: true, class: "row g-3" do |form| %>
+      <div class="col-md-3">
+        <%= form.select :subject_id, 
+                        options_from_collection_for_select(@subjects, :id, :name, params[:subject_id]),
+                        { prompt: 'Todas as disciplinas' }, 
+                        { class: "form-select" } %>
+      </div>
+      <div class="col-md-3">
+        <%= form.select :period, 
+                        options_for_select([
+                          ['Todos os períodos', ''], 
+                          ['Este mês', 'current_month'], 
+                          ['Último mês', 'last_month'], 
+                          ['Este bimestre', 'current_quarter'],
+                          ['Este semestre', 'current_semester'],
+                          ['Este ano', 'current_year']
+                        ], params[:period]),
+                        {}, { class: "form-select" } %>
+      </div>
+      <div class="col-md-3">
+        <%= form.select :status, 
+                        options_for_select([
+                          ['Todas', ''], 
+                          ['Justificadas', 'justified'], 
+                          ['Injustificadas', 'unjustified']
+                        ], params[:status]),
+                        {}, { class: "form-select" } %>
+      </div>
+      <div class="col-md-3">
+        <div class="d-grid">
+          <%= form.submit "Filtrar", class: "btn btn-outline-secondary" %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<!-- Gráfico de Frequência por Disciplina -->
+<div class="card mb-4">
+  <div class="card-header">
+    <h5><i class="fas fa-chart-bar"></i> Frequência por Disciplina</h5>
+  </div>
+  <div class="card-body">
+    <% @subjects.each do |subject| %>
+      <% subject_absences = @absences.where(subject: subject).count %>
+      <% total_classes = subject.class_schedules.where('date <= ?', Date.current).count %>
+      <% attendance_rate = total_classes > 0 ? ((total_classes - subject_absences).to_f / total_classes * 100).round(1) : 100 %>
+      
+      <div class="mb-3">
+        <div class="d-flex justify-content-between align-items-center mb-1">
+          <span class="fw-medium"><%= subject.name %></span>
+          <span class="text-muted small">
+            <%= attendance_rate %>% de presença 
+            (<%= total_classes - subject_absences %>/<%= total_classes %> aulas)
+          </span>
+        </div>
+        <div class="progress" style="height: 10px;">
+          <div class="progress-bar bg-<%= attendance_rate >= 75 ? 'success' : attendance_rate >= 50 ? 'warning' : 'danger' %>" 
+               style="width: <%= attendance_rate %>%"></div>
+        </div>
+        <% if attendance_rate < 75 %>
+          <small class="text-danger">
+            <i class="fas fa-exclamation-triangle"></i>
+            Atenção: Frequência abaixo do mínimo (75%)
+          </small>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<!-- Lista de Faltas -->
+<div class="card">
+  <div class="card-header">
+    <h5><i class="fas fa-list"></i> Histórico de Faltas</h5>
+  </div>
+  <div class="card-body">
+    <% if @absences.any? %>
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Disciplina</th>
+              <th>Professor</th>
+              <th>Período</th>
+              <th>Status</th>
+              <th>Justificativa</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @absences.order(date: :desc).each do |absence| %>
+              <tr>
+                <td>
+                  <strong><%= absence.date.strftime("%d/%m/%Y") %></strong>
+                  <br>
+                  <small class="text-muted">
+                    <%= absence.date.strftime("%A").capitalize %>
+                  </small>
+                </td>
+                <td>
+                  <div class="fw-medium"><%= absence.subject.name %></div>
+                  <small class="text-muted">
+                    <%= absence.class_schedule&.start_time&.strftime("%H:%M") %>
+                    <% if absence.class_schedule&.end_time %>
+                      - <%= absence.class_schedule.end_time.strftime("%H:%M") %>
+                    <% end %>
+                  </small>
+                </td>
+                <td>
+                  <% if absence.subject.teacher %>
+                    <%= absence.subject.teacher.name %>
+                  <% else %>
+                    <span class="text-muted">-</span>
+                  <% end %>
+                </td>
+                <td>
+                  <% if absence.class_schedule %>
+                    <%= absence.class_schedule.period_display %>
+                  <% else %>
+                    <span class="text-muted">-</span>
+                  <% end %>
+                </td>
+                <td>
+                  <% if absence.justified? %>
+                    <span class="badge bg-success">
+                      <i class="fas fa-check"></i> Justificada
+                    </span>
+                  <% else %>
+                    <span class="badge bg-danger">
+                      <i class="fas fa-times"></i> Injustificada
+                    </span>
+                  <% end %>
+                </td>
+                <td>
+                  <% if absence.justification.present? %>
+                    <button class="btn btn-sm btn-outline-info" 
+                            data-bs-toggle="modal" 
+                            data-bs-target="#justificationModal<%= absence.id %>">
+                      <i class="fas fa-eye"></i> Ver
+                    </button>
+                  <% else %>
+                    <% unless absence.justified? %>
+                      <button class="btn btn-sm btn-outline-primary" 
+                              data-bs-toggle="modal" 
+                              data-bs-target="#justifyModal<%= absence.id %>">
+                        <i class="fas fa-plus"></i> Justificar
+                      </button>
+                    <% else %>
+                      <span class="text-muted">-</span>
+                    <% end %>
+                  <% end %>
+                </td>
+                <td>
+                  <div class="btn-group btn-group-sm">
+                    <button class="btn btn-outline-secondary" 
+                            data-bs-toggle="modal" 
+                            data-bs-target="#detailModal<%= absence.id %>">
+                      <i class="fas fa-info"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <div class="text-center py-5">
+        <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+        <h5 class="text-muted">Nenhuma falta registrada</h5>
+        <p class="text-muted">
+          <% if params.any? %>
+            Não há faltas que correspondam aos filtros selecionados.
+          <% else %>
+            Parabéns! Você não possui faltas registradas.
+          <% end %>
+        </p>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<!-- Alertas de Frequência -->
+<% subjects_with_low_attendance = @subjects.select { |s| 
+     total = s.class_schedules.where('date <= ?', Date.current).count
+     absences = @absences.where(subject: s).count
+     total > 0 && ((total - absences).to_f / total * 100) < 75
+   } %>
+
+<% if subjects_with_low_attendance.any? %>
+  <div class="alert alert-warning mt-4">
+    <h6><i class="fas fa-exclamation-triangle"></i> Atenção - Frequência Baixa</h6>
+    <p class="mb-2">As seguintes disciplinas estão com frequência abaixo do mínimo (75%):</p>
+    <ul class="mb-0">
+      <% subjects_with_low_attendance.each do |subject| %>
+        <% total = subject.class_schedules.where('date <= ?', Date.current).count %>
+        <% absences = @absences.where(subject: subject).count %>
+        <% rate = ((total - absences).to_f / total * 100).round(1) %>
+        <li><strong><%= subject.name %></strong> - <%= rate %>% de presença</li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>

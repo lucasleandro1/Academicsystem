@@ -1,0 +1,320 @@
+<% content_for :title, "Nova Turma" %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1><i class="fas fa-door-open"></i> Nova Turma</h1>
+  <%= link_to direction_classrooms_path, class: "btn btn-outline-secondary" do %>
+    <i class="fas fa-arrow-left"></i> Voltar
+  <% end %>
+</div>
+
+<div class="row">
+  <div class="col-lg-8 mx-auto">
+    <%= form_with model: [:direction, @classroom], local: true, class: "needs-validation", novalidate: true do |form| %>
+      
+      <!-- Informações Básicas -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="fas fa-info-circle"></i> Informações Básicas</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <%= form.label :name, "Nome da Turma *", class: "form-label" %>
+              <%= form.text_field :name, class: "form-control", placeholder: "Ex: 1ª Série A", required: true %>
+              <div class="invalid-feedback">
+                Por favor, informe o nome da turma.
+              </div>
+              <div class="form-text">
+                Nome identificador da turma (ex: 1ª Série A, 2º Ano B)
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <%= form.label :code, "Código da Turma", class: "form-label" %>
+              <%= form.text_field :code, class: "form-control", placeholder: "Ex: 1A-2024" %>
+              <div class="form-text">
+                Código único para identificação (opcional)
+              </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+              <%= form.label :grade, "Série/Ano *", class: "form-label" %>
+              <%= form.select :grade, 
+                              options_for_select([
+                                ['Selecione...', ''],
+                                ['1ª Série', '1'],
+                                ['2ª Série', '2'], 
+                                ['3ª Série', '3'],
+                                ['4ª Série', '4'],
+                                ['5ª Série', '5'],
+                                ['6ª Série', '6'],
+                                ['7ª Série', '7'],
+                                ['8ª Série', '8'],
+                                ['9ª Série', '9'],
+                                ['1º Ano', '10'],
+                                ['2º Ano', '11'],
+                                ['3º Ano', '12']
+                              ], @classroom.grade),
+                              {}, { class: "form-select", required: true } %>
+              <div class="invalid-feedback">
+                Por favor, selecione a série/ano.
+              </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+              <%= form.label :shift, "Turno *", class: "form-label" %>
+              <%= form.select :shift, 
+                              options_for_select([
+                                ['Selecione...', ''],
+                                ['Matutino', 'morning'],
+                                ['Vespertino', 'afternoon'],
+                                ['Noturno', 'evening']
+                              ], @classroom.shift),
+                              {}, { class: "form-select", required: true } %>
+              <div class="invalid-feedback">
+                Por favor, selecione o turno.
+              </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+              <%= form.label :capacity, "Capacidade Máxima", class: "form-label" %>
+              <%= form.number_field :capacity, class: "form-control", min: 1, max: 50, placeholder: "30" %>
+              <div class="form-text">
+                Número máximo de alunos na turma
+              </div>
+            </div>
+
+            <div class="col-12 mb-3">
+              <%= form.label :description, "Descrição", class: "form-label" %>
+              <%= form.text_area :description, class: "form-control", rows: 3, 
+                                placeholder: "Descrição adicional sobre a turma..." %>
+              <div class="form-text">
+                Informações complementares sobre a turma (opcional)
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Configurações de Horário -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="fas fa-clock"></i> Configurações de Horário</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <%= form.label :start_time, "Horário de Início", class: "form-label" %>
+              <%= form.time_field :start_time, class: "form-control" %>
+              <div class="form-text">
+                Horário de início das aulas desta turma
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <%= form.label :end_time, "Horário de Término", class: "form-label" %>
+              <%= form.time_field :end_time, class: "form-control" %>
+              <div class="form-text">
+                Horário de término das aulas desta turma
+              </div>
+            </div>
+
+            <div class="col-12 mb-3">
+              <%= form.label :active_days, "Dias Ativos", class: "form-label" %>
+              <div class="row">
+                <% [
+                  ['Segunda-feira', 'monday'],
+                  ['Terça-feira', 'tuesday'], 
+                  ['Quarta-feira', 'wednesday'],
+                  ['Quinta-feira', 'thursday'],
+                  ['Sexta-feira', 'friday'],
+                  ['Sábado', 'saturday']
+                ].each do |day_name, day_value| %>
+                  <div class="col-md-4 col-6">
+                    <div class="form-check">
+                      <%= form.check_box :active_days, { multiple: true, class: "form-check-input" }, day_value, "" %>
+                      <%= form.label "active_days_#{day_value}", day_name, class: "form-check-label" %>
+                    </div>
+                  </div>
+                <% end %>
+              </div>
+              <div class="form-text">
+                Selecione os dias da semana em que esta turma tem aulas
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Localização -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="fas fa-map-marker-alt"></i> Localização</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <%= form.label :classroom_number, "Número da Sala", class: "form-label" %>
+              <%= form.text_field :classroom_number, class: "form-control", placeholder: "Ex: 101, A-15" %>
+              <div class="form-text">
+                Número ou código da sala onde a turma estuda
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <%= form.label :building, "Prédio/Bloco", class: "form-label" %>
+              <%= form.text_field :building, class: "form-control", placeholder: "Ex: Bloco A, Prédio Principal" %>
+              <div class="form-text">
+                Identificação do prédio ou bloco
+              </div>
+            </div>
+
+            <div class="col-12 mb-3">
+              <%= form.label :location_notes, "Observações de Localização", class: "form-label" %>
+              <%= form.text_area :location_notes, class: "form-control", rows: 2, 
+                                placeholder: "Informações adicionais sobre a localização..." %>
+              <div class="form-text">
+                Informações extras para facilitar a localização da sala
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Status e Configurações Avançadas -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="fas fa-cog"></i> Configurações Avançadas</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <div class="form-check form-switch">
+                <%= form.check_box :active, class: "form-check-input", checked: true %>
+                <%= form.label :active, "Turma Ativa", class: "form-check-label" %>
+              </div>
+              <div class="form-text">
+                Turmas inativas não aparecem nas listagens principais
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <div class="form-check form-switch">
+                <%= form.check_box :allow_enrollments, class: "form-check-input", checked: true %>
+                <%= form.label :allow_enrollments, "Permitir Matrículas", class: "form-check-label" %>
+              </div>
+              <div class="form-text">
+                Permitir que novos alunos se matriculem nesta turma
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <%= form.label :academic_year, "Ano Letivo", class: "form-label" %>
+              <%= form.number_field :academic_year, class: "form-control", 
+                                   value: Date.current.year, min: 2020, max: 2030 %>
+              <div class="form-text">
+                Ano letivo ao qual esta turma pertence
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <%= form.label :semester, "Semestre", class: "form-label" %>
+              <%= form.select :semester, 
+                              options_for_select([
+                                ['Anual', 'annual'],
+                                ['1º Semestre', 'first'],
+                                ['2º Semestre', 'second']
+                              ], 'annual'),
+                              {}, { class: "form-select" } %>
+              <div class="form-text">
+                Período letivo da turma
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ações -->
+      <div class="card">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <%= link_to direction_classrooms_path, class: "btn btn-outline-secondary" do %>
+              <i class="fas fa-times"></i> Cancelar
+            <% end %>
+            
+            <div>
+              <%= form.submit "Salvar Rascunho", name: "draft", class: "btn btn-outline-primary me-2" %>
+              <%= form.submit "Criar Turma", class: "btn btn-primary" do %>
+                <i class="fas fa-save"></i> Criar Turma
+              <% end %>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    <% end %>
+  </div>
+</div>
+
+<!-- Modal de Ajuda -->
+<div class="modal fade" id="helpModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="fas fa-question-circle"></i> Ajuda - Nova Turma</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <h6>Informações Básicas</h6>
+        <ul>
+          <li><strong>Nome da Turma:</strong> Identificação principal (ex: 1ª Série A, 9º Ano B)</li>
+          <li><strong>Código:</strong> Identificador único opcional para controle interno</li>
+          <li><strong>Série/Ano:</strong> Nível educacional da turma</li>
+          <li><strong>Turno:</strong> Período de funcionamento da turma</li>
+        </ul>
+        
+        <h6>Configurações de Horário</h6>
+        <ul>
+          <li><strong>Horários:</strong> Definem o período de aulas da turma</li>
+          <li><strong>Dias Ativos:</strong> Dias da semana com aulas regulares</li>
+        </ul>
+        
+        <h6>Dicas</h6>
+        <ul>
+          <li>Use nomes padronizados para facilitar a organização</li>
+          <li>Defina a capacidade considerando o espaço físico disponível</li>
+          <li>Mantenha as informações de localização atualizadas</li>
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Link para abrir ajuda -->
+<div class="position-fixed bottom-0 end-0 p-3">
+  <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#helpModal">
+    <i class="fas fa-question-circle"></i> Ajuda
+  </button>
+</div>
+
+<script>
+// Validação do formulário
+(function() {
+  'use strict';
+  window.addEventListener('load', function() {
+    var forms = document.getElementsByClassName('needs-validation');
+    var validation = Array.prototype.filter.call(forms, function(form) {
+      form.addEventListener('submit', function(event) {
+        if (form.checkValidity() === false) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+      }, false);
+    });
+  }, false);
+})();
+</script>

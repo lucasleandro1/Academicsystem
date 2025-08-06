@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Sistema Acadêmico - Página de Teste</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  </head>
+
+  <body class="bg-light">
+    <div class="container py-5">
+      <div class="row justify-content-center">
+        <div class="col-lg-10">
+          <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+              <h3 class="mb-0">
+                <i class="fas fa-users me-2"></i>
+                Sistema Acadêmico - Usuários de Teste
+              </h3>
+              <p class="mb-0 mt-2">Clique em qualquer usuário para fazer login automaticamente e testar as funcionalidades</p>
+            </div>
+            <div class="card-body">
+              
+              <!-- Admin Users -->
+              <h5 class="text-danger mb-3">
+                <i class="fas fa-crown me-2"></i>
+                Administradores
+              </h5>
+              <div class="row mb-4">
+                <% @users.where(user_type: 'admin').each do |user| %>
+                  <div class="col-md-6 mb-3">
+                    <div class="card border-danger">
+                      <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                          <div>
+                            <h6 class="card-title mb-1"><%= user.full_name %></h6>
+                            <p class="card-text text-muted mb-0">
+                              <small><%= user.email %></small>
+                            </p>
+                          </div>
+                          <div>
+                            <%= link_to test_login_as_path(user), method: :post, 
+                                class: "btn btn-danger btn-sm" do %>
+                              <i class="fas fa-sign-in-alt me-1"></i>
+                              Login
+                            <% end %>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                <% end %>
+              </div>
+
+              <!-- Direction Users -->
+              <h5 class="text-warning mb-3">
+                <i class="fas fa-user-tie me-2"></i>
+                Direção
+              </h5>
+              <div class="row mb-4">
+                <% @users.where(user_type: 'direction').each do |user| %>
+                  <div class="col-md-6 mb-3">
+                    <div class="card border-warning">
+                      <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                          <div>
+                            <h6 class="card-title mb-1"><%= user.full_name %></h6>
+                            <p class="card-text text-muted mb-0">
+                              <small><%= user.email %></small>
+                              <br>
+                              <small class="text-primary"><%= user.school&.name %></small>
+                            </p>
+                          </div>
+                          <div>
+                            <%= link_to test_login_as_path(user), method: :post, 
+                                class: "btn btn-warning btn-sm" do %>
+                              <i class="fas fa-sign-in-alt me-1"></i>
+                              Login
+                            <% end %>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                <% end %>
+              </div>
+
+              <!-- Teacher Users -->
+              <h5 class="text-info mb-3">
+                <i class="fas fa-chalkboard-teacher me-2"></i>
+                Professores
+              </h5>
+              <div class="row mb-4">
+                <% @users.where(user_type: 'teacher').each do |user| %>
+                  <div class="col-md-6 mb-3">
+                    <div class="card border-info">
+                      <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                          <div>
+                            <h6 class="card-title mb-1"><%= user.full_name %></h6>
+                            <p class="card-text text-muted mb-0">
+                              <small><%= user.email %></small>
+                              <br>
+                              <small class="text-primary"><%= user.school&.name %></small>
+                            </p>
+                          </div>
+                          <div>
+                            <%= link_to test_login_as_path(user), method: :post, 
+                                class: "btn btn-info btn-sm" do %>
+                              <i class="fas fa-sign-in-alt me-1"></i>
+                              Login
+                            <% end %>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                <% end %>
+              </div>
+
+              <!-- Student Users -->
+              <h5 class="text-success mb-3">
+                <i class="fas fa-user-graduate me-2"></i>
+                Estudantes
+              </h5>
+              <div class="row mb-4">
+                <% @users.where(user_type: 'student').each do |user| %>
+                  <div class="col-md-6 mb-3">
+                    <div class="card border-success">
+                      <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                          <div>
+                            <h6 class="card-title mb-1"><%= user.full_name %></h6>
+                            <p class="card-text text-muted mb-0">
+                              <small><%= user.email %></small>
+                              <br>
+                              <small class="text-primary"><%= user.school&.name %></small>
+                            </p>
+                          </div>
+                          <div>
+                            <%= link_to test_login_as_path(user), method: :post, 
+                                class: "btn btn-success btn-sm" do %>
+                              <i class="fas fa-sign-in-alt me-1"></i>
+                              Login
+                            <% end %>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                <% end %>
+              </div>
+
+              <!-- Statistics -->
+              <div class="row">
+                <div class="col-12">
+                  <div class="alert alert-info">
+                    <h6 class="alert-heading">
+                      <i class="fas fa-info-circle me-2"></i>
+                      Estatísticas do Sistema
+                    </h6>
+                    <div class="row">
+                      <div class="col-md-3">
+                        <strong>Escolas:</strong> <%= School.count %>
+                      </div>
+                      <div class="col-md-3">
+                        <strong>Usuários:</strong> <%= User.count %>
+                      </div>
+                      <div class="col-md-3">
+                        <strong>Turmas:</strong> <%= Classroom.count %>
+                      </div>
+                      <div class="col-md-3">
+                        <strong>Matérias:</strong> <%= Subject.count %>
+                      </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                      <div class="col-md-3">
+                        <strong>Atividades:</strong> <%= Activity.count %>
+                      </div>
+                      <div class="col-md-3">
+                        <strong>Notas:</strong> <%= Grade.count %>
+                      </div>
+                      <div class="col-md-3">
+                        <strong>Mensagens:</strong> <%= Message.count %>
+                      </div>
+                      <div class="col-md-3">
+                        <strong>Eventos:</strong> <%= Event.count %>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Navigation Links -->
+              <div class="row">
+                <div class="col-12 text-center">
+                  <div class="btn-group" role="group">
+                    <%= link_to "Sistema Principal", root_path, class: "btn btn-primary" %>
+                    <%= link_to "Login Manual", new_user_session_path, class: "btn btn-outline-secondary" %>
+                    <%= link_to "Criar Conta", new_user_registration_path, class: "btn btn-outline-success" %>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

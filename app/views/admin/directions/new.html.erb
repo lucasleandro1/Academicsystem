@@ -1,0 +1,167 @@
+<% content_for :title, "Cadastrar Diretor" %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1><i class="fas fa-user-plus"></i> Cadastrar Novo Diretor</h1>
+  <%= link_to admin_directions_path, class: "btn btn-outline-secondary" do %>
+    <i class="fas fa-arrow-left"></i> Voltar
+  <% end %>
+</div>
+
+<div class="row">
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-header">
+        <h5><i class="fas fa-user-tie"></i> Dados do Diretor</h5>
+      </div>
+      <div class="card-body">
+        <%= form_with model: [:admin, @direction], local: true do |form| %>
+          <% if @direction.errors.any? %>
+            <div class="alert alert-danger" role="alert">
+              <h6><i class="fas fa-exclamation-triangle"></i> Erro ao salvar diretor:</h6>
+              <ul class="mb-0">
+                <% @direction.errors.full_messages.each do |message| %>
+                  <li><%= message %></li>
+                <% end %>
+              </ul>
+            </div>
+          <% end %>
+
+          <%= form.hidden_field :user_type, value: 'direction' %>
+
+          <!-- Dados Pessoais -->
+          <h6 class="text-primary mb-3"><i class="fas fa-user"></i> Dados Pessoais</h6>
+          
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <%= form.label :first_name, "Nome *", class: "form-label" %>
+                <%= form.text_field :first_name, class: "form-control #{'is-invalid' if @direction.errors[:first_name].any?}", 
+                                   placeholder: "Nome do diretor" %>
+                <% if @direction.errors[:first_name].any? %>
+                  <div class="invalid-feedback">
+                    <%= @direction.errors[:first_name].first %>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <%= form.label :last_name, "Sobrenome *", class: "form-label" %>
+                <%= form.text_field :last_name, class: "form-control #{'is-invalid' if @direction.errors[:last_name].any?}", 
+                                   placeholder: "Sobrenome do diretor" %>
+                <% if @direction.errors[:last_name].any? %>
+                  <div class="invalid-feedback">
+                    <%= @direction.errors[:last_name].first %>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <%= form.label :email, "E-mail *", class: "form-label" %>
+              <%= form.email_field :email, class: "form-control #{'is-invalid' if @direction.errors[:email].any?}", 
+                                  placeholder: "diretor@escola.com" %>
+              <% if @direction.errors[:email].any? %>
+                <div class="invalid-feedback">
+                  <%= @direction.errors[:email].first %>
+                </div>
+              <% end %>
+            </div>
+            <div class="col-md-6 mb-3">
+              <%= form.label :phone, "Telefone", class: "form-label" %>
+              <%= form.text_field :phone, class: "form-control", 
+                                 placeholder: "(00) 00000-0000" %>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <%= form.label :registration_number, "Registro Profissional", class: "form-label" %>
+              <%= form.text_field :registration_number, class: "form-control", 
+                                 placeholder: "Número do registro profissional" %>
+            </div>
+            <div class="col-md-6 mb-3">
+              <%= form.label :birth_date, "Data de Nascimento", class: "form-label" %>
+              <%= form.date_field :birth_date, class: "form-control" %>
+            </div>
+          </div>
+
+          <!-- Dados Profissionais -->
+          <h6 class="text-primary mb-3 mt-4"><i class="fas fa-briefcase"></i> Dados Profissionais</h6>
+          
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <%= form.label :position, "Cargo", class: "form-label" %>
+              <%= form.text_field :position, class: "form-control", 
+                                 placeholder: "Ex: Diretor Geral" %>
+            </div>
+            <div class="col-md-6 mb-3">
+              <%= form.label :school_id, "Escola *", class: "form-label" %>
+              <%= form.collection_select :school_id, @schools, :id, :name, 
+                                        { prompt: "Selecione uma escola" }, 
+                                        { class: "form-select #{'is-invalid' if @direction.errors[:school_id].any?}" } %>
+              <% if @direction.errors[:school_id].any? %>
+                <div class="invalid-feedback">
+                  <%= @direction.errors[:school_id].first %>
+                </div>
+              <% end %>
+            </div>
+          </div>
+
+          <!-- Dados de Acesso -->
+          <h6 class="text-primary mb-3 mt-4"><i class="fas fa-key"></i> Dados de Acesso</h6>
+          
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <%= form.label :password, "Senha", class: "form-label" %>
+              <%= form.password_field :password, class: "form-control", 
+                                     placeholder: "Deixe em branco para gerar automaticamente" %>
+              <div class="form-text">Se não informada, uma senha será gerada automaticamente.</div>
+            </div>
+          </div>
+
+          <!-- Botões -->
+          <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+            <%= link_to admin_directions_path, class: "btn btn-secondary" do %>
+              <i class="fas fa-times"></i> Cancelar
+            <% end %>
+            <%= form.submit "Cadastrar Diretor", class: "btn btn-primary" do %>
+              <i class="fas fa-save"></i> Salvar
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card">
+      <div class="card-header">
+        <h6><i class="fas fa-info-circle"></i> Informações</h6>
+      </div>
+      <div class="card-body">
+        <p class="text-muted small">
+          <strong>Campos obrigatórios:</strong>
+          <br>• Nome completo
+          <br>• E-mail
+          <br>• Escola
+        </p>
+        <hr>
+        <p class="text-muted small">
+          <strong>Sobre o diretor:</strong>
+          <br>• Terá acesso completo ao sistema da escola
+          <br>• Poderá gerenciar professores e alunos
+          <br>• Poderá visualizar relatórios da escola
+        </p>
+        <hr>
+        <p class="text-muted small">
+          <strong>Senha:</strong>
+          <br>• Se não informada, será gerada automaticamente
+          <br>• O diretor poderá alterar no primeiro acesso
+        </p>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,273 @@
+<% content_for :title, "Turmas" %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1><i class="fas fa-door-open"></i> Gerenciar Turmas</h1>
+  <%= link_to new_direction_classroom_path, class: "btn btn-primary" do %>
+    <i class="fas fa-plus"></i> Nova Turma
+  <% end %>
+</div>
+
+<!-- Filtros e Busca -->
+<div class="card mb-4">
+  <div class="card-body">
+    <%= form_with url: direction_classrooms_path, method: :get, local: true, class: "row g-3" do |form| %>
+      <div class="col-md-4">
+        <%= form.text_field :search, placeholder: "Buscar por nome ou código da turma...", 
+                           value: params[:search], class: "form-control" %>
+      </div>
+      <div class="col-md-3">
+        <%= form.select :grade, 
+                        options_for_select([
+                          ['Todas as séries', ''],
+                          ['1ª Série', '1'],
+                          ['2ª Série', '2'], 
+                          ['3ª Série', '3'],
+                          ['4ª Série', '4'],
+                          ['5ª Série', '5'],
+                          ['6ª Série', '6'],
+                          ['7ª Série', '7'],
+                          ['8ª Série', '8'],
+                          ['9ª Série', '9'],
+                          ['1º Ano', '10'],
+                          ['2º Ano', '11'],
+                          ['3º Ano', '12']
+                        ], params[:grade]),
+                        {}, { class: "form-select" } %>
+      </div>
+      <div class="col-md-2">
+        <%= form.select :shift, 
+                        options_for_select([
+                          ['Todos os turnos', ''],
+                          ['Matutino', 'morning'],
+                          ['Vespertino', 'afternoon'],
+                          ['Noturno', 'evening']
+                        ], params[:shift]),
+                        {}, { class: "form-select" } %>
+      </div>
+      <div class="col-md-3">
+        <div class="d-grid">
+          <%= form.submit "Filtrar", class: "btn btn-outline-secondary" %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<!-- Estatísticas Rápidas -->
+<div class="row mb-4">
+  <div class="col-md-3">
+    <div class="card text-center">
+      <div class="card-body">
+        <h3 class="text-primary"><%= @classrooms.count %></h3>
+        <small class="text-muted">Total de Turmas</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center">
+      <div class="card-body">
+        <h3 class="text-success"><%= @classrooms.joins(:enrollments).group(:id).count.count %></h3>
+        <small class="text-muted">Com Alunos</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center">
+      <div class="card-body">
+        <h3 class="text-info"><%= @classrooms.joins(:enrollments).sum('enrollments.count') %></h3>
+        <small class="text-muted">Total de Alunos</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center">
+      <div class="card-body">
+        <h3 class="text-warning"><%= (@classrooms.joins(:enrollments).sum('enrollments.count').to_f / @classrooms.count).round(1) if @classrooms.count > 0 %></h3>
+        <small class="text-muted">Média por Turma</small>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Lista de Turmas -->
+<div class="row">
+  <% if @classrooms.any? %>
+    <% @classrooms.each do |classroom| %>
+      <div class="col-lg-6 col-md-12 mb-4">
+        <div class="card h-100">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+              <i class="fas fa-door-open text-primary"></i>
+              <%= classroom.name %>
+            </h5>
+            <div class="dropdown">
+              <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                <i class="fas fa-ellipsis-v"></i>
+              </button>
+              <ul class="dropdown-menu">
+                <li>
+                  <%= link_to direction_classroom_path(classroom), class: "dropdown-item" do %>
+                    <i class="fas fa-eye"></i> Ver Detalhes
+                  <% end %>
+                </li>
+                <li>
+                  <%= link_to edit_direction_classroom_path(classroom), class: "dropdown-item" do %>
+                    <i class="fas fa-edit"></i> Editar
+                  <% end %>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                  <%= link_to "#", class: "dropdown-item text-danger", 
+                             data: { confirm: "Tem certeza que deseja excluir esta turma?" } do %>
+                    <i class="fas fa-trash"></i> Excluir
+                  <% end %>
+                </li>
+              </ul>
+            </div>
+          </div>
+          
+          <div class="card-body">
+            <!-- Informações básicas -->
+            <div class="row mb-3">
+              <div class="col-6">
+                <small class="text-muted">Série/Ano:</small>
+                <br>
+                <strong><%= classroom.grade || 'Não definida' %></strong>
+              </div>
+              <div class="col-6">
+                <small class="text-muted">Turno:</small>
+                <br>
+                <span class="badge bg-<%= 
+                  case classroom.shift
+                  when 'morning' then 'warning'
+                  when 'afternoon' then 'info'
+                  when 'evening' then 'dark'
+                  else 'secondary'
+                  end
+                %>">
+                  <%= 
+                    case classroom.shift
+                    when 'morning' then 'Matutino'
+                    when 'afternoon' then 'Vespertino'
+                    when 'evening' then 'Noturno'
+                    else 'Não definido'
+                    end
+                  %>
+                </span>
+              </div>
+            </div>
+
+            <!-- Estatísticas da turma -->
+            <div class="row mb-3">
+              <div class="col-4 text-center">
+                <h4 class="text-primary"><%= classroom.enrollments.count %></h4>
+                <small class="text-muted">Alunos</small>
+              </div>
+              <div class="col-4 text-center">
+                <h4 class="text-success"><%= classroom.subjects.count %></h4>
+                <small class="text-muted">Disciplinas</small>
+              </div>
+              <div class="col-4 text-center">
+                <h4 class="text-info"><%= classroom.subjects.joins(:user).distinct.count %></h4>
+                <small class="text-muted">Professores</small>
+              </div>
+            </div>
+
+            <!-- Descrição -->
+            <% if classroom.description.present? %>
+              <div class="mb-3">
+                <small class="text-muted">Descrição:</small>
+                <p class="small"><%= truncate(classroom.description, length: 100) %></p>
+              </div>
+            <% end %>
+
+            <!-- Principais disciplinas -->
+            <% if classroom.subjects.any? %>
+              <div class="mb-3">
+                <small class="text-muted">Principais Disciplinas:</small>
+                <br>
+                <% classroom.subjects.limit(3).each do |subject| %>
+                  <span class="badge bg-secondary me-1"><%= subject.name %></span>
+                <% end %>
+                <% if classroom.subjects.count > 3 %>
+                  <small class="text-muted">+<%= classroom.subjects.count - 3 %> mais</small>
+                <% end %>
+              </div>
+            <% end %>
+
+            <!-- Capacidade -->
+            <% if classroom.capacity.present? %>
+              <div class="mb-2">
+                <small class="text-muted">Capacidade:</small>
+                <div class="progress" style="height: 6px;">
+                  <% occupancy = (classroom.enrollments.count.to_f / classroom.capacity * 100).round(1) %>
+                  <div class="progress-bar bg-<%= occupancy > 90 ? 'danger' : occupancy > 70 ? 'warning' : 'success' %>" 
+                       style="width: <%= occupancy %>%"></div>
+                </div>
+                <small class="text-muted">
+                  <%= classroom.enrollments.count %>/<%= classroom.capacity %> alunos 
+                  (<%= occupancy %>%)
+                </small>
+              </div>
+            <% end %>
+          </div>
+
+          <div class="card-footer">
+            <div class="d-flex justify-content-between align-items-center">
+              <small class="text-muted">
+                <i class="fas fa-calendar"></i>
+                Criada em <%= classroom.created_at.strftime("%d/%m/%Y") %>
+              </small>
+              <%= link_to direction_classroom_path(classroom), class: "btn btn-sm btn-outline-primary" do %>
+                <i class="fas fa-arrow-right"></i> Ver Mais
+              <% end %>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  <% else %>
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body text-center py-5">
+          <i class="fas fa-door-open fa-3x text-muted mb-3"></i>
+          <h5 class="text-muted">Nenhuma turma encontrada</h5>
+          <p class="text-muted">
+            <% if params.any? %>
+              Não há turmas que correspondam aos filtros selecionados.
+            <% else %>
+              Nenhuma turma foi criada ainda.
+            <% end %>
+          </p>
+          <%= link_to new_direction_classroom_path, class: "btn btn-primary" do %>
+            <i class="fas fa-plus"></i> Criar Primeira Turma
+          <% end %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>
+
+<!-- Gráfico por Turno -->
+<% if @classrooms.any? %>
+  <div class="card mt-4">
+    <div class="card-header">
+      <h5><i class="fas fa-chart-pie"></i> Distribuição por Turno</h5>
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <% shift_stats = @classrooms.group(:shift).count %>
+        <% shift_names = { 'morning' => 'Matutino', 'afternoon' => 'Vespertino', 'evening' => 'Noturno' } %>
+        
+        <% shift_stats.each do |shift, count| %>
+          <div class="col-md-4 mb-3">
+            <div class="text-center">
+              <h4 class="text-primary"><%= count %></h4>
+              <small class="text-muted"><%= shift_names[shift] || 'Não definido' %></small>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+<% end %>

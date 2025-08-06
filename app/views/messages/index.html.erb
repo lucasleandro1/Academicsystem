@@ -1,0 +1,104 @@
+<% content_for :title, "Mensagens" %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1><i class="fas fa-envelope"></i> Mensagens</h1>
+  <%= link_to new_message_path, class: "btn btn-primary" do %>
+    <i class="fas fa-plus"></i> Nova Mensagem
+  <% end %>
+</div>
+
+<!-- Filtros -->
+<div class="card mb-4">
+  <div class="card-body">
+    <%= form_with url: messages_path, method: :get, local: true, class: "row g-3" do |form| %>
+      <div class="col-md-3">
+        <%= form.select :folder, 
+                        options_for_select([
+                          ['Todas', ''], 
+                          ['Recebidas', 'inbox'], 
+                          ['Enviadas', 'sent'],
+                          ['Não lidas', 'unread']
+                        ], params[:folder]),
+                        {}, { class: "form-select" } %>
+      </div>
+      <div class="col-md-3">
+        <%= form.select :priority, 
+                        options_for_select([
+                          ['Todas as prioridades', ''], 
+                          ['Alta', 'high'], 
+                          ['Média', 'medium'], 
+                          ['Baixa', 'low']
+                        ], params[:priority]),
+                        {}, { class: "form-select" } %>
+      </div>
+      <div class="col-md-4">
+        <%= form.text_field :search, placeholder: "Buscar por assunto ou remetente...", 
+                           value: params[:search], class: "form-control" %>
+      </div>
+      <div class="col-md-2">
+        <div class="d-grid">
+          <%= form.submit "Filtrar", class: "btn btn-outline-secondary" %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div> 
+          <% if @unread_count > 0 %>
+            <span class="badge bg-danger"><%= @unread_count %></span>
+          <% end %>
+        </h5>
+      </div>
+      <div class="card-body">
+        <% if @received_messages.any? %>
+          <% @received_messages.each do |message| %>
+            <div class="d-flex justify-content-between align-items-center border-bottom py-2 <%= 'fw-bold' unless message.read? %>">
+              <div>
+                <%= link_to message_path(message), class: "text-decoration-none" do %>
+                  <strong><%= message.subject %></strong>
+                  <br>
+                  <small class="text-muted">De: <%= message.sender.full_name %></small>
+                <% end %>
+              </div>
+              <div class="text-end">
+                <small class="text-muted"><%= time_ago_in_words(message.created_at) %> atrás</small>
+                <% unless message.read? %>
+                  <br><span class="badge bg-primary">Não lida</span>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+        <% else %>
+          <p class="text-muted">Nenhuma mensagem recebida.</p>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">
+        <h5><i class="bi bi-send"></i> Mensagens Enviadas</h5>
+      </div>
+      <div class="card-body">
+        <% if @sent_messages.any? %>
+          <% @sent_messages.each do |message| %>
+            <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+              <div>
+                <%= link_to message_path(message), class: "text-decoration-none" do %>
+                  <strong><%= message.subject %></strong>
+                  <br>
+                  <small class="text-muted">Para: <%= message.recipient.full_name %></small>
+                <% end %>
+              </div>
+              <div class="text-end">
+                <small class="text-muted"><%= time_ago_in_words(message.created_at) %> atrás</small>
+              </div>
+            </div>
+          <% end %>
+        <% else %>
+          <p class="text-muted">Nenhuma mensagem enviada.</p>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

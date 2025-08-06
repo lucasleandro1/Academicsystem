@@ -1,0 +1,322 @@
+<% content_for :title, "Meu Perfil" %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1><i class="fas fa-user"></i> Meu Perfil</h1>
+  <%= link_to edit_students_profile_path, class: "btn btn-primary" do %>
+    <i class="fas fa-edit"></i> Editar Dados Pessoais
+  <% end %>
+</div>
+
+<div class="row">
+  <div class="col-lg-8">
+    <!-- Dados Pessoais -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5><i class="fas fa-user-circle"></i> Dados Pessoais</h5>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-3 text-center mb-3">
+            <div class="bg-primary rounded-circle mx-auto d-flex align-items-center justify-content-center" 
+                 style="width: 120px; height: 120px;">
+              <i class="fas fa-user fa-3x text-white"></i>
+            </div>
+            <h5 class="mt-2"><%= current_user.full_name %></h5>
+            <small class="text-muted">Aluno</small>
+          </div>
+          <div class="col-md-9">
+            <table class="table table-borderless">
+              <tr>
+                <th width="150">Nome Completo:</th>
+                <td><%= current_user.full_name %></td>
+              </tr>
+              <tr>
+                <th>E-mail:</th>
+                <td><%= current_user.email %></td>
+              </tr>
+              <% if current_user.phone.present? %>
+                <tr>
+                  <th>Telefone:</th>
+                  <td><%= current_user.phone %></td>
+                </tr>
+              <% end %>
+              <% if current_user.birth_date.present? %>
+                <tr>
+                  <th>Data de Nascimento:</th>
+                  <td>
+                    <%= current_user.birth_date.strftime("%d/%m/%Y") %>
+                    (<%= pluralize((Date.current - current_user.birth_date).to_i / 365, 'ano') %>)
+                  </td>
+                </tr>
+              <% end %>
+              <% if current_user.cpf.present? %>
+                <tr>
+                  <th>CPF:</th>
+                  <td><%= current_user.cpf %></td>
+                </tr>
+              <% end %>
+              <% if current_user.address.present? %>
+                <tr>
+                  <th>Endereço:</th>
+                  <td><%= current_user.address %></td>
+                </tr>
+              <% end %>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dados de Matrícula -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5><i class="fas fa-id-card"></i> Dados de Matrícula</h5>
+      </div>
+      <div class="card-body">
+        <% enrollment = current_user.enrollments.where(status: 'active').first %>
+        <% if enrollment&.classroom %>
+          <table class="table table-borderless">
+            <tr>
+              <th width="150">Número da Matrícula:</th>
+              <td><strong><%= current_user.registration_number %></strong></td>
+            </tr>
+            <tr>
+              <th>Escola:</th>
+              <td><%= current_user.school.name %></td>
+            </tr>
+            <tr>
+              <th>Turma:</th>
+              <td><%= enrollment.classroom.name %></td>
+            </tr>
+            <tr>
+              <th>Nível:</th>
+              <td><%= enrollment.classroom.level.humanize %></td>
+            </tr>
+            <tr>
+              <th>Turno:</th>
+              <td><%= enrollment.classroom.shift.humanize %></td>
+            </tr>
+            <tr>
+              <th>Ano Letivo:</th>
+              <td><%= enrollment.classroom.academic_year %></td>
+            </tr>
+            <tr>
+              <th>Data de Matrícula:</th>
+              <td><%= enrollment.created_at.strftime("%d/%m/%Y") %></td>
+            </tr>
+            <tr>
+              <th>Status:</th>
+              <td>
+                <span class="badge bg-<%= enrollment.status == 'active' ? 'success' : 'warning' %>">
+                  <%= enrollment.status.humanize %>
+                </span>
+              </td>
+            </tr>
+          </table>
+        <% else %>
+          <div class="text-center py-3">
+            <i class="fas fa-exclamation-triangle fa-2x text-warning mb-2"></i>
+            <p class="text-muted">Você não possui uma matrícula ativa no momento.</p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Responsável/Contato de Emergência -->
+    <div class="card">
+      <div class="card-header">
+        <h5><i class="fas fa-users"></i> Responsável</h5>
+      </div>
+      <div class="card-body">
+        <% if current_user.guardian_name.present? %>
+          <table class="table table-borderless">
+            <tr>
+              <th width="150">Nome:</th>
+              <td><%= current_user.guardian_name %></td>
+            </tr>
+            <% if current_user.guardian_phone.present? %>
+              <tr>
+                <th>Telefone:</th>
+                <td><%= current_user.guardian_phone %></td>
+              </tr>
+            <% end %>
+            <% if current_user.guardian_email.present? %>
+              <tr>
+                <th>E-mail:</th>
+                <td><%= current_user.guardian_email %></td>
+              </tr>
+            <% end %>
+            <% if current_user.guardian_relationship.present? %>
+              <tr>
+                <th>Parentesco:</th>
+                <td><%= current_user.guardian_relationship %></td>
+              </tr>
+            <% end %>
+          </table>
+        <% else %>
+          <div class="text-center py-3">
+            <i class="fas fa-user-friends fa-2x text-muted mb-2"></i>
+            <p class="text-muted">Dados do responsável não cadastrados.</p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <!-- Resumo Acadêmico -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h6><i class="fas fa-chart-bar"></i> Resumo Acadêmico</h6>
+      </div>
+      <div class="card-body">
+        <div class="text-center mb-3">
+          <h3 class="text-primary"><%= @overall_average || "N/A" %></h3>
+          <small class="text-muted">Média Geral</small>
+        </div>
+        <div class="row text-center">
+          <div class="col-6">
+            <h4 class="text-success"><%= @attendance_rate %>%</h4>
+            <small class="text-muted">Frequência</small>
+          </div>
+          <div class="col-6">
+            <h4 class="text-info"><%= @total_subjects %></h4>
+            <small class="text-muted">Disciplinas</small>
+          </div>
+        </div>
+        <hr>
+        <div class="row text-center">
+          <div class="col-6">
+            <h4 class="text-warning"><%= @submitted_activities %></h4>
+            <small class="text-muted">Atividades Entregues</small>
+          </div>
+          <div class="col-6">
+            <h4 class="text-<%= @total_occurrences > 0 ? 'danger' : 'success' %>">
+              <%= @total_occurrences %>
+            </h4>
+            <small class="text-muted">Ocorrências</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ações Rápidas -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h6><i class="fas fa-bolt"></i> Ações Rápidas</h6>
+      </div>
+      <div class="card-body">
+        <div class="d-grid gap-2">
+          <%= link_to edit_students_profile_path, class: "btn btn-outline-primary" do %>
+            <i class="fas fa-edit"></i> Editar Dados Pessoais
+          <% end %>
+          
+          <%= link_to students_grades_path, class: "btn btn-outline-success" do %>
+            <i class="fas fa-star"></i> Ver Notas e Boletim
+          <% end %>
+          
+          <%= link_to students_attendance_path, class: "btn btn-outline-info" do %>
+            <i class="fas fa-calendar-check"></i> Ver Frequência
+          <% end %>
+          
+          <%= link_to students_documents_path, class: "btn btn-outline-secondary" do %>
+            <i class="fas fa-folder"></i> Meus Documentos
+          <% end %>
+          
+          <%= link_to students_schedule_path, class: "btn btn-outline-warning" do %>
+            <i class="fas fa-calendar-alt"></i> Grade de Horários
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Últimas Atualizações -->
+    <div class="card">
+      <div class="card-header">
+        <h6><i class="fas fa-clock"></i> Últimas Atualizações</h6>
+      </div>
+      <div class="card-body">
+        <div class="timeline">
+          <% if @recent_grades.any? %>
+            <div class="timeline-item">
+              <i class="fas fa-star text-success"></i>
+              <div class="timeline-content">
+                <small class="text-muted">
+                  <%= @recent_grades.first.created_at.strftime("%d/%m às %H:%M") %>
+                </small>
+                <p class="mb-0">Nova nota em <%= @recent_grades.first.subject.name %></p>
+              </div>
+            </div>
+          <% end %>
+          
+          <% if @recent_activities.any? %>
+            <div class="timeline-item">
+              <i class="fas fa-tasks text-info"></i>
+              <div class="timeline-content">
+                <small class="text-muted">
+                  <%= @recent_activities.first.created_at.strftime("%d/%m às %H:%M") %>
+                </small>
+                <p class="mb-0">Nova atividade: <%= @recent_activities.first.title %></p>
+              </div>
+            </div>
+          <% end %>
+
+          <div class="timeline-item">
+            <i class="fas fa-user text-primary"></i>
+            <div class="timeline-content">
+              <small class="text-muted">
+                <%= current_user.updated_at.strftime("%d/%m às %H:%M") %>
+              </small>
+              <p class="mb-0">Dados atualizados</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.timeline {
+  position: relative;
+}
+
+.timeline-item {
+  display: flex;
+  align-items-start;
+  margin-bottom: 1rem;
+  padding-left: 2rem;
+  position: relative;
+}
+
+.timeline-item i {
+  position: absolute;
+  left: 0;
+  top: 0.25rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+}
+
+.timeline-content {
+  flex-grow: 1;
+}
+
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: 0.75rem;
+  top: 1.5rem;
+  width: 1px;
+  height: calc(100% + 0.5rem);
+  background-color: #dee2e6;
+}
+
+.timeline-item:last-child::before {
+  display: none;
+}
+</style>

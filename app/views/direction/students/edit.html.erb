@@ -1,0 +1,155 @@
+<% content_for :title, "Editar Aluno" %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1><i class="fas fa-user-edit"></i> Editar Aluno</h1>
+  <%= link_to direction_students_path, class: "btn btn-outline-secondary" do %>
+    <i class="fas fa-arrow-left"></i> Voltar
+  <% end %>
+</div>
+
+<div class="row">
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-header">
+        <h5><i class="fas fa-user"></i> Dados do Aluno</h5>
+      </div>
+      <div class="card-body">
+        <%= form_with model: [@user], url: direction_student_path(@user), method: :patch, local: true do |form| %>
+          <% if @user.errors.any? %>
+            <div class="alert alert-danger">
+              <h6><i class="fas fa-exclamation-triangle"></i> Corrija os seguintes erros:</h6>
+              <ul class="mb-0">
+                <% @user.errors.full_messages.each do |message| %>
+                  <li><%= message %></li>
+                <% end %>
+              </ul>
+            </div>
+          <% end %>
+
+          <!-- Dados Pessoais -->
+          <div class="mb-4">
+            <h6 class="text-muted border-bottom pb-2">Dados Pessoais</h6>
+            
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <%= form.label :first_name, "Nome", class: "form-label" %>
+                <%= form.text_field :first_name, class: "form-control", required: true %>
+              </div>
+              <div class="col-md-6 mb-3">
+                <%= form.label :last_name, "Sobrenome", class: "form-label" %>
+                <%= form.text_field :last_name, class: "form-control", required: true %>
+              </div>
+            </div>
+            
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <%= form.label :email, "E-mail", class: "form-label" %>
+                <%= form.email_field :email, class: "form-control", required: true %>
+              </div>
+              <div class="col-md-6 mb-3">
+                <%= form.label :phone, "Telefone", class: "form-label" %>
+                <%= form.tel_field :phone, class: "form-control" %>
+              </div>
+            </div>
+            
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <%= form.label :birth_date, "Data de Nascimento", class: "form-label" %>
+                <%= form.date_field :birth_date, class: "form-control" %>
+              </div>
+              <div class="col-md-6 mb-3">
+                <%= form.label :registration_number, "Matrícula", class: "form-label" %>
+                <%= form.text_field :registration_number, class: "form-control" %>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <%= form.label :guardian_name, "Nome do Responsável", class: "form-label" %>
+              <%= form.text_field :guardian_name, class: "form-control" %>
+            </div>
+          </div>
+
+          <!-- Status -->
+          <div class="mb-4">
+            <h6 class="text-muted border-bottom pb-2">Status</h6>
+            
+            <div class="form-check form-switch">
+              <%= form.check_box :active, class: "form-check-input" %>
+              <%= form.label :active, "Aluno ativo", class: "form-check-label" %>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-between">
+            <%= link_to direction_students_path, class: "btn btn-secondary" do %>
+              <i class="fas fa-times"></i> Cancelar
+            <% end %>
+            <%= form.submit "Atualizar Aluno", class: "btn btn-primary" do %>
+              <i class="fas fa-save"></i> Atualizar Aluno
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-lg-4">
+    <!-- Informações do Aluno -->
+    <div class="card">
+      <div class="card-header">
+        <h6><i class="fas fa-info-circle"></i> Informações do Aluno</h6>
+      </div>
+      <div class="card-body">
+        <p><strong>Criado em:</strong> <%= @user.created_at.strftime("%d/%m/%Y") %></p>
+        <p><strong>Última atualização:</strong> <%= @user.updated_at.strftime("%d/%m/%Y") %></p>
+        <p><strong>Status:</strong> 
+          <% if @user.active? %>
+            <span class="badge bg-success">Ativo</span>
+          <% else %>
+            <span class="badge bg-secondary">Inativo</span>
+          <% end %>
+        </p>
+      </div>
+    </div>
+
+    <!-- Matrículas -->
+    <div class="card mt-3">
+      <div class="card-header">
+        <h6><i class="fas fa-graduation-cap"></i> Matrículas</h6>
+      </div>
+      <div class="card-body">
+        <% enrollments = @user.enrollments.where(school: current_user.school) %>
+        <% if enrollments.any? %>
+          <% enrollments.each do |enrollment| %>
+            <div class="mb-2">
+              <strong><%= enrollment.classroom.name %></strong>
+              <br>
+              <span class="badge bg-<%= enrollment.status == 'active' ? 'success' : 'warning' %>">
+                <%= enrollment.status.humanize %>
+              </span>
+              <small class="text-muted">
+                desde <%= enrollment.enrollment_date.strftime("%d/%m/%Y") %>
+              </small>
+            </div>
+          <% end %>
+        <% else %>
+          <p class="text-muted">Nenhuma matrícula ativa</p>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Ações -->
+    <div class="card mt-3">
+      <div class="card-header">
+        <h6><i class="fas fa-tools"></i> Ações</h6>
+      </div>
+      <div class="card-body">
+        <%= link_to direction_student_path(@user), class: "btn btn-outline-primary btn-sm w-100 mb-2" do %>
+          <i class="fas fa-eye"></i> Ver Detalhes
+        <% end %>
+        <%= link_to direction_enrollments_path(student_id: @user.id), class: "btn btn-outline-info btn-sm w-100 mb-2" do %>
+          <i class="fas fa-graduation-cap"></i> Gerenciar Matrículas
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

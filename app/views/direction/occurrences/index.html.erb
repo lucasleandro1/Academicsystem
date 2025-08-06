@@ -1,0 +1,434 @@
+<% content_for :title, "Ocorrências" %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1><i class="fas fa-exclamation-triangle"></i> Gerenciar Ocorrências</h1>
+  <%= link_to new_direction_occurrence_path, class: "btn btn-primary" do %>
+    <i class="fas fa-plus"></i> Nova Ocorrência
+  <% end %>
+</div>
+
+<!-- Filtros e Busca -->
+<div class="card mb-4">
+  <div class="card-body">
+    <%= form_with url: direction_occurrences_path, method: :get, local: true, class: "row g-3" do |form| %>
+      <div class="col-md-3">
+        <%= form.text_field :search, placeholder: "Buscar por aluno ou descrição...", 
+                           value: params[:search], class: "form-control" %>
+      </div>
+      <div class="col-md-2">
+        <%= form.select :occurrence_type, 
+                        options_for_select([
+                          ['Todos os tipos', ''],
+                          ['Disciplinar', 'disciplinary'],
+                          ['Comportamental', 'behavioral'],
+                          ['Acadêmica', 'academic'],
+                          ['Saúde', 'health'],
+                          ['Outros', 'other']
+                        ], params[:occurrence_type]),
+                        {}, { class: "form-select" } %>
+      </div>
+      <div class="col-md-2">
+        <%= form.select :severity, 
+                        options_for_select([
+                          ['Todas as gravidades', ''],
+                          ['Leve', 'low'],
+                          ['Moderada', 'medium'],
+                          ['Grave', 'high'],
+                          ['Muito Grave', 'critical']
+                        ], params[:severity]),
+                        {}, { class: "form-select" } %>
+      </div>
+      <div class="col-md-2">
+        <%= form.select :status, 
+                        options_for_select([
+                          ['Todos os status', ''],
+                          ['Aberta', 'open'],
+                          ['Em Acompanhamento', 'in_progress'],
+                          ['Resolvida', 'resolved'],
+                          ['Fechada', 'closed']
+                        ], params[:status]),
+                        {}, { class: "form-select" } %>
+      </div>
+      <div class="col-md-2">
+        <%= form.date_field :date, value: params[:date], 
+                           class: "form-control", placeholder: "Data" %>
+      </div>
+      <div class="col-md-1">
+        <div class="d-grid">
+          <%= form.submit "Filtrar", class: "btn btn-outline-secondary" %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<!-- Estatísticas Rápidas -->
+<div class="row mb-4">
+  <div class="col-md-3">
+    <div class="card text-center">
+      <div class="card-body">
+        <h3 class="text-primary"><%= @occurrences.count %></h3>
+        <small class="text-muted">Total de Ocorrências</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center">
+      <div class="card-body">
+        <h3 class="text-warning"><%= @occurrences.where(status: ['open', 'in_progress']).count %></h3>
+        <small class="text-muted">Em Aberto</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center">
+      <div class="card-body">
+        <h3 class="text-danger"><%= @occurrences.where(severity: ['high', 'critical']).count %></h3>
+        <small class="text-muted">Graves</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center">
+      <div class="card-body">
+        <h3 class="text-success"><%= @occurrences.where(status: 'resolved').count %></h3>
+        <small class="text-muted">Resolvidas</small>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Ocorrências Prioritárias -->
+<% priority_occurrences = @occurrences.where(severity: ['high', 'critical'], status: ['open', 'in_progress']).limit(3) %>
+<% if priority_occurrences.any? %>
+  <div class="card mb-4 border-danger">
+    <div class="card-header bg-danger text-white">
+      <h5 class="mb-0"><i class="fas fa-exclamation-circle"></i> Ocorrências Prioritárias</h5>
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <% priority_occurrences.each do |occurrence| %>
+          <div class="col-md-4 mb-3">
+            <div class="card border-danger">
+              <div class="card-body">
+                <h6 class="card-title">
+                  <span class="badge bg-<%= occurrence.severity == 'critical' ? 'danger' : 'warning' %>">
+                    <%= occurrence.severity == 'critical' ? 'CRÍTICA' : 'GRAVE' %>
+                  </span>
+                </h6>
+                <p class="card-text">
+                  <strong>Aluno:</strong> <%= occurrence.user&.name || 'Não informado' %><br>
+                  <strong>Data:</strong> <%= occurrence.date.strftime("%d/%m/%Y") %>
+                </p>
+                <%= link_to direction_occurrence_path(occurrence), class: "btn btn-sm btn-outline-danger" do %>
+                  Ver Detalhes
+                <% end %>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<!-- Lista de Ocorrências -->
+<div class="row">
+  <% if @occurrences.any? %>
+    <% @occurrences.each do |occurrence| %>
+      <div class="col-lg-6 col-md-12 mb-4">
+        <div class="card h-100 
+                    <%= 'border-danger' if occurrence.severity == 'critical' %>
+                    <%= 'border-warning' if occurrence.severity == 'high' %>
+                    <%= 'border-success' if occurrence.status == 'resolved' %>">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h6 class="mb-0">
+              <i class="fas fa-<%= 
+                case occurrence.occurrence_type
+                when 'disciplinary' then 'gavel'
+                when 'behavioral' then 'user-times'
+                when 'academic' then 'book'
+                when 'health' then 'heartbeat'
+                else 'exclamation-triangle'
+                end
+              %> text-primary"></i>
+              Ocorrência #<%= occurrence.id %>
+            </h6>
+            <div class="dropdown">
+              <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                <i class="fas fa-ellipsis-v"></i>
+              </button>
+              <ul class="dropdown-menu">
+                <li>
+                  <%= link_to direction_occurrence_path(occurrence), class: "dropdown-item" do %>
+                    <i class="fas fa-eye"></i> Ver Detalhes
+                  <% end %>
+                </li>
+                <li>
+                  <%= link_to edit_direction_occurrence_path(occurrence), class: "dropdown-item" do %>
+                    <i class="fas fa-edit"></i> Editar
+                  <% end %>
+                </li>
+                <li>
+                  <%= link_to "#", class: "dropdown-item", 
+                             data: { bs_toggle: "modal", bs_target: "#updateStatusModal#{occurrence.id}" } do %>
+                    <i class="fas fa-tasks"></i> Atualizar Status
+                  <% end %>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                  <%= link_to "#", class: "dropdown-item text-success", 
+                             data: { confirm: "Marcar como resolvida?" } do %>
+                    <i class="fas fa-check"></i> Marcar como Resolvida
+                  <% end %>
+                </li>
+              </ul>
+            </div>
+          </div>
+          
+          <div class="card-body">
+            <!-- Aluno envolvido -->
+            <div class="row mb-3">
+              <div class="col-12">
+                <small class="text-muted">Aluno:</small>
+                <br>
+                <% if occurrence.user %>
+                  <div class="d-flex align-items-center">
+                    <i class="fas fa-user text-info me-2"></i>
+                    <div>
+                      <strong><%= occurrence.user.name %></strong>
+                      <br>
+                      <small class="text-muted"><%= occurrence.user.email %></small>
+                    </div>
+                  </div>
+                <% else %>
+                  <span class="text-muted">Aluno não identificado</span>
+                <% end %>
+              </div>
+            </div>
+
+            <!-- Status e Gravidade -->
+            <div class="row mb-3">
+              <div class="col-6">
+                <small class="text-muted">Status:</small>
+                <br>
+                <span class="badge bg-<%= 
+                  case occurrence.status
+                  when 'open' then 'danger'
+                  when 'in_progress' then 'warning'
+                  when 'resolved' then 'success'
+                  when 'closed' then 'secondary'
+                  else 'secondary'
+                  end
+                %>">
+                  <%= 
+                    case occurrence.status
+                    when 'open' then 'Aberta'
+                    when 'in_progress' then 'Em Acompanhamento'
+                    when 'resolved' then 'Resolvida'
+                    when 'closed' then 'Fechada'
+                    else 'Indefinido'
+                    end
+                  %>
+                </span>
+              </div>
+              <div class="col-6">
+                <small class="text-muted">Gravidade:</small>
+                <br>
+                <span class="badge bg-<%= 
+                  case occurrence.severity
+                  when 'low' then 'info'
+                  when 'medium' then 'warning'
+                  when 'high' then 'orange'
+                  when 'critical' then 'danger'
+                  else 'secondary'
+                  end
+                %>">
+                  <%= 
+                    case occurrence.severity
+                    when 'low' then 'Leve'
+                    when 'medium' then 'Moderada'
+                    when 'high' then 'Grave'
+                    when 'critical' then 'Crítica'
+                    else 'Não definida'
+                    end
+                  %>
+                </span>
+              </div>
+            </div>
+
+            <!-- Tipo e Data -->
+            <div class="row mb-3">
+              <div class="col-6">
+                <small class="text-muted">Tipo:</small>
+                <br>
+                <span class="badge bg-info">
+                  <%= 
+                    case occurrence.occurrence_type
+                    when 'disciplinary' then 'Disciplinar'
+                    when 'behavioral' then 'Comportamental'
+                    when 'academic' then 'Acadêmica'
+                    when 'health' then 'Saúde'
+                    when 'other' then 'Outros'
+                    else 'Não definido'
+                    end
+                  %>
+                </span>
+              </div>
+              <div class="col-6">
+                <small class="text-muted">Data:</small>
+                <br>
+                <strong><%= occurrence.date.strftime("%d/%m/%Y") %></strong>
+                <% if occurrence.time %>
+                  <br><small class="text-muted"><%= occurrence.time.strftime("%H:%M") %></small>
+                <% end %>
+              </div>
+            </div>
+
+            <!-- Local -->
+            <% if occurrence.location.present? %>
+              <div class="mb-3">
+                <small class="text-muted">Local:</small>
+                <br>
+                <i class="fas fa-map-marker-alt text-warning"></i>
+                <span><%= occurrence.location %></span>
+              </div>
+            <% end %>
+
+            <!-- Descrição -->
+            <div class="mb-3">
+              <small class="text-muted">Descrição:</small>
+              <p class="small"><%= truncate(occurrence.description, length: 150) %></p>
+            </div>
+
+            <!-- Professor que reportou -->
+            <% if occurrence.reporter_name.present? %>
+              <div class="mb-2">
+                <small class="text-muted">Reportado por:</small>
+                <br>
+                <span class="small"><%= occurrence.reporter_name %></span>
+              </div>
+            <% end %>
+
+            <!-- Medidas tomadas -->
+            <% if occurrence.actions_taken.present? %>
+              <div class="mb-2">
+                <small class="text-muted">Medidas tomadas:</small>
+                <p class="small text-success"><%= truncate(occurrence.actions_taken, length: 100) %></p>
+              </div>
+            <% end %>
+          </div>
+
+          <div class="card-footer">
+            <div class="d-flex justify-content-between align-items-center">
+              <small class="text-muted">
+                <i class="fas fa-calendar-plus"></i>
+                Criada em <%= occurrence.created_at.strftime("%d/%m/%Y às %H:%M") %>
+              </small>
+              <%= link_to direction_occurrence_path(occurrence), class: "btn btn-sm btn-outline-primary" do %>
+                <i class="fas fa-arrow-right"></i> Ver Mais
+              <% end %>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Atualizar Status -->
+      <div class="modal fade" id="updateStatusModal<%= occurrence.id %>" tabindex="-1">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">
+                <i class="fas fa-tasks"></i> Atualizar Status - Ocorrência #<%= occurrence.id %>
+              </h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <%= form_with url: "#", local: true do |form| %>
+                <div class="mb-3">
+                  <%= form.label :status, "Novo Status", class: "form-label" %>
+                  <%= form.select :status, 
+                                  options_for_select([
+                                    ['Aberta', 'open'],
+                                    ['Em Acompanhamento', 'in_progress'],
+                                    ['Resolvida', 'resolved'],
+                                    ['Fechada', 'closed']
+                                  ], occurrence.status),
+                                  {}, { class: "form-select" } %>
+                </div>
+                
+                <div class="mb-3">
+                  <%= form.label :actions_taken, "Medidas Tomadas", class: "form-label" %>
+                  <%= form.text_area :actions_taken, class: "form-control", rows: 3,
+                                    value: occurrence.actions_taken,
+                                    placeholder: "Descreva as medidas adotadas..." %>
+                </div>
+                
+                <div class="mb-3">
+                  <%= form.label :notes, "Observações", class: "form-label" %>
+                  <%= form.text_area :notes, class: "form-control", rows: 2,
+                                    placeholder: "Observações sobre a atualização..." %>
+                </div>
+              <% end %>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+              <button type="button" class="btn btn-primary">
+                <i class="fas fa-save"></i> Atualizar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  <% else %>
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body text-center py-5">
+          <i class="fas fa-exclamation-triangle fa-3x text-muted mb-3"></i>
+          <h5 class="text-muted">Nenhuma ocorrência encontrada</h5>
+          <p class="text-muted">
+            <% if params.any? %>
+              Não há ocorrências que correspondam aos filtros selecionados.
+            <% else %>
+              Nenhuma ocorrência foi registrada ainda.
+            <% end %>
+          </p>
+          <%= link_to new_direction_occurrence_path, class: "btn btn-primary" do %>
+            <i class="fas fa-plus"></i> Registrar Primeira Ocorrência
+          <% end %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>
+
+<!-- Estatísticas por Tipo -->
+<% if @occurrences.any? %>
+  <div class="card mt-4">
+    <div class="card-header">
+      <h5><i class="fas fa-chart-bar"></i> Estatísticas por Tipo</h5>
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <% type_stats = @occurrences.group(:occurrence_type).count %>
+        <% type_names = { 
+          'disciplinary' => 'Disciplinar',
+          'behavioral' => 'Comportamental',
+          'academic' => 'Acadêmica',
+          'health' => 'Saúde',
+          'other' => 'Outros'
+        } %>
+        
+        <% type_stats.each do |type, count| %>
+          <div class="col-md-2 col-6 mb-3">
+            <div class="text-center">
+              <h4 class="text-primary"><%= count %></h4>
+              <small class="text-muted"><%= type_names[type] || 'Não definido' %></small>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+<% end %>

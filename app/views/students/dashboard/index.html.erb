@@ -1,0 +1,444 @@
+<%# Page Title %>
+<% content_for :title, "Dashboard - Estudante" %>
+
+<!-- Welcome Header -->
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <div>
+    <h1 class="h2">
+      <i class="fas fa-user-graduate text-success me-2"></i>
+      Meu Painel Estudantil
+    </h1>
+    <p class="text-muted mb-0">
+      Bem-vindo(a), <%= current_user.full_name %>! 
+      Acompanhe seu progresso acadêmico.
+    </p>
+  </div>
+  <div class="btn-toolbar mb-2 mb-md-0">
+    <div class="btn-group me-2">
+      <%= link_to "#", class: "btn btn-sm btn-outline-primary" do %>
+        <i class="fas fa-book"></i> Minhas Matérias
+      <% end %>
+      <%= link_to "#", class: "btn btn-sm btn-outline-success" do %>
+        <i class="fas fa-calendar"></i> Horários
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<!-- Student Statistics -->
+<div class="row mb-4">
+  <div class="col-xl-3 col-md-6 mb-4">
+    <div class="card card-stat border-left-primary shadow h-100 py-2">
+      <div class="card-body">
+        <div class="row no-gutters align-items-center">
+          <div class="col mr-2">
+            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+              Minhas Turmas
+            </div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800">
+              <%= current_user.enrollments.joins(:classroom).distinct.count('classrooms.id') %>
+            </div>
+          </div>
+          <div class="col-auto">
+            <i class="fas fa-users fa-2x text-gray-300"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xl-3 col-md-6 mb-4">
+    <div class="card card-stat border-left-success shadow h-100 py-2">
+      <div class="card-body">
+        <div class="row no-gutters align-items-center">
+          <div class="col mr-2">
+            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+              Média Geral
+            </div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800">
+              <% avg = Grade.where(student: current_user).average(:score) %>
+              <%= avg ? number_with_precision(avg, precision: 1) : 'N/A' %>
+            </div>
+          </div>
+          <div class="col-auto">
+            <i class="fas fa-chart-line fa-2x text-gray-300"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xl-3 col-md-6 mb-4">
+    <div class="card card-stat border-left-info shadow h-100 py-2">
+      <div class="card-body">
+        <div class="row no-gutters align-items-center">
+          <div class="col mr-2">
+            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+              Atividades Pendentes
+            </div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800">
+              <% pending_activities = Activity.joins(:subject => {:classroom => :enrollments})
+                                          .where(enrollments: {student: current_user})
+                                          .where('due_date >= ?', Date.current)
+                                          .distinct %>
+              <%= pending_activities.count %>
+            </div>
+          </div>
+          <div class="col-auto">
+            <i class="fas fa-tasks fa-2x text-gray-300"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xl-3 col-md-6 mb-4">
+    <div class="card card-stat border-left-warning shadow h-100 py-2">
+      <div class="card-body">
+        <div class="row no-gutters align-items-center">
+          <div class="col mr-2">
+            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+              Presenças (%)
+            </div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800">
+              <% total_occurrences = Occurrence.joins(:classroom => :enrollments)
+                                              .where(enrollments: {student: current_user}).count %>
+              <% present_occurrences = Occurrence.joins(:classroom => :enrollments)
+                                                .where(enrollments: {student: current_user}, present: true).count %>
+              <% attendance_rate = total_occurrences > 0 ? (present_occurrences.to_f / total_occurrences * 100).round(1) : 0 %>
+              <%= attendance_rate %>%
+            </div>
+          </div>
+          <div class="col-auto">
+            <i class="fas fa-calendar-check fa-2x text-gray-300"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Current Grades and Schedule -->
+<div class="row">
+  <div class="col-lg-8 mb-4">
+    <div class="card shadow mb-4">
+      <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">
+          <i class="fas fa-chart-bar me-2"></i>
+          Minhas Notas por Matéria
+        </h6>
+      </div>
+      <div class="card-body">
+        <% grades_by_subject = Grade.joins(:subject).where(student: current_user).group('subjects.name').average(:score) %>
+        <% if grades_by_subject.any? %>
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Matéria</th>
+                  <th>Média</th>
+                  <th>Status</th>
+                  <th>Última Nota</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% grades_by_subject.each do |subject_name, average| %>
+                  <% last_grade = Grade.joins(:subject).where(student: current_user, subjects: {name: subject_name}).order(:created_at).last %>
+                  <tr>
+                    <td>
+                      <strong><%= subject_name %></strong>
+                    </td>
+                    <td>
+                      <span class="h5 mb-0 font-weight-bold text-<%= average >= 7 ? 'success' : average >= 5 ? 'warning' : 'danger' %>">
+                        <%= number_with_precision(average, precision: 1) %>
+                      </span>
+                    </td>
+                    <td>
+                      <% if average >= 7 %>
+                        <span class="badge bg-success">Aprovado</span>
+                      <% elsif average >= 5 %>
+                        <span class="badge bg-warning">Recuperação</span>
+                      <% else %>
+                        <span class="badge bg-danger">Reprovado</span>
+                      <% end %>
+                    </td>
+                    <td>
+                      <% if last_grade %>
+                        <span class="text-muted">
+                          <%= last_grade.score %> 
+                          <small>(<%= time_ago_in_words(last_grade.created_at) %> atrás)</small>
+                        </span>
+                      <% else %>
+                        <span class="text-muted">Sem notas</span>
+                      <% end %>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        <% else %>
+          <div class="text-center text-muted py-4">
+            <i class="fas fa-chart-bar fa-3x mb-3"></i>
+            <p>Ainda não há notas lançadas</p>
+            <small>Entre em contato com seus professores</small>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4 mb-4">
+    <div class="card shadow mb-4">
+      <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">
+          <i class="fas fa-clock me-2"></i>
+          Meus Horários
+        </h6>
+      </div>
+      <div class="card-body">
+        <% class_schedules = ClassSchedule.joins(:classroom => :enrollments)
+                                        .where(enrollments: {student: current_user})
+                                        .order(:day_of_week, :start_time)
+                                        .includes(:subject, :classroom) %>
+        <% if class_schedules.any? %>
+          <% class_schedules.group_by(&:day_of_week).each do |day, schedules| %>
+            <div class="mb-3">
+              <h6 class="text-primary"><%= Date::DAYNAMES[day] %></h6>
+              <% schedules.each do |schedule| %>
+                <div class="d-flex align-items-center mb-2 p-2 border rounded">
+                  <div class="me-3">
+                    <small class="text-muted">
+                      <%= schedule.start_time.strftime("%H:%M") %> - 
+                      <%= schedule.end_time.strftime("%H:%M") %>
+                    </small>
+                  </div>
+                  <div class="flex-grow-1">
+                    <small>
+                      <strong><%= schedule.subject.name %></strong>
+                      <br>
+                      <%= schedule.classroom.name %>
+                    </small>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          <% end %>
+        <% else %>
+          <div class="text-center text-muted py-4">
+            <i class="fas fa-calendar fa-2x mb-3"></i>
+            <p>Nenhum horário cadastrado</p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Upcoming Activities and Recent Events -->
+<div class="row">
+  <div class="col-lg-6 mb-4">
+    <div class="card shadow mb-4">
+      <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">
+          <i class="fas fa-calendar-alt me-2"></i>
+          Próximas Atividades
+        </h6>
+      </div>
+      <div class="card-body">
+        <% upcoming_activities = Activity.joins(:subject => {:classroom => :enrollments})
+                                       .where(enrollments: {student: current_user})
+                                       .where('due_date >= ?', Date.current)
+                                       .order(:due_date)
+                                       .limit(5)
+                                       .includes(:subject) %>
+        <% if upcoming_activities.any? %>
+          <% upcoming_activities.each do |activity| %>
+            <div class="d-flex align-items-center mb-3 p-2 border rounded">
+              <div class="me-3">
+                <div class="rounded-circle bg-<%= activity.due_date <= Date.current + 3.days ? 'danger' : activity.due_date <= Date.current + 1.week ? 'warning' : 'success' %> text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                  <i class="fas fa-tasks"></i>
+                </div>
+              </div>
+              <div class="flex-grow-1">
+                <h6 class="mb-0"><%= truncate(activity.title, length: 35) %></h6>
+                <small class="text-muted">
+                  <%= activity.subject.name %>
+                  <br>
+                  Entrega: <%= activity.due_date.strftime("%d/%m/%Y") %>
+                  (<%= time_ago_in_words(activity.due_date) %>)
+                </small>
+              </div>
+            </div>
+          <% end %>
+        <% else %>
+          <div class="text-center text-muted py-4">
+            <i class="fas fa-tasks fa-2x mb-3"></i>
+            <p>Nenhuma atividade próxima</p>
+            <small>Parabéns! Você está em dia</small>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6 mb-4">
+    <div class="card shadow mb-4">
+      <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+        <h6 class="m-0 font-weight-bold text-primary">
+          <i class="fas fa-bell me-2"></i>
+          Avisos e Eventos
+        </h6>
+      </div>
+      <div class="card-body">
+        <% recent_events = Event.where(school: current_user.school)
+                              .where('date >= ?', Date.current)
+                              .order(:date)
+                              .limit(5) %>
+        <% if recent_events.any? %>
+          <% recent_events.each do |event| %>
+            <div class="d-flex align-items-start mb-3 p-2 border rounded">
+              <div class="me-3">
+                <div class="rounded-circle bg-info text-white d-flex align-items-center justify-content-center" style="width: 35px; height: 35px;">
+                  <i class="fas fa-calendar"></i>
+                </div>
+              </div>
+              <div class="flex-grow-1">
+                <h6 class="mb-1"><%= event.title %></h6>
+                <p class="mb-1 small"><%= truncate(event.description, length: 80) %></p>
+                <small class="text-muted">
+                  <i class="fas fa-calendar me-1"></i>
+                  <%= event.date.strftime("%d/%m/%Y") %>
+                </small>
+              </div>
+            </div>
+          <% end %>
+        <% else %>
+          <div class="text-center text-muted py-4">
+            <i class="fas fa-calendar fa-2x mb-3"></i>
+            <p>Nenhum evento próximo</p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Messages and Performance -->
+<div class="row">
+  <div class="col-lg-6 mb-4">
+    <div class="card shadow mb-4">
+      <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+        <h6 class="m-0 font-weight-bold text-primary">
+          <i class="fas fa-comments me-2"></i>
+          Mensagens Recentes
+        </h6>
+        <% unread_count = current_user.received_messages.unread.count %>
+        <% if unread_count > 0 %>
+          <span class="badge bg-danger"><%= unread_count %></span>
+        <% end %>
+      </div>
+      <div class="card-body">
+        <% recent_messages = current_user.received_messages.order(created_at: :desc).limit(3) %>
+        <% if recent_messages.any? %>
+          <% recent_messages.each do |message| %>
+            <div class="d-flex align-items-start mb-3 <%= 'bg-light' if message.unread? %> p-2 rounded">
+              <div class="me-3">
+                <div class="rounded-circle bg-info text-white d-flex align-items-center justify-content-center" style="width: 35px; height: 35px;">
+                  <i class="fas fa-user"></i>
+                </div>
+              </div>
+              <div class="flex-grow-1">
+                <h6 class="mb-1">
+                  <%= message.sender.full_name %>
+                  <% if message.unread? %>
+                    <span class="badge bg-primary ms-1">Nova</span>
+                  <% end %>
+                </h6>
+                <p class="mb-1 small"><%= truncate(message.content, length: 60) %></p>
+                <small class="text-muted"><%= time_ago_in_words(message.created_at) %> atrás</small>
+              </div>
+            </div>
+          <% end %>
+        <% else %>
+          <div class="text-center text-muted py-3">
+            <i class="fas fa-comments fa-2x mb-2"></i>
+            <p>Nenhuma mensagem</p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6 mb-4">
+    <div class="card shadow mb-4">
+      <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">
+          <i class="fas fa-chart-pie me-2"></i>
+          Meu Desempenho
+        </h6>
+      </div>
+      <div class="card-body">
+        <% total_grades = Grade.where(student: current_user).count %>
+        <% if total_grades > 0 %>
+          <% grades_distribution = Grade.where(student: current_user).group_by do |grade|
+               if grade.score >= 9
+                 'Excelente (9-10)'
+               elsif grade.score >= 7
+                 'Bom (7-8)'
+               elsif grade.score >= 5
+                 'Regular (5-6)'
+               else
+                 'Insuficiente (0-4)'
+               end
+             end %>
+          
+          <% ['Excelente (9-10)', 'Bom (7-8)', 'Regular (5-6)', 'Insuficiente (0-4)'].each do |category| %>
+            <% count = grades_distribution[category]&.count || 0 %>
+            <% percentage = (count.to_f / total_grades * 100).round(1) %>
+            <div class="mb-3">
+              <div class="d-flex justify-content-between">
+                <span><%= category %></span>
+                <strong><%= count %> (<%= percentage %>%)</strong>
+              </div>
+              <div class="progress mb-2">
+                <div class="progress-bar bg-<%= category.include?('Excelente') ? 'success' : category.include?('Bom') ? 'primary' : category.include?('Regular') ? 'warning' : 'danger' %>" 
+                     role="progressbar" style="width: <%= percentage %>%"></div>
+              </div>
+            </div>
+          <% end %>
+        <% else %>
+          <div class="text-center text-muted py-4">
+            <i class="fas fa-chart-pie fa-2x mb-3"></i>
+            <p>Ainda não há dados suficientes</p>
+            <small>Continue estudando!</small>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .border-left-primary {
+    border-left: 0.25rem solid #4e73df !important;
+  }
+  .border-left-success {
+    border-left: 0.25rem solid #1cc88a !important;
+  }
+  .border-left-info {
+    border-left: 0.25rem solid #36b9cc !important;
+  }
+  .border-left-warning {
+    border-left: 0.25rem solid #f6c23e !important;
+  }
+  .text-xs {
+    font-size: 0.7rem;
+  }
+  .text-gray-800 {
+    color: #5a5c69 !important;
+  }
+  .text-gray-300 {
+    color: #dddfeb !important;
+  }
+</style>

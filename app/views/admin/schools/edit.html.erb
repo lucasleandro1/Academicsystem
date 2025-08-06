@@ -1,0 +1,159 @@
+<% content_for :title, "Editar #{@school.name}" %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1><i class="fas fa-edit"></i> Editar Escola</h1>
+  <div class="btn-group">
+    <%= link_to admin_school_path(@school), class: "btn btn-outline-primary" do %>
+      <i class="fas fa-eye"></i> Visualizar
+    <% end %>
+    <%= link_to admin_schools_path, class: "btn btn-outline-secondary" do %>
+      <i class="fas fa-arrow-left"></i> Voltar
+    <% end %>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-header">
+        <h5><i class="fas fa-school"></i> Dados da Escola</h5>
+      </div>
+      <div class="card-body">
+        <%= form_with model: [:admin, @school], local: true, multipart: true do |form| %>
+          <% if @school.errors.any? %>
+            <div class="alert alert-danger" role="alert">
+              <h6><i class="fas fa-exclamation-triangle"></i> Erro ao salvar escola:</h6>
+              <ul class="mb-0">
+                <% @school.errors.full_messages.each do |message| %>
+                  <li><%= message %></li>
+                <% end %>
+              </ul>
+            </div>
+          <% end %>
+
+          <div class="row">
+            <div class="col-md-12 mb-3">
+              <%= form.label :name, "Nome da Escola *", class: "form-label" %>
+              <%= form.text_field :name, class: "form-control #{'is-invalid' if @school.errors[:name].any?}", 
+                                 placeholder: "Ex: Escola Estadual João da Silva" %>
+              <% if @school.errors[:name].any? %>
+                <div class="invalid-feedback">
+                  <%= @school.errors[:name].first %>
+                </div>
+              <% end %>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <%= form.label :cnpj, "CNPJ *", class: "form-label" %>
+              <%= form.text_field :cnpj, class: "form-control #{'is-invalid' if @school.errors[:cnpj].any?}", 
+                                 placeholder: "00.000.000/0000-00" %>
+              <% if @school.errors[:cnpj].any? %>
+                <div class="invalid-feedback">
+                  <%= @school.errors[:cnpj].first %>
+                </div>
+              <% end %>
+            </div>
+            <div class="col-md-6 mb-3">
+              <%= form.label :phone, "Telefone", class: "form-label" %>
+              <%= form.text_field :phone, class: "form-control", 
+                                 placeholder: "(00) 0000-0000" %>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <%= form.label :address, "Endereço *", class: "form-label" %>
+            <%= form.text_area :address, class: "form-control #{'is-invalid' if @school.errors[:address].any?}", 
+                              rows: 3, placeholder: "Rua, número, bairro, cidade - UF, CEP" %>
+            <% if @school.errors[:address].any? %>
+              <div class="invalid-feedback">
+                <%= @school.errors[:address].first %>
+              </div>
+            <% end %>
+          </div>
+
+          <div class="mb-3">
+            <%= form.label :description, "Descrição", class: "form-label" %>
+            <%= form.text_area :description, class: "form-control", rows: 4, 
+                              placeholder: "Descrição sobre a escola, missão, valores..." %>
+          </div>
+
+          <div class="mb-3">
+            <%= form.label :logo, "Logo da Escola", class: "form-label" %>
+            <% if @school.logo.present? %>
+              <div class="mb-2">
+                <small class="text-muted">Logo atual:</small><br>
+                <%= image_tag @school.logo, class: "img-thumbnail", style: "max-height: 80px;" %>
+              </div>
+            <% end %>
+            <%= form.file_field :logo, class: "form-control", accept: "image/*" %>
+            <div class="form-text">Formatos aceitos: JPG, PNG, GIF. Tamanho máximo: 2MB. Deixe em branco para manter a logo atual.</div>
+          </div>
+
+          <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+            <%= link_to admin_school_path(@school), class: "btn btn-secondary" do %>
+              <i class="fas fa-times"></i> Cancelar
+            <% end %>
+            <%= form.submit "Salvar Alterações", class: "btn btn-primary" do %>
+              <i class="fas fa-save"></i> Salvar
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card">
+      <div class="card-header">
+        <h6><i class="fas fa-info-circle"></i> Informações</h6>
+      </div>
+      <div class="card-body">
+        <p class="text-muted small">
+          <strong>Campos obrigatórios:</strong>
+          <br>• Nome da escola
+          <br>• CNPJ
+          <br>• Endereço
+        </p>
+        <hr>
+        <p class="text-muted small">
+          <strong>Atenção:</strong>
+          <br>• Ao desativar a escola, todos os usuários perderão acesso
+          <br>• Mudanças no CNPJ podem afetar relatórios
+          <br>• A logo será redimensionada automaticamente
+        </p>
+      </div>
+    </div>
+
+    <!-- Estatísticas atuais -->
+    <div class="card mt-3">
+      <div class="card-header">
+        <h6><i class="fas fa-chart-bar"></i> Dados Atuais</h6>
+      </div>
+      <div class="card-body">
+        <div class="row text-center">
+          <div class="col-6">
+            <h4 class="text-primary"><%= @school.users.where(user_type: 'teacher').count %></h4>
+            <small class="text-muted">Professores</small>
+          </div>
+          <div class="col-6">
+            <h4 class="text-success"><%= @school.users.where(user_type: 'student').count %></h4>
+            <small class="text-muted">Alunos</small>
+          </div>
+        </div>
+        <hr>
+        <div class="row text-center">
+          <div class="col-6">
+            <h4 class="text-info"><%= @school.classrooms.count %></h4>
+            <small class="text-muted">Turmas</small>
+          </div>
+          <div class="col-6">
+            <h4 class="text-warning"><%= @school.subjects.count %></h4>
+            <small class="text-muted">Disciplinas</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

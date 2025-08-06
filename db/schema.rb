@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_06_25_120000) do
+ActiveRecord::Schema[8.0].define(version: 2025_08_06_165714) do
   create_table "absences", force: :cascade do |t|
     t.integer "subject_id", null: false
     t.date "date"
@@ -117,6 +117,22 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_25_120000) do
     t.index ["user_id"], name: "index_grades_on_user_id"
   end
 
+  create_table "messages", force: :cascade do |t|
+    t.integer "sender_id", null: false
+    t.integer "recipient_id", null: false
+    t.integer "school_id", null: false
+    t.string "subject", null: false
+    t.text "body", null: false
+    t.datetime "read_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["recipient_id", "read_at"], name: "index_messages_on_recipient_id_and_read_at"
+    t.index ["recipient_id"], name: "index_messages_on_recipient_id"
+    t.index ["school_id"], name: "index_messages_on_school_id"
+    t.index ["sender_id", "created_at"], name: "index_messages_on_sender_id_and_created_at"
+    t.index ["sender_id"], name: "index_messages_on_sender_id"
+  end
+
   create_table "occurrences", force: :cascade do |t|
     t.text "description"
     t.string "occurrence_type"
@@ -140,6 +156,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_25_120000) do
     t.string "logo"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "email"
   end
 
   create_table "subjects", force: :cascade do |t|
@@ -187,6 +204,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_25_120000) do
     t.string "guardian_name"
     t.string "position"
     t.string "specialization"
+    t.string "first_name"
+    t.string "last_name"
+    t.string "phone"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
     t.index ["school_id"], name: "index_users_on_school_id"
@@ -209,6 +229,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_25_120000) do
   add_foreign_key "events", "schools"
   add_foreign_key "grades", "subjects"
   add_foreign_key "grades", "users"
+  add_foreign_key "messages", "schools"
+  add_foreign_key "messages", "users", column: "recipient_id"
+  add_foreign_key "messages", "users", column: "sender_id"
   add_foreign_key "occurrences", "schools"
   add_foreign_key "occurrences", "users"
   add_foreign_key "subjects", "classrooms"

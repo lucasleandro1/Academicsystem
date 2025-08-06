@@ -1,0 +1,87 @@
+<% content_for :title, "Dados da Escola" %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1><i class="fas fa-school"></i> Dados da Escola</h1>
+  <%= link_to edit_direction_school_path, class: "btn btn-primary" do %>
+    <i class="fas fa-edit"></i> Editar
+  <% end %>
+</div>
+
+<div class="row">
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-header">
+        <h5><i class="fas fa-info-circle"></i> Informações Básicas</h5>
+      </div>
+      <div class="card-body">
+        <dl class="row">
+          <dt class="col-sm-3">Nome:</dt>
+          <dd class="col-sm-9"><%= @school.name %></dd>
+          
+          <dt class="col-sm-3">CNPJ:</dt>
+          <dd class="col-sm-9"><%= @school.cnpj %></dd>
+          
+          <dt class="col-sm-3">Endereço:</dt>
+          <dd class="col-sm-9"><%= @school.address %></dd>
+          
+          <dt class="col-sm-3">Telefone:</dt>
+          <dd class="col-sm-9"><%= @school.phone %></dd>
+          
+          <dt class="col-sm-3">Status:</dt>
+          <dd class="col-sm-9">
+            <% if @school.active? %>
+              <span class="badge bg-success">Ativa</span>
+            <% else %>
+              <span class="badge bg-danger">Inativa</span>
+            <% end %>
+          </dd>
+        </dl>
+        
+        <% if @school.description.present? %>
+          <hr>
+          <h6>Descrição:</h6>
+          <p><%= simple_format(@school.description) %></p>
+        <% end %>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-lg-4">
+    <div class="card">
+      <div class="card-header">
+        <h6><i class="fas fa-chart-pie"></i> Estatísticas</h6>
+      </div>
+      <div class="card-body">
+        <div class="row text-center">
+          <div class="col-6 mb-3">
+            <div class="h4 text-primary"><%= @school.users.student.active.count %></div>
+            <small class="text-muted">Alunos Ativos</small>
+          </div>
+          <div class="col-6 mb-3">
+            <div class="h4 text-success"><%= @school.users.teacher.active.count %></div>
+            <small class="text-muted">Professores Ativos</small>
+          </div>
+          <div class="col-6 mb-3">
+            <div class="h4 text-info"><%= @school.classrooms.count %></div>
+            <small class="text-muted">Turmas</small>
+          </div>
+          <div class="col-6 mb-3">
+            <div class="h4 text-warning"><%= @school.subjects.count %></div>
+            <small class="text-muted">Disciplinas</small>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <% if @school.logo.present? %>
+      <div class="card mt-3">
+        <div class="card-header">
+          <h6><i class="fas fa-image"></i> Logo da Escola</h6>
+        </div>
+        <div class="card-body text-center">
+          <img src="<%= @school.logo %>" alt="Logo" class="img-fluid" style="max-height: 200px;">
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

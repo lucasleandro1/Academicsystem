@@ -1,0 +1,549 @@
+<% content_for :title, "Horário de Aulas" %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1><i class="fas fa-calendar-week"></i> Horário de Aulas</h1>
+  <div class="btn-group" role="group">
+    <button type="button" class="btn btn-outline-primary active" onclick="changeView('week')">
+      <i class="fas fa-calendar-week"></i> Semanal
+    </button>
+    <button type="button" class="btn btn-outline-primary" onclick="changeView('day')">
+      <i class="fas fa-calendar-day"></i> Diário
+    </button>
+  </div>
+</div>
+
+<!-- Navegação da Semana -->
+<div class="card mb-4">
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-center">
+      <div>
+        <button class="btn btn-outline-secondary" onclick="navigateWeek('prev')">
+          <i class="fas fa-chevron-left"></i> Semana anterior
+        </button>
+        <button class="btn btn-outline-secondary ms-2" onclick="navigateWeek('current')">
+          Esta semana
+        </button>
+        <button class="btn btn-outline-secondary ms-2" onclick="navigateWeek('next')">
+          Próxima semana <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+      <h5 class="mb-0" id="week-title">
+        <%= Date.current.beginning_of_week.strftime("%d/%m") %> - 
+        <%= Date.current.end_of_week.strftime("%d/%m/%Y") %>
+      </h5>
+      <div>
+        <select class="form-select form-select-sm" id="semester-filter">
+          <option value="">Semestre atual</option>
+          <option value="1">1º Semestre</option>
+          <option value="2">2º Semestre</option>
+        </select>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Resumo do Dia -->
+<div class="row mb-4">
+  <div class="col-md-3">
+    <div class="card text-center bg-primary text-white">
+      <div class="card-body">
+        <h3><%= @today_classes.count %></h3>
+        <small>Aulas Hoje</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center bg-success text-white">
+      <div class="card-body">
+        <h3><%= @week_classes.count %></h3>
+        <small>Esta Semana</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center bg-info text-white">
+      <div class="card-body">
+        <h3><%= @current_subjects.count %></h3>
+        <small>Disciplinas</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center bg-warning text-white">
+      <div class="card-body">
+        <h3 id="next-class-time">
+          <% next_class = @today_classes.where('start_time > ?', Time.current).first %>
+          <%= next_class ? next_class.start_time.strftime("%H:%M") : "--:--" %>
+        </h3>
+        <small>Próxima Aula</small>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Vista Semanal -->
+<div id="week-view" class="schedule-view">
+  <div class="card">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-bordered mb-0 schedule-table">
+          <thead class="table-light">
+            <tr>
+              <th class="time-column">Horário</th>
+              <th class="text-center">Segunda</th>
+              <th class="text-center">Terça</th>
+              <th class="text-center">Quarta</th>
+              <th class="text-center">Quinta</th>
+              <th class="text-center">Sexta</th>
+              <th class="text-center">Sábado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% time_slots = ['07:00', '07:50', '08:40', '09:30', '10:20', '11:10', '13:30', '14:20', '15:10', '16:00', '16:50', '17:40'] %>
+            <% time_slots.each_with_index do |time_slot, index| %>
+              <tr class="<%= 'current-time-slot' if Time.current.strftime('%H:%M') >= time_slot && Time.current.strftime('%H:%M') < time_slots[index + 1] %>">
+                <td class="time-slot">
+                  <strong><%= time_slot %></strong>
+                  <% if time_slots[index + 1] %>
+                    <br><small class="text-muted"><%= time_slots[index + 1] %></small>
+                  <% end %>
+                </td>
+                <% (1..6).each do |day| %>
+                  <% class_schedule = @week_schedule.find { |cs| 
+                       cs.day_of_week == day && 
+                       cs.start_time.strftime('%H:%M') == time_slot 
+                     } %>
+                  <td class="schedule-cell">
+                    <% if class_schedule %>
+                      <div class="class-block subject-<%= class_schedule.subject.id % 6 %>">
+                        <div class="subject-name">
+                          <strong><%= class_schedule.subject.name %></strong>
+                        </div>
+                        <div class="teacher-name">
+                          <small><%= class_schedule.subject.teacher&.name || 'Professor' %></small>
+                        </div>
+                        <div class="room-info">
+                          <small><i class="fas fa-map-marker-alt"></i> 
+                            <%= class_schedule.classroom&.name || 'Sala TBD' %>
+                          </small>
+                        </div>
+                        <% if class_schedule.end_time %>
+                          <div class="time-info">
+                            <small><%= class_schedule.start_time.strftime('%H:%M') %> - 
+                                   <%= class_schedule.end_time.strftime('%H:%M') %></small>
+                          </div>
+                        <% end %>
+                      </div>
+                    <% end %>
+                  </td>
+                <% end %>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Vista Diária -->
+<div id="day-view" class="schedule-view d-none">
+  <div class="row">
+    <!-- Seletor de Dia -->
+    <div class="col-12 mb-3">
+      <div class="card">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+              <span id="selected-day"><%= Date.current.strftime("%A, %d de %B de %Y") %></span>
+            </h5>
+            <div>
+              <button class="btn btn-outline-secondary btn-sm" onclick="changeDay(-1)">
+                <i class="fas fa-chevron-left"></i>
+              </button>
+              <button class="btn btn-outline-secondary btn-sm mx-2" onclick="goToToday()">
+                Hoje
+              </button>
+              <button class="btn btn-outline-secondary btn-sm" onclick="changeDay(1)">
+                <i class="fas fa-chevron-right"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cronograma do Dia -->
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h6><i class="fas fa-clock"></i> Cronograma do Dia</h6>
+        </div>
+        <div class="card-body">
+          <div id="daily-schedule">
+            <!-- Será preenchido via JavaScript -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Próximas Aulas -->
+<div class="card mt-4">
+  <div class="card-header">
+    <h5><i class="fas fa-clock"></i> Próximas Aulas</h5>
+  </div>
+  <div class="card-body">
+    <% upcoming_classes = @week_classes.where('start_time > ?', Time.current).limit(5) %>
+    <% if upcoming_classes.any? %>
+      <div class="timeline">
+        <% upcoming_classes.each do |class_schedule| %>
+          <div class="timeline-item">
+            <div class="timeline-marker bg-primary">
+              <i class="fas fa-book text-white"></i>
+            </div>
+            <div class="timeline-content">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <h6 class="mb-1"><%= class_schedule.subject.name %></h6>
+                  <p class="text-muted small mb-1">
+                    Professor: <%= class_schedule.subject.teacher&.name || 'TBD' %>
+                  </p>
+                  <p class="text-muted small mb-0">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <%= class_schedule.classroom&.name || 'Sala TBD' %>
+                  </p>
+                </div>
+                <div class="text-end">
+                  <div class="fw-bold text-primary">
+                    <%= class_schedule.start_time.strftime('%H:%M') %>
+                  </div>
+                  <small class="text-muted">
+                    <%= class_schedule.start_time.strftime('%d/%m') %>
+                  </small>
+                </div>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="text-center py-3">
+        <i class="fas fa-calendar-check fa-2x text-muted mb-3"></i>
+        <p class="text-muted">Não há aulas programadas para os próximos dias.</p>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<!-- Legenda de Disciplinas -->
+<div class="card mt-4">
+  <div class="card-header">
+    <h6><i class="fas fa-palette"></i> Legenda de Disciplinas</h6>
+  </div>
+  <div class="card-body">
+    <div class="row">
+      <% @current_subjects.each_with_index do |subject, index| %>
+        <div class="col-md-6 col-lg-4 mb-2">
+          <div class="d-flex align-items-center">
+            <div class="legend-color subject-<%= subject.id % 6 %> me-2"></div>
+            <span><%= subject.name %></span>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentWeek = new Date();
+let selectedDay = new Date();
+
+// Dados dos horários (normalmente viriam do servidor)
+const scheduleData = [
+  <% @week_schedule.each_with_index do |schedule, index| %>
+    {
+      id: <%= schedule.id %>,
+      subject: '<%= j schedule.subject.name %>',
+      teacher: '<%= j (schedule.subject.teacher&.name || "Professor") %>',
+      classroom: '<%= j (schedule.classroom&.name || "Sala TBD") %>',
+      day_of_week: <%= schedule.day_of_week %>,
+      start_time: '<%= schedule.start_time.strftime("%H:%M") %>',
+      end_time: '<%= schedule.end_time&.strftime("%H:%M") || "" %>',
+      subject_id: <%= schedule.subject.id %>
+    }<%= ',' unless index == @week_schedule.length - 1 %>
+  <% end %>
+];
+
+document.addEventListener('DOMContentLoaded', function() {
+  updateCurrentTimeHighlight();
+  setInterval(updateCurrentTimeHighlight, 60000); // Atualizar a cada minuto
+});
+
+function changeView(view) {
+  // Atualizar botões ativos
+  document.querySelectorAll('.btn-group .btn').forEach(btn => {
+    btn.classList.remove('active');
+  });
+  event.target.classList.add('active');
+  
+  // Esconder todas as vistas
+  document.querySelectorAll('.schedule-view').forEach(viewEl => {
+    viewEl.classList.add('d-none');
+  });
+  
+  // Mostrar vista selecionada
+  document.getElementById(view + '-view').classList.remove('d-none');
+  
+  if (view === 'day') {
+    renderDayView();
+  }
+}
+
+function navigateWeek(direction) {
+  if (direction === 'prev') {
+    currentWeek.setDate(currentWeek.getDate() - 7);
+  } else if (direction === 'next') {
+    currentWeek.setDate(currentWeek.getDate() + 7);
+  } else if (direction === 'current') {
+    currentWeek = new Date();
+  }
+  
+  updateWeekTitle();
+  // Aqui você recarregaria os dados da semana
+}
+
+function updateWeekTitle() {
+  const startOfWeek = new Date(currentWeek);
+  startOfWeek.setDate(currentWeek.getDate() - currentWeek.getDay() + 1); // Segunda-feira
+  const endOfWeek = new Date(startOfWeek);
+  endOfWeek.setDate(startOfWeek.getDate() + 5); // Sábado
+  
+  const title = startOfWeek.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) + 
+                ' - ' + endOfWeek.toLocaleDateString('pt-BR');
+  document.getElementById('week-title').textContent = title;
+}
+
+function changeDay(days) {
+  selectedDay.setDate(selectedDay.getDate() + days);
+  updateSelectedDay();
+  renderDayView();
+}
+
+function goToToday() {
+  selectedDay = new Date();
+  updateSelectedDay();
+  renderDayView();
+}
+
+function updateSelectedDay() {
+  const options = { 
+    weekday: 'long', 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric' 
+  };
+  document.getElementById('selected-day').textContent = 
+    selectedDay.toLocaleDateString('pt-BR', options);
+}
+
+function renderDayView() {
+  const dayOfWeek = selectedDay.getDay() || 7; // Converter domingo (0) para 7
+  const daySchedule = scheduleData.filter(item => item.day_of_week === dayOfWeek);
+  
+  const container = document.getElementById('daily-schedule');
+  
+  if (daySchedule.length === 0) {
+    container.innerHTML = `
+      <div class="text-center py-4">
+        <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+        <h5 class="text-muted">Nenhuma aula programada</h5>
+        <p class="text-muted">Não há aulas programadas para este dia.</p>
+      </div>
+    `;
+    return;
+  }
+  
+  // Ordenar por horário
+  daySchedule.sort((a, b) => a.start_time.localeCompare(b.start_time));
+  
+  let html = '<div class="timeline">';
+  daySchedule.forEach(classItem => {
+    html += `
+      <div class="timeline-item">
+        <div class="timeline-marker bg-primary">
+          <i class="fas fa-book text-white"></i>
+        </div>
+        <div class="timeline-content">
+          <div class="class-card">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <h6 class="mb-0">${classItem.subject}</h6>
+              <span class="badge bg-primary">${classItem.start_time}${classItem.end_time ? ' - ' + classItem.end_time : ''}</span>
+            </div>
+            <div class="text-muted small">
+              <div class="mb-1">
+                <i class="fas fa-user"></i> Professor: ${classItem.teacher}
+              </div>
+              <div>
+                <i class="fas fa-map-marker-alt"></i> Local: ${classItem.classroom}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  });
+  html += '</div>';
+  
+  container.innerHTML = html;
+}
+
+function updateCurrentTimeHighlight() {
+  const now = new Date();
+  const currentTime = now.getHours().toString().padStart(2, '0') + ':' + 
+                     now.getMinutes().toString().padStart(2, '0');
+  
+  // Remover destaque anterior
+  document.querySelectorAll('.current-time-slot').forEach(el => {
+    el.classList.remove('current-time-slot');
+  });
+  
+  // Adicionar destaque à linha atual
+  const timeSlots = ['07:00', '07:50', '08:40', '09:30', '10:20', '11:10', '13:30', '14:20', '15:10', '16:00', '16:50', '17:40'];
+  for (let i = 0; i < timeSlots.length - 1; i++) {
+    if (currentTime >= timeSlots[i] && currentTime < timeSlots[i + 1]) {
+      const rows = document.querySelectorAll('.schedule-table tbody tr');
+      if (rows[i]) {
+        rows[i].classList.add('current-time-slot');
+      }
+      break;
+    }
+  }
+}
+</script>
+
+<style>
+.schedule-table {
+  font-size: 0.9rem;
+}
+
+.time-column {
+  width: 120px;
+  background-color: #f8f9fa;
+}
+
+.time-slot {
+  background-color: #f8f9fa;
+  text-align: center;
+  vertical-align: middle;
+  padding: 0.75rem 0.5rem;
+}
+
+.schedule-cell {
+  width: 14.2%;
+  vertical-align: top;
+  padding: 0.25rem;
+  height: 80px;
+}
+
+.class-block {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  height: 100%;
+  font-size: 0.8rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.subject-0 { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+.subject-1 { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+.subject-2 { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+.subject-3 { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+.subject-4 { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+.subject-5 { background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); }
+
+.subject-name {
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  line-height: 1.2;
+}
+
+.teacher-name, .room-info, .time-info {
+  opacity: 0.9;
+  line-height: 1.1;
+  margin-bottom: 0.1rem;
+}
+
+.current-time-slot {
+  background-color: #fff3cd !important;
+  border-left: 4px solid #ffc107;
+}
+
+.timeline {
+  position: relative;
+  padding-left: 2rem;
+}
+
+.timeline-item {
+  position: relative;
+  padding-bottom: 1.5rem;
+}
+
+.timeline-item:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  left: -1.625rem;
+  top: 2rem;
+  width: 2px;
+  height: calc(100% - 1rem);
+  background-color: #dee2e6;
+}
+
+.timeline-marker {
+  position: absolute;
+  left: -2rem;
+  top: 0;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.timeline-content {
+  margin-left: 0.5rem;
+}
+
+.class-card {
+  background: #f8f9fa;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  border-left: 4px solid #007bff;
+}
+
+.legend-color {
+  width: 20px;
+  height: 20px;
+  border-radius: 0.25rem;
+  display: inline-block;
+}
+
+@media (max-width: 768px) {
+  .schedule-table {
+    font-size: 0.75rem;
+  }
+  
+  .class-block {
+    font-size: 0.7rem;
+    padding: 0.25rem;
+  }
+  
+  .schedule-cell {
+    height: 60px;
+  }
+}
+</style>

@@ -1,0 +1,229 @@
+<% content_for :title, "Ocorrências Disciplinares" %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1><i class="fas fa-exclamation-triangle"></i> Ocorrências Disciplinares</h1>
+  <div class="text-muted">
+    <small>Histórico Disciplinar</small>
+  </div>
+</div>
+
+<!-- Resumo de Ocorrências -->
+<div class="row mb-4">
+  <div class="col-md-3">
+    <div class="card text-center bg-warning text-white">
+      <div class="card-body">
+        <h3><%= @occurrences.count %></h3>
+        <small>Total de Ocorrências</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center bg-danger text-white">
+      <div class="card-body">
+        <h3><%= @occurrences.where(severity: 'grave').count %></h3>
+        <small>Ocorrências Graves</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center bg-info text-white">
+      <div class="card-body">
+        <h3><%= @occurrences.where(resolved: true).count %></h3>
+        <small>Resolvidas</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center bg-secondary text-white">
+      <div class="card-body">
+        <h3><%= @occurrences.where('created_at >= ?', Date.current.beginning_of_month).count %></h3>
+        <small>Este Mês</small>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Lista de Ocorrências -->
+<div class="card">
+  <div class="card-header">
+    <h5><i class="fas fa-list"></i> Histórico de Ocorrências</h5>
+  </div>
+  <div class="card-body">
+    <% if @occurrences.any? %>
+      <div class="row">
+        <% @occurrences.order(created_at: :desc).each do |occurrence| %>
+          <div class="col-lg-6 col-md-12 mb-4">
+            <div class="card h-100 border-<%= occurrence.resolved? ? 'success' : 
+                 case occurrence.severity
+                 when 'grave' then 'danger'
+                 when 'moderada' then 'warning'
+                 else 'info'
+                 end %>">
+              
+              <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                  <h6 class="mb-0">
+                    <i class="fas fa-exclamation-circle text-<%= 
+                      case occurrence.severity
+                      when 'grave' then 'danger'
+                      when 'moderada' then 'warning'
+                      else 'info'
+                      end
+                    %>"></i>
+                    Ocorrência #<%= occurrence.id %>
+                  </h6>
+                  <small class="text-muted">
+                    <%= occurrence.created_at.strftime("%d/%m/%Y às %H:%M") %>
+                  </small>
+                </div>
+                <div>
+                  <span class="badge bg-<%= 
+                    case occurrence.occurrence_type
+                    when 'disciplinary' then 'danger'
+                    when 'academic' then 'warning'
+                    when 'behavioral' then 'info'
+                    else 'secondary'
+                    end
+                  %>">
+                    <%= occurrence.occurrence_type&.humanize || 'Outros' %>
+                  </span>
+                </div>
+              </div>
+
+              <div class="card-body">
+                <!-- Título/Resumo -->
+                <h6 class="card-title">
+                  <%= occurrence.title || "Ocorrência #{occurrence.occurrence_type&.humanize}" %>
+                </h6>
+
+                <!-- Descrição -->
+                <p class="text-muted mb-3">
+                  <%= truncate(occurrence.description, length: 150) %>
+                </p>
+
+                <!-- Status -->
+                <div class="mb-2">
+                  <span class="badge bg-<%= occurrence.resolved? ? 'success' : 'warning' %>">
+                    <i class="fas fa-<%= occurrence.resolved? ? 'check' : 'clock' %>"></i>
+                    <%= occurrence.resolved? ? 'Resolvida' : 'Pendente' %>
+                  </span>
+                </div>
+              </div>
+
+              <div class="card-footer">
+                <div class="d-flex justify-content-between align-items-center">
+                  <small class="text-muted">
+                    <i class="fas fa-user"></i>
+                    Registrada por: <%= occurrence.reported_by || 'Equipe escolar' %>
+                  </small>
+                  <button class="btn btn-sm btn-outline-primary" 
+                          data-bs-toggle="modal" 
+                          data-bs-target="#occurrenceModal<%= occurrence.id %>">
+                    <i class="fas fa-eye"></i> Detalhes
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="text-center py-5">
+        <i class="fas fa-smile fa-3x text-success mb-3"></i>
+        <h5 class="text-muted">Nenhuma ocorrência registrada</h5>
+        <p class="text-muted">
+          Parabéns! Você não possui ocorrências disciplinares registradas.
+        </p>
+      </div>
+    <% end %>
+  </div>
+</div>
+                <td>
+                  <% if occurrence.description.length > 50 %>
+                    <span data-bs-toggle="tooltip" title="<%= occurrence.description %>">
+                      <%= truncate(occurrence.description, length: 50) %>
+                    </span>
+                  <% else %>
+                    <%= occurrence.description %>
+                  <% end %>
+                </td>
+                <td>
+                  <span class="badge bg-<%= occurrence.resolved? ? 'success' : 'warning' %>">
+                    <%= occurrence.resolved? ? 'Resolvida' : 'Pendente' %>
+                  </span>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Estatísticas de Ocorrências -->
+      <div class="row mt-4">
+        <div class="col-md-6">
+          <div class="card">
+            <div class="card-header">
+              <h5>Ocorrências por Tipo</h5>
+            </div>
+            <div class="card-body">
+              <% @occurrences_by_type.each do |type, count| %>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <span class="badge bg-<%= occurrence_type_color(type) %>">
+                    <%= type.humanize %>
+                  </span>
+                  <span class="fw-bold"><%= count %></span>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-md-6">
+          <div class="card">
+            <div class="card-header">
+              <h5>Status das Ocorrências</h5>
+            </div>
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="badge bg-warning">Pendentes</span>
+                <span class="fw-bold"><%= @occurrences.where(resolved: false).count %></span>
+              </div>
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="badge bg-success">Resolvidas</span>
+                <span class="fw-bold"><%= @occurrences.where(resolved: true).count %></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% else %>
+      <div class="alert alert-success">
+        <i class="fas fa-check-circle"></i>
+        Parabéns! Você não possui ocorrências registradas.
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<% if @occurrences.any? %>
+  <div class="row mt-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h5>Informações Importantes</h5>
+        </div>
+        <div class="card-body">
+          <div class="alert alert-info mb-0">
+            <h6 class="alert-heading">Como interpretar as ocorrências:</h6>
+            <ul class="mb-0">
+              <li><strong>Disciplinar:</strong> Relacionada a comportamento em sala de aula</li>
+              <li><strong>Acadêmica:</strong> Relacionada ao desempenho escolar</li>
+              <li><strong>Frequência:</strong> Relacionada a faltas ou atrasos</li>
+              <li><strong>Outros:</strong> Outras situações específicas</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>

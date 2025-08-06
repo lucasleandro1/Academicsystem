@@ -1,0 +1,123 @@
+<% content_for :title, "Editar Dados da Escola" %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1><i class="fas fa-edit"></i> Editar Dados da Escola</h1>
+  <%= link_to direction_school_path, class: "btn btn-outline-secondary" do %>
+    <i class="fas fa-arrow-left"></i> Voltar
+  <% end %>
+</div>
+
+<div class="row">
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-header">
+        <h5><i class="fas fa-school"></i> Dados da Escola</h5>
+      </div>
+      <div class="card-body">
+        <%= form_with model: @school, url: direction_school_path, local: true, multipart: true do |form| %>
+          <% if @school.errors.any? %>
+            <div class="alert alert-danger" role="alert">
+              <h6><i class="fas fa-exclamation-triangle"></i> Corrija os seguintes erros:</h6>
+              <ul class="mb-0">
+                <% @school.errors.full_messages.each do |message| %>
+                  <li><%= message %></li>
+                <% end %>
+              </ul>
+            </div>
+          <% end %>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <%= form.label :name, "Nome da Escola *", class: "form-label" %>
+              <%= form.text_field :name, class: "form-control #{'is-invalid' if @school.errors[:name].any?}", 
+                                  placeholder: "Nome completo da escola" %>
+              <% if @school.errors[:name].any? %>
+                <div class="invalid-feedback">
+                  <%= @school.errors[:name].first %>
+                </div>
+              <% end %>
+            </div>
+            <div class="col-md-6 mb-3">
+              <%= form.label :cnpj, "CNPJ *", class: "form-label" %>
+              <%= form.text_field :cnpj, class: "form-control #{'is-invalid' if @school.errors[:cnpj].any?}", 
+                                  placeholder: "00.000.000/0000-00" %>
+              <% if @school.errors[:cnpj].any? %>
+                <div class="invalid-feedback">
+                  <%= @school.errors[:cnpj].first %>
+                </div>
+              <% end %>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <%= form.label :phone, "Telefone", class: "form-label" %>
+              <%= form.text_field :phone, class: "form-control", 
+                                  placeholder: "(00) 0000-0000" %>
+            </div>
+            <div class="col-md-6 mb-3">
+              <%= form.label :address, "Endereço", class: "form-label" %>
+              <%= form.text_field :address, class: "form-control #{'is-invalid' if @school.errors[:address].any?}", 
+                                  placeholder: "Endereço completo da escola" %>
+              <% if @school.errors[:address].any? %>
+                <div class="invalid-feedback">
+                  <%= @school.errors[:address].first %>
+                </div>
+              <% end %>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <%= form.label :description, "Descrição", class: "form-label" %>
+            <%= form.text_area :description, class: "form-control", rows: 4, 
+                              placeholder: "Descrição sobre a escola, missão, valores..." %>
+          </div>
+
+          <div class="mb-3">
+            <%= form.label :logo, "Logo da Escola", class: "form-label" %>
+            <%= form.file_field :logo, class: "form-control", accept: "image/*" %>
+            <div class="form-text">Formatos aceitos: JPG, PNG, GIF. Tamanho máximo: 2MB</div>
+          </div>
+
+          <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+            <%= link_to direction_school_path, class: "btn btn-secondary" do %>
+              <i class="fas fa-times"></i> Cancelar
+            <% end %>
+            <%= form.submit "Atualizar Dados", class: "btn btn-primary" do %>
+              <i class="fas fa-save"></i> Salvar
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-lg-4">
+    <div class="card">
+      <div class="card-header">
+        <h6><i class="fas fa-info-circle"></i> Informações</h6>
+      </div>
+      <div class="card-body">
+        <p class="text-muted small">
+          <strong>Campos obrigatórios:</strong>
+        </p>
+        <ul class="small text-muted">
+          <li>Nome da Escola</li>
+          <li>CNPJ</li>
+          <li>Endereço</li>
+        </ul>
+        
+        <hr>
+        
+        <p class="text-muted small">
+          <strong>Dicas:</strong>
+        </p>
+        <ul class="small text-muted">
+          <li>O logo será exibido nos relatórios e documentos oficiais</li>
+          <li>As informações da escola são visíveis para todos os usuários</li>
+          <li>Mantenha os dados sempre atualizados</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>

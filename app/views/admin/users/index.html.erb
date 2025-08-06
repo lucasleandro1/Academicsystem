@@ -1,0 +1,147 @@
+<% content_for :title, "Usuários" %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1><i class="fas fa-users"></i> Gerenciar Usuários</h1>
+  <%= link_to new_admin_user_path, class: "btn btn-primary" do %>
+    <i class="fas fa-plus"></i> Novo Usuário
+  <% end %>
+</div>
+
+<!-- Filtros e Busca -->
+<div class="card mb-4">
+  <div class="card-body">
+    <%= form_with url: admin_users_path, method: :get, local: true, class: "row g-3" do |form| %>
+      <div class="col-md-4">
+        <%= form.text_field :search, placeholder: "Buscar por nome, email ou matrícula...", 
+                           value: params[:search], class: "form-control" %>
+      </div>
+      <div class="col-md-2">
+        <%= form.select :user_type, 
+                        options_for_select([
+                          ['Todos', ''], 
+                          ['Administradores', 'admin'], 
+                          ['Direção', 'direction'], 
+                          ['Professores', 'teacher'], 
+                          ['Alunos', 'student']
+                        ], params[:user_type]),
+                        {}, { class: "form-select" } %>
+      </div>
+      <div class="col-md-3">
+        <%= form.collection_select :school_id, @schools, :id, :name, 
+                                   { prompt: "Todas as escolas" }, 
+                                   { class: "form-select" } %>
+      </div>
+      <div class="col-md-2">
+        <div class="d-grid">
+          <%= form.submit "Filtrar", class: "btn btn-outline-secondary" %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<!-- Lista de Usuários -->
+<div class="card">
+  <div class="card-header">
+    <h5 class="mb-0">Lista de Usuários (<%= @users.count %>)</h5>
+  </div>
+  <div class="card-body p-0">
+    <% if @users.any? %>
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Usuário</th>
+              <th>Tipo</th>
+              <th>Escola</th>
+              <th>Contato</th>
+              <th width="150">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @users.each do |user| %>
+              <tr>
+                <td>
+                  <div class="d-flex align-items-center">
+                    <div class="rounded-circle bg-<%= user.user_type == 'admin' ? 'danger' : user.user_type == 'direction' ? 'warning' : user.user_type == 'teacher' ? 'info' : 'success' %> text-white d-flex align-items-center justify-content-center me-2" 
+                         style="width: 40px; height: 40px;">
+                      <i class="fas fa-user"></i>
+                    </div>
+                    <div>
+                      <strong><%= user.full_name %></strong>
+                      <br>
+                      <small class="text-muted">
+                        <% if user.registration_number.present? %>
+                          Matrícula: <%= user.registration_number %>
+                        <% else %>
+                          <%= user.email %>
+                        <% end %>
+                      </small>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <span class="badge bg-<%= user.user_type == 'admin' ? 'danger' : user.user_type == 'direction' ? 'warning' : user.user_type == 'teacher' ? 'info' : 'success' %>">
+                    <%= user.user_type.humanize %>
+                  </span>
+                </td>
+                <td>
+                  <% if user.school.present? %>
+                    <%= user.school.name %>
+                  <% else %>
+                    <span class="text-muted">Sem escola</span>
+                  <% end %>
+                </td>
+                <td>
+                  <%= user.email %>
+                  <% if user.phone.present? %>
+                    <br>
+                    <small class="text-muted"><i class="fas fa-phone"></i> <%= user.phone %></small>
+                  <% end %>
+                </td>
+                <td>
+                  <div class="btn-group" role="group">
+                    <%= link_to admin_user_path(user), class: "btn btn-sm btn-outline-primary", 
+                               title: "Visualizar" do %>
+                      <i class="fas fa-eye"></i>
+                    <% end %>
+                    <%= link_to edit_admin_user_path(user), class: "btn btn-sm btn-outline-secondary", 
+                               title: "Editar" do %>
+                      <i class="fas fa-edit"></i>
+                    <% end %>
+                    <% if user != current_user %>
+                      <%= link_to admin_user_path(user), method: :delete, 
+                                 class: "btn btn-sm btn-outline-danger", title: "Excluir",
+                                 data: { 
+                                   confirm: "Tem certeza que deseja excluir este usuário?",
+                                   turbo_method: :delete 
+                                 } do %>
+                        <i class="fas fa-trash"></i>
+                      <% end %>
+                    <% end %>
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <div class="text-center py-5">
+        <i class="fas fa-users fa-3x text-muted mb-3"></i>
+        <h5 class="text-muted">Nenhum usuário encontrado</h5>
+        <p class="text-muted">Cadastre o primeiro usuário do sistema.</p>
+        <%= link_to new_admin_user_path, class: "btn btn-primary" do %>
+          <i class="fas fa-plus"></i> Cadastrar Usuário
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<!-- Paginação -->
+<% if @users.respond_to?(:current_page) %>
+  <div class="d-flex justify-content-center mt-4">
+    <%= paginate @users %>
+  </div>
+<% end %>

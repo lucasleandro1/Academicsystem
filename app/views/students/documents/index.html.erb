@@ -1,0 +1,104 @@
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1 class="h2">Meus Documentos</h1>
+</div>
+
+<div class="row">
+  <div class="col-12">
+    <% if @documents.any? %>
+      <div class="table-responsive">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>Nome do Documento</th>
+              <th>Tipo</th>
+              <th>Data de Upload</th>
+              <th>Tamanho</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @documents.each do |document| %>
+              <tr>
+                <td>
+                  <i class="fas fa-file-<%= get_file_icon(document.file_type) %> me-2"></i>
+                  <%= document.title %>
+                </td>
+                <td>
+                  <span class="badge bg-secondary">
+                    <%= document.document_type.humanize %>
+                  </span>
+                </td>
+                <td><%= document.created_at.strftime("%d/%m/%Y às %H:%M") %></td>
+                <td>
+                  <% if document.file_size.present? %>
+                    <%= number_to_human_size(document.file_size) %>
+                  <% else %>
+                    <span class="text-muted">-</span>
+                  <% end %>
+                </td>
+                <td>
+                  <% if document.file.present? %>
+                    <%= link_to "Download", document.file, 
+                                class: "btn btn-sm btn-outline-primary",
+                                target: "_blank" %>
+                  <% else %>
+                    <span class="text-muted">Arquivo não disponível</span>
+                  <% end %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i>
+        Você ainda não possui documentos cadastrados.
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<div class="row mt-4">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">
+        <h5>Documentos por Tipo</h5>
+      </div>
+      <div class="card-body">
+        <% if @documents_by_type.any? %>
+          <% @documents_by_type.each do |type, count| %>
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span><%= type.humanize %>:</span>
+              <span class="badge bg-primary"><%= count %></span>
+            </div>
+          <% end %>
+        <% else %>
+          <p class="text-muted mb-0">Nenhum documento encontrado.</p>
+        <% end %>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">
+        <h5>Informações</h5>
+      </div>
+      <div class="card-body">
+        <p class="mb-2">
+          <i class="fas fa-info-circle text-info"></i>
+          Os documentos disponíveis aqui são fornecidos pela secretaria da escola.
+        </p>
+        <p class="mb-2">
+          <i class="fas fa-download text-primary"></i>
+          Clique em "Download" para baixar o arquivo.
+        </p>
+        <p class="mb-0">
+          <i class="fas fa-question-circle text-warning"></i>
+          Em caso de dúvidas, entre em contato com a secretaria.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>

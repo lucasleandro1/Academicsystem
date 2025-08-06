@@ -1,0 +1,42 @@
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1 class="h2">Nova Mensagem</h1>
+</div>
+
+<div class="row">
+  <div class="col-md-8">
+    <%= form_with model: @message, local: true, class: "row g-3" do |form| %>
+      <% if @message.errors.any? %>
+        <div class="alert alert-danger">
+          <h6><%= pluralize(@message.errors.count, "erro") %> impediram que a mensagem fosse enviada:</h6>
+          <ul class="mb-0">
+            <% @message.errors.each do |error| %>
+              <li><%= error.full_message %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <div class="col-12">
+        <%= form.label :recipient_id, "Destinatário", class: "form-label" %>
+        <%= form.collection_select :recipient_id, @recipients, :id, :full_name, 
+                                   { prompt: "Selecione o destinatário" }, 
+                                   { class: "form-select", required: true } %>
+      </div>
+
+      <div class="col-12">
+        <%= form.label :subject, "Assunto", class: "form-label" %>
+        <%= form.text_field :subject, class: "form-control", required: true %>
+      </div>
+
+      <div class="col-12">
+        <%= form.label :body, "Mensagem", class: "form-label" %>
+        <%= form.text_area :body, rows: 8, class: "form-control", required: true %>
+      </div>
+
+      <div class="col-12">
+        <%= form.submit "Enviar Mensagem", class: "btn btn-primary" %>
+        <%= link_to "Cancelar", messages_path, class: "btn btn-secondary" %>
+      </div>
+    <% end %>
+  </div>
+</div>

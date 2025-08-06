@@ -1,0 +1,306 @@
+<% content_for :title, "Painel do Professor" %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h1><i class="fas fa-chalkboard-teacher"></i> Painel do Professor</h1>
+    <p class="text-muted mb-0">Bem-vindo, <%= current_user.full_name %> - <%= current_user.school.name %></p>
+  </div>
+  <div class="text-end">
+    <small class="text-muted">
+      Hoje: <%= Date.current.strftime("%d/%m/%Y") %>
+      <br>
+      <%= Date.current.strftime("%A").capitalize %>
+    </small>
+  </div>
+</div>
+
+<!-- Cards de Estatísticas -->
+<div class="row mb-4">
+  <div class="col-lg-3 col-md-6 mb-3">
+    <div class="card card-stat bg-primary text-white">
+      <div class="card-body">
+        <div class="d-flex justify-content-between">
+          <div>
+            <h6 class="card-title">Turmas</h6>
+            <h2><%= @my_classrooms.count %></h2>
+            <small>Atribuídas</small>
+          </div>
+          <div class="align-self-center">
+            <i class="fas fa-users fa-2x"></i>
+          </div>
+        </div>
+      </div>
+      <div class="card-footer bg-primary bg-opacity-75">
+        <%= link_to teachers_classrooms_path, class: "text-white text-decoration-none small" do %>
+          <i class="fas fa-arrow-right"></i> Ver turmas
+        <% end %>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-lg-3 col-md-6 mb-3">
+    <div class="card card-stat bg-success text-white">
+      <div class="card-body">
+        <div class="d-flex justify-content-between">
+          <div>
+            <h6 class="card-title">Disciplinas</h6>
+            <h2><%= @my_subjects.count %></h2>
+            <small>Ministradas</small>
+          </div>
+          <div class="align-self-center">
+            <i class="fas fa-book fa-2x"></i>
+          </div>
+        </div>
+      </div>
+      <div class="card-footer bg-success bg-opacity-75">
+        <%= link_to teachers_subjects_path, class: "text-white text-decoration-none small" do %>
+          <i class="fas fa-arrow-right"></i> Ver disciplinas
+        <% end %>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-lg-3 col-md-6 mb-3">
+    <div class="card card-stat bg-info text-white">
+      <div class="card-body">
+        <div class="d-flex justify-content-between">
+          <div>
+            <h6 class="card-title">Alunos</h6>
+            <h2><%= @total_students %></h2>
+            <small>Sob sua tutoria</small>
+          </div>
+          <div class="align-self-center">
+            <i class="fas fa-user-graduate fa-2x"></i>
+          </div>
+        </div>
+      </div>
+      <div class="card-footer bg-info bg-opacity-75">
+        <%= link_to teachers_students_path, class: "text-white text-decoration-none small" do %>
+          <i class="fas fa-arrow-right"></i> Ver alunos
+        <% end %>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-lg-3 col-md-6 mb-3">
+    <div class="card card-stat bg-warning text-white">
+      <div class="card-body">
+        <div class="d-flex justify-content-between">
+          <div>
+            <h6 class="card-title">Atividades</h6>
+            <h2><%= @active_activities.count %></h2>
+            <small>Ativas</small>
+          </div>
+          <div class="align-self-center">
+            <i class="fas fa-tasks fa-2x"></i>
+          </div>
+        </div>
+      </div>
+      <div class="card-footer bg-warning bg-opacity-75">
+        <%= link_to teachers_activities_path, class: "text-white text-decoration-none small" do %>
+          <i class="fas fa-arrow-right"></i> Ver atividades
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <!-- Agenda de Hoje -->
+  <div class="col-md-6 mb-4">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between">
+        <h5><i class="fas fa-calendar-day"></i> Agenda de Hoje</h5>
+        <%= link_to teachers_schedule_path, class: "btn btn-sm btn-outline-primary" do %>
+          <i class="fas fa-calendar-alt"></i> Ver Grade Completa
+        <% end %>
+      </div>
+      <div class="card-body">
+        <% if @today_schedule.any? %>
+          <% @today_schedule.each do |schedule| %>
+            <div class="d-flex align-items-center mb-3 p-2 bg-light rounded">
+              <div class="me-3">
+                <strong><%= schedule.start_time.strftime("%H:%M") %></strong>
+                <br>
+                <small class="text-muted"><%= schedule.end_time.strftime("%H:%M") %></small>
+              </div>
+              <div class="flex-grow-1">
+                <strong><%= schedule.subject.name %></strong>
+                <br>
+                <small class="text-muted">
+                  <i class="fas fa-users"></i> <%= schedule.classroom.name %>
+                </small>
+              </div>
+              <div>
+                <%= link_to teachers_class_schedule_path(schedule), class: "btn btn-sm btn-outline-primary" do %>
+                  <i class="fas fa-eye"></i>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+        <% else %>
+          <div class="text-center py-3">
+            <i class="fas fa-calendar-day fa-2x text-muted mb-2"></i>
+            <p class="text-muted mb-0">Nenhuma aula agendada para hoje</p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ações Rápidas -->
+  <div class="col-md-6 mb-4">
+    <div class="card">
+      <div class="card-header">
+        <h5><i class="fas fa-bolt"></i> Ações Rápidas</h5>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-6 mb-2">
+            <%= link_to new_teachers_activity_path, class: "btn btn-outline-primary w-100" do %>
+              <i class="fas fa-plus-circle"></i><br>
+              <small>Nova Atividade</small>
+            <% end %>
+          </div>
+          <div class="col-6 mb-2">
+            <%= link_to teachers_grades_path, class: "btn btn-outline-success w-100" do %>
+              <i class="fas fa-star"></i><br>
+              <small>Lançar Notas</small>
+            <% end %>
+          </div>
+          <div class="col-6 mb-2">
+            <%= link_to teachers_absences_path, class: "btn btn-outline-warning w-100" do %>
+              <i class="fas fa-calendar-times"></i><br>
+              <small>Registrar Faltas</small>
+            <% end %>
+          </div>
+          <div class="col-6 mb-2">
+            <%= link_to new_teachers_message_path, class: "btn btn-outline-info w-100" do %>
+              <i class="fas fa-envelope"></i><br>
+              <small>Enviar Mensagem</small>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <!-- Atividades Pendentes -->
+  <div class="col-md-6 mb-4">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between">
+        <h5><i class="fas fa-clock"></i> Atividades Pendentes de Correção</h5>
+        <%= link_to teachers_submissions_path, class: "btn btn-sm btn-outline-warning" do %>
+          <i class="fas fa-eye"></i> Ver todas
+        <% end %>
+      </div>
+      <div class="card-body">
+        <% if @pending_submissions.any? %>
+          <% @pending_submissions.limit(5).each do |submission| %>
+            <div class="d-flex align-items-center justify-content-between mb-2 p-2 bg-light rounded">
+              <div>
+                <strong><%= submission.activity.title %></strong>
+                <br>
+                <small class="text-muted">
+                  <i class="fas fa-user"></i> <%= submission.user.full_name %>
+                  - <%= submission.submitted_at.strftime("%d/%m/%Y") %>
+                </small>
+              </div>
+              <div>
+                <%= link_to teachers_submission_path(submission), class: "btn btn-sm btn-outline-primary" do %>
+                  <i class="fas fa-edit"></i> Corrigir
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+        <% else %>
+          <div class="text-center py-3">
+            <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+            <p class="text-muted mb-0">Nenhuma atividade pendente</p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Próximas Atividades -->
+  <div class="col-md-6 mb-4">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between">
+        <h5><i class="fas fa-calendar-check"></i> Próximas Atividades</h5>
+        <%= link_to teachers_activities_path, class: "btn btn-sm btn-outline-primary" do %>
+          <i class="fas fa-eye"></i> Ver todas
+        <% end %>
+      </div>
+      <div class="card-body">
+        <% if @upcoming_activities.any? %>
+          <% @upcoming_activities.limit(5).each do |activity| %>
+            <div class="d-flex align-items-center justify-content-between mb-2 p-2 bg-light rounded">
+              <div>
+                <strong><%= activity.title %></strong>
+                <br>
+                <small class="text-muted">
+                  <i class="fas fa-calendar"></i> Prazo: <%= activity.due_date.strftime("%d/%m/%Y") %>
+                  <br>
+                  <i class="fas fa-book"></i> <%= activity.subject.name %>
+                </small>
+              </div>
+              <div>
+                <%= link_to teachers_activity_path(activity), class: "btn btn-sm btn-outline-primary" do %>
+                  <i class="fas fa-eye"></i>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+        <% else %>
+          <div class="text-center py-3">
+            <i class="fas fa-tasks fa-2x text-muted mb-2"></i>
+            <p class="text-muted mb-0">Nenhuma atividade próxima</p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Estatísticas de Desempenho -->
+<div class="row">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between">
+        <h5><i class="fas fa-chart-line"></i> Resumo de Desempenho</h5>
+        <%= link_to teachers_reports_path, class: "btn btn-primary" do %>
+          <i class="fas fa-chart-bar"></i> Relatórios Detalhados
+        <% end %>
+      </div>
+      <div class="card-body">
+        <div class="row text-center">
+          <div class="col-md-3">
+            <div class="border-end">
+              <h4 class="text-primary"><%= @average_grade || "N/A" %></h4>
+              <small class="text-muted">Média Geral das Turmas</small>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="border-end">
+              <h4 class="text-success"><%= @attendance_rate || "N/A" %>%</h4>
+              <small class="text-muted">Taxa de Frequência</small>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="border-end">
+              <h4 class="text-info"><%= @submitted_activities || 0 %></h4>
+              <small class="text-muted">Atividades Entregues</small>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <h4 class="text-warning"><%= @total_occurrences || 0 %></h4>
+            <small class="text-muted">Ocorrências Registradas</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,476 @@
+<% content_for :title, "Novo Evento" %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1><i class="fas fa-calendar-plus"></i> Novo Evento</h1>
+  <%= link_to direction_events_path, class: "btn btn-outline-secondary" do %>
+    <i class="fas fa-arrow-left"></i> Voltar
+  <% end %>
+</div>
+
+<div class="row">
+  <div class="col-lg-8 mx-auto">
+    <%= form_with model: [:direction, @event], local: true, class: "needs-validation", novalidate: true do |form| %>
+      
+      <!-- Informações Básicas -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="fas fa-info-circle"></i> Informações Básicas</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-8 mb-3">
+              <%= form.label :title, "Título do Evento *", class: "form-label" %>
+              <%= form.text_field :title, class: "form-control", 
+                                 placeholder: "Ex: Reunião de Pais, Feira de Ciências, Formatura", required: true %>
+              <div class="invalid-feedback">
+                Por favor, informe o título do evento.
+              </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+              <%= form.label :event_type, "Tipo de Evento *", class: "form-label" %>
+              <%= form.select :event_type, 
+                              options_for_select([
+                                ['Selecione...', ''],
+                                ['Reunião', 'meeting'],
+                                ['Evento Acadêmico', 'academic'],
+                                ['Festa/Comemoração', 'celebration'],
+                                ['Palestra', 'lecture'],
+                                ['Formação', 'training'],
+                                ['Avaliação', 'evaluation'],
+                                ['Outros', 'other']
+                              ], @event.event_type),
+                              {}, { class: "form-select", required: true } %>
+              <div class="invalid-feedback">
+                Por favor, selecione o tipo do evento.
+              </div>
+            </div>
+
+            <div class="col-12 mb-3">
+              <%= form.label :description, "Descrição do Evento", class: "form-label" %>
+              <%= form.text_area :description, class: "form-control", rows: 4, 
+                                placeholder: "Descreva detalhadamente o evento, objetivos, programação..." %>
+              <div class="form-text">
+                Informações detalhadas sobre o evento
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Data e Horário -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="fas fa-clock"></i> Data e Horário</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <%= form.label :start_date, "Data de Início *", class: "form-label" %>
+              <%= form.date_field :start_date, class: "form-control", required: true %>
+              <div class="invalid-feedback">
+                Por favor, informe a data de início.
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <%= form.label :end_date, "Data de Término", class: "form-label" %>
+              <%= form.date_field :end_date, class: "form-control" %>
+              <div class="form-text">
+                Para eventos de um dia só, deixe em branco
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <%= form.label :start_time, "Horário de Início", class: "form-label" %>
+              <%= form.time_field :start_time, class: "form-control" %>
+              <div class="form-text">
+                Horário de início do evento
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <%= form.label :end_time, "Horário de Término", class: "form-label" %>
+              <%= form.time_field :end_time, class: "form-control" %>
+              <div class="form-text">
+                Horário de término do evento
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <div class="form-check form-switch">
+                <%= form.check_box :all_day, class: "form-check-input" %>
+                <%= form.label :all_day, "Evento o dia todo", class: "form-check-label" %>
+              </div>
+              <div class="form-text">
+                Marque se o evento dura o dia inteiro
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <div class="form-check form-switch">
+                <%= form.check_box :recurring, class: "form-check-input" %>
+                <%= form.label :recurring, "Evento Recorrente", class: "form-check-label" %>
+              </div>
+              <div class="form-text">
+                Evento que se repete periodicamente
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Local e Organização -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="fas fa-map-marker-alt"></i> Local e Organização</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <%= form.label :location, "Local do Evento", class: "form-label" %>
+              <%= form.text_field :location, class: "form-control", 
+                                 placeholder: "Ex: Auditório, Quadra, Sala 101" %>
+              <div class="form-text">
+                Onde o evento será realizado
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <%= form.label :capacity, "Capacidade Máxima", class: "form-label" %>
+              <%= form.number_field :capacity, class: "form-control", min: 1, placeholder: "100" %>
+              <div class="form-text">
+                Número máximo de participantes
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <%= form.label :organizer, "Organizador", class: "form-label" %>
+              <%= form.text_field :organizer, class: "form-control", 
+                                 placeholder: "Nome do responsável ou departamento" %>
+              <div class="form-text">
+                Pessoa ou setor responsável pela organização
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <%= form.label :contact_info, "Informações de Contato", class: "form-label" %>
+              <%= form.text_field :contact_info, class: "form-control", 
+                                 placeholder: "Telefone, email ou sala" %>
+              <div class="form-text">
+                Como entrar em contato sobre o evento
+              </div>
+            </div>
+
+            <div class="col-12 mb-3">
+              <%= form.label :location_notes, "Observações sobre o Local", class: "form-label" %>
+              <%= form.text_area :location_notes, class: "form-control", rows: 2,
+                                placeholder: "Instruções de acesso, equipamentos disponíveis..." %>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Participantes -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="fas fa-users"></i> Participantes</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-12 mb-3">
+              <%= form.label :target_audience, "Público-alvo", class: "form-label" %>
+              <div class="row">
+                <% [
+                  ['Alunos', 'students'],
+                  ['Professores', 'teachers'],
+                  ['Pais/Responsáveis', 'parents'],
+                  ['Funcionários', 'staff'],
+                  ['Direção', 'direction'],
+                  ['Comunidade', 'community']
+                ].each do |audience_name, audience_value| %>
+                  <div class="col-md-4 col-6">
+                    <div class="form-check">
+                      <%= form.check_box :target_audience, { multiple: true, class: "form-check-input" }, audience_value, "" %>
+                      <%= form.label "target_audience_#{audience_value}", audience_name, class: "form-check-label" %>
+                    </div>
+                  </div>
+                <% end %>
+              </div>
+              <div class="form-text">
+                Selecione quem pode participar do evento
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <div class="form-check form-switch">
+                <%= form.check_box :requires_registration, class: "form-check-input" %>
+                <%= form.label :requires_registration, "Requer Inscrição", class: "form-check-label" %>
+              </div>
+              <div class="form-text">
+                Participantes precisam se inscrever antecipadamente
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <div class="form-check form-switch">
+                <%= form.check_box :is_mandatory, class: "form-check-input" %>
+                <%= form.label :is_mandatory, "Participação Obrigatória", class: "form-check-label" %>
+              </div>
+              <div class="form-text">
+                Presença obrigatória para o público-alvo
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <%= form.label :registration_deadline, "Prazo para Inscrição", class: "form-label" %>
+              <%= form.date_field :registration_deadline, class: "form-control" %>
+              <div class="form-text">
+                Data limite para inscrições (se aplicável)
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <%= form.label :registration_fee, "Taxa de Inscrição", class: "form-label" %>
+              <div class="input-group">
+                <span class="input-group-text">R$</span>
+                <%= form.number_field :registration_fee, class: "form-control", 
+                                     step: 0.01, min: 0, placeholder: "0,00" %>
+              </div>
+              <div class="form-text">
+                Deixe 0 para eventos gratuitos
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recursos e Materiais -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="fas fa-tools"></i> Recursos e Materiais</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <%= form.label :required_materials, "Materiais Necessários", class: "form-label" %>
+              <%= form.text_area :required_materials, class: "form-control", rows: 3,
+                                placeholder: "Liste os materiais que os participantes devem trazer..." %>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <%= form.label :provided_materials, "Materiais Fornecidos", class: "form-label" %>
+              <%= form.text_area :provided_materials, class: "form-control", rows: 3,
+                                placeholder: "Liste os materiais que serão fornecidos pela escola..." %>
+            </div>
+
+            <div class="col-12 mb-3">
+              <%= form.label :equipment_needed, "Equipamentos Necessários", class: "form-label" %>
+              <div class="row">
+                <% [
+                  ['Projetor', 'projector'],
+                  ['Microfone', 'microphone'],
+                  ['Caixa de Som', 'speakers'],
+                  ['Computador', 'computer'],
+                  ['Quadro/Lousa', 'board'],
+                  ['Mesa/Cadeiras', 'furniture']
+                ].each do |equipment_name, equipment_value| %>
+                  <div class="col-md-4 col-6">
+                    <div class="form-check">
+                      <%= form.check_box :equipment_needed, { multiple: true, class: "form-check-input" }, equipment_value, "" %>
+                      <%= form.label "equipment_needed_#{equipment_value}", equipment_name, class: "form-check-label" %>
+                    </div>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+
+            <div class="col-12 mb-3">
+              <%= form.label :special_requirements, "Requisitos Especiais", class: "form-label" %>
+              <%= form.text_area :special_requirements, class: "form-control", rows: 2,
+                                placeholder: "Necessidades especiais de acessibilidade, alimentação, etc..." %>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Configurações -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="fas fa-cog"></i> Configurações</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <%= form.label :status, "Status do Evento", class: "form-label" %>
+              <%= form.select :status, 
+                              options_for_select([
+                                ['Planejado', 'planned'],
+                                ['Confirmado', 'confirmed'],
+                                ['Em Andamento', 'ongoing'],
+                                ['Concluído', 'completed'],
+                                ['Cancelado', 'cancelled']
+                              ], 'planned'),
+                              {}, { class: "form-select" } %>
+            </div>
+
+            <div class="col-md-4 mb-3">
+              <%= form.label :priority, "Prioridade", class: "form-label" %>
+              <%= form.select :priority, 
+                              options_for_select([
+                                ['Baixa', 'low'],
+                                ['Normal', 'normal'],
+                                ['Alta', 'high'],
+                                ['Urgente', 'urgent']
+                              ], 'normal'),
+                              {}, { class: "form-select" } %>
+            </div>
+
+            <div class="col-md-4 mb-3">
+              <%= form.label :visibility, "Visibilidade", class: "form-label" %>
+              <%= form.select :visibility, 
+                              options_for_select([
+                                ['Público', 'public'],
+                                ['Apenas Escola', 'school'],
+                                ['Privado', 'private']
+                              ], 'school'),
+                              {}, { class: "form-select" } %>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <div class="form-check form-switch">
+                <%= form.check_box :send_notifications, class: "form-check-input", checked: true %>
+                <%= form.label :send_notifications, "Enviar Notificações", class: "form-check-label" %>
+              </div>
+              <div class="form-text">
+                Notificar participantes sobre o evento
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <div class="form-check form-switch">
+                <%= form.check_box :allow_comments, class: "form-check-input", checked: true %>
+                <%= form.label :allow_comments, "Permitir Comentários", class: "form-check-label" %>
+              </div>
+              <div class="form-text">
+                Participantes podem comentar sobre o evento
+              </div>
+            </div>
+
+            <div class="col-12 mb-3">
+              <%= form.label :notes, "Observações Internas", class: "form-label" %>
+              <%= form.text_area :notes, class: "form-control", rows: 3,
+                                placeholder: "Observações para a equipe organizadora..." %>
+              <div class="form-text">
+                Notas visíveis apenas para organizadores
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ações -->
+      <div class="card">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <%= link_to direction_events_path, class: "btn btn-outline-secondary" do %>
+              <i class="fas fa-times"></i> Cancelar
+            <% end %>
+            
+            <div>
+              <%= form.submit "Salvar Rascunho", name: "draft", class: "btn btn-outline-primary me-2" %>
+              <%= form.submit "Criar Evento", class: "btn btn-primary" do %>
+                <i class="fas fa-save"></i> Criar Evento
+              <% end %>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    <% end %>
+  </div>
+</div>
+
+<!-- Modal de Ajuda -->
+<div class="modal fade" id="helpModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="fas fa-question-circle"></i> Ajuda - Novo Evento</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <h6>Tipos de Eventos</h6>
+        <ul>
+          <li><strong>Reunião:</strong> Encontros administrativos ou pedagógicos</li>
+          <li><strong>Acadêmico:</strong> Feiras, seminários, apresentações</li>
+          <li><strong>Comemoração:</strong> Festas, formaturas, celebrações</li>
+          <li><strong>Palestra:</strong> Apresentações educativas</li>
+          <li><strong>Formação:</strong> Capacitações e treinamentos</li>
+          <li><strong>Avaliação:</strong> Provas, exames, avaliações</li>
+        </ul>
+        
+        <h6>Configurações Importantes</h6>
+        <ul>
+          <li><strong>Público-alvo:</strong> Define quem pode ver e participar</li>
+          <li><strong>Inscrição:</strong> Se requer inscrição prévia</li>
+          <li><strong>Capacidade:</strong> Limite de participantes</li>
+          <li><strong>Visibilidade:</strong> Quem pode visualizar o evento</li>
+        </ul>
+        
+        <h6>Dicas</h6>
+        <ul>
+          <li>Use títulos claros e descritivos</li>
+          <li>Defina horários precisos</li>
+          <li>Liste todos os materiais necessários</li>
+          <li>Configure notificações para lembrar participantes</li>
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Link para abrir ajuda -->
+<div class="position-fixed bottom-0 end-0 p-3">
+  <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#helpModal">
+    <i class="fas fa-question-circle"></i> Ajuda
+  </button>
+</div>
+
+<script>
+// Validação do formulário
+(function() {
+  'use strict';
+  window.addEventListener('load', function() {
+    var forms = document.getElementsByClassName('needs-validation');
+    var validation = Array.prototype.filter.call(forms, function(form) {
+      form.addEventListener('submit', function(event) {
+        if (form.checkValidity() === false) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+      }, false);
+    });
+  }, false);
+})();
+
+// Lógica para evento o dia todo
+document.getElementById('event_all_day').addEventListener('change', function() {
+  const startTime = document.getElementById('event_start_time');
+  const endTime = document.getElementById('event_end_time');
+  
+  if (this.checked) {
+    startTime.disabled = true;
+    endTime.disabled = true;
+    startTime.value = '';
+    endTime.value = '';
+  } else {
+    startTime.disabled = false;
+    endTime.disabled = false;
+  }
+});
+</script>

@@ -1,0 +1,47 @@
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1 class="h2">Minhas Disciplinas</h1>
+  <div class="btn-toolbar mb-2 mb-md-0">
+    <%= link_to "Nova Disciplina", new_admin_subject_path, class: "btn btn-sm btn-primary" if can?(:create, Subject) %>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-12">
+    <% if @subjects.any? %>
+      <div class="row">
+        <% @subjects.each do |subject| %>
+          <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card">
+              <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                  <h5 class="card-title mb-0"><%= subject.name %></h5>
+                  <span class="badge bg-primary"><%= subject.enrollments.count %> alunos</span>
+                </div>
+              </div>
+              <div class="card-body">
+                <p class="card-text">
+                  <strong>Turma:</strong> <%= subject.classroom.name %><br>
+                  <strong>Carga Horária:</strong> <%= subject.workload %>h
+                </p>
+                <% if subject.description.present? %>
+                  <p class="card-text">
+                    <small class="text-muted"><%= truncate(subject.description, length: 100) %></small>
+                  </p>
+                <% end %>
+              </div>
+              <div class="card-footer">
+                <%= link_to "Gerenciar", teachers_subject_path(subject), class: "btn btn-sm btn-primary" %>
+                <%= link_to "Horários", teachers_subject_class_schedules_path(subject), class: "btn btn-sm btn-outline-secondary" %>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i>
+        Você ainda não foi atribuído a nenhuma disciplina.
+      </div>
+    <% end %>
+  </div>
+</div>

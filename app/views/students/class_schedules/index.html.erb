@@ -1,0 +1,82 @@
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1 class="h2">Meus Horários</h1>
+</div>
+
+<div class="row">
+  <div class="col-12">
+    <% if @schedules.any? %>
+      <div class="table-responsive">
+        <table class="table table-bordered">
+          <thead class="table-light">
+            <tr>
+              <th>Horário</th>
+              <th>Segunda</th>
+              <th>Terça</th>
+              <th>Quarta</th>
+              <th>Quinta</th>
+              <th>Sexta</th>
+            </tr>
+          </thead>
+          <tbody>
+              <% @time_slots.each do |time_slot| %>
+              <tr>
+                <td class="table-light">
+                  <strong><%= time_slot %></strong>
+                </td>
+                <% ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'].each do |day| %>
+                  <td>
+                    <% schedule = @schedules_by_day_time[day]&.[](time_slot) %>
+                    <% if schedule %>
+                      <div class="small">
+                        <strong><%= schedule.subject.name %></strong><br>
+                        <span class="text-muted">
+                          <%= schedule.subject.user.full_name %><br>
+                          Sala: <%= schedule.classroom.name %>
+                        </span>
+                      </div>
+                    <% end %>
+                  </td>
+                <% end %>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i>
+        Você ainda não possui horários de aula cadastrados.
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<div class="row mt-4">
+  <div class="col-12">
+    <h4>Lista de Disciplinas</h4>
+    <% if @subjects.any? %>
+      <div class="row">
+        <% @subjects.each do |subject| %>
+          <div class="col-md-6 col-lg-4 mb-3">
+            <div class="card">
+              <div class="card-body">
+                <h6 class="card-title"><%= subject.name %></h6>
+                <p class="card-text">
+                  <small class="text-muted">
+                    <i class="fas fa-user"></i> <%= subject.user.full_name %><br>
+                    <i class="fas fa-clock"></i> <%= subject.workload %>h
+                  </small>
+                </p>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="alert alert-warning">
+        <i class="fas fa-exclamation-triangle"></i>
+        Você ainda não está matriculado em nenhuma disciplina.
+      </div>
+    <% end %>
+  </div>
+</div>
