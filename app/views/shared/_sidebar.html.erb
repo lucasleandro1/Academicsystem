@@ -73,7 +73,7 @@
   <!-- Navegação para Professor -->
   <ul class="nav flex-column">
     <li class="nav-item">
-      <%= link_to teachers_dashboard_path, class: "nav-link #{'active' if current_page?(teachers_dashboard_path)}" do %>
+      <%= link_to teachers_root_path, class: "nav-link #{'active' if current_page?(teachers_root_path)}" do %>
         <i class="fas fa-tachometer-alt"></i> Dashboard
       <% end %>
     </li>
@@ -85,20 +85,20 @@
     </li>
     
     <li class="nav-item">
-      <%= link_to teachers_classrooms_path, class: "nav-link #{'active' if controller_name == 'classrooms' && namespace == 'teachers'}" do %>
+      <%= link_to teachers_classrooms_path, class: "nav-link #{'active' if controller_name == 'classrooms' && controller.class.module_parent.name.downcase == 'teachers'}" do %>
         <i class="fas fa-users"></i> Turmas
         <span class="badge bg-primary ms-auto"><%= current_user.subjects.joins(:classroom).distinct.count %></span>
       <% end %>
     </li>
     
     <li class="nav-item">
-      <%= link_to teachers_activities_path, class: "nav-link #{'active' if controller_name == 'activities' && namespace == 'teachers'}" do %>
+      <%= link_to teachers_activities_path, class: "nav-link #{'active' if controller_name == 'activities' && controller.class.module_parent.name.downcase == 'teachers'}" do %>
         <i class="fas fa-tasks"></i> Atividades
       <% end %>
     </li>
     
     <li class="nav-item">
-      <%= link_to teachers_grades_path, class: "nav-link #{'active' if controller_name == 'grades' && namespace == 'teachers'}" do %>
+      <%= link_to teachers_grades_path, class: "nav-link #{'active' if controller_name == 'grades' && controller.class.module_parent.name.downcase == 'teachers'}" do %>
         <i class="fas fa-star"></i> Notas
       <% end %>
     </li>
@@ -108,7 +108,7 @@
   <!-- Navegação para Aluno -->
   <ul class="nav flex-column">
     <li class="nav-item">
-      <%= link_to students_dashboard_path, class: "nav-link #{'active' if current_page?(students_dashboard_path)}" do %>
+      <%= link_to students_root_path, class: "nav-link #{'active' if current_page?(students_root_path)}" do %>
         <i class="fas fa-tachometer-alt"></i> Dashboard
       <% end %>
     </li>
@@ -120,19 +120,19 @@
     </li>
     
     <li class="nav-item">
-      <%= link_to students_profile_path, class: "nav-link #{'active' if controller_name == 'profile' && namespace == 'students'}" do %>
+      <%= link_to students_profile_path, class: "nav-link #{'active' if controller_name == 'profile' && controller.class.module_parent.name.downcase == 'students'}" do %>
         <i class="fas fa-user"></i> Meu Perfil
       <% end %>
     </li>
     
     <li class="nav-item">
-      <%= link_to students_grades_path, class: "nav-link #{'active' if controller_name == 'grades' && namespace == 'students'}" do %>
+      <%= link_to students_grades_path, class: "nav-link #{'active' if controller_name == 'grades' && controller.class.module_parent.name.downcase == 'students'}" do %>
         <i class="fas fa-star"></i> Notas e Boletim
       <% end %>
     </li>
     
     <li class="nav-item">
-      <%= link_to students_activities_path, class: "nav-link #{'active' if controller_name == 'activities' && namespace == 'students'}" do %>
+      <%= link_to students_activities_path, class: "nav-link #{'active' if controller_name == 'activities' && controller.class.module_parent.name.downcase == 'students'}" do %>
         <i class="fas fa-tasks"></i> Atividades
       <% end %>
     </li>
@@ -184,7 +184,7 @@
   <!-- Navegação para Professor -->
   <ul class="nav flex-column">
     <li class="nav-item">
-      <%= link_to teachers_dashboard_path, class: "nav-link #{'active' if current_page?(teachers_dashboard_path)}" do %>
+      <%= link_to teachers_root_path, class: "nav-link #{'active' if current_page?(teachers_root_path)}" do %>
         <i class="fas fa-tachometer-alt"></i> Dashboard
       <% end %>
     </li>
@@ -196,20 +196,20 @@
     </li>
     
     <li class="nav-item">
-      <%= link_to teachers_classrooms_path, class: "nav-link #{'active' if controller_name == 'classrooms' && namespace == 'teachers'}" do %>
+      <%= link_to teachers_classrooms_path, class: "nav-link #{'active' if controller_name == 'classrooms' && controller.class.module_parent.name.downcase == 'teachers'}" do %>
         <i class="fas fa-users"></i> Turmas
         <span class="badge bg-primary ms-auto"><%= current_user.subjects.joins(:classroom).distinct.count %></span>
       <% end %>
     </li>
     
     <li class="nav-item">
-      <%= link_to teachers_activities_path, class: "nav-link #{'active' if controller_name == 'activities' && namespace == 'teachers'}" do %>
+      <%= link_to teachers_activities_path, class: "nav-link #{'active' if controller_name == 'activities' && controller.class.module_parent.name.downcase == 'teachers'}" do %>
         <i class="fas fa-tasks"></i> Atividades
       <% end %>
     </li>
     
     <li class="nav-item">
-      <%= link_to teachers_grades_path, class: "nav-link #{'active' if controller_name == 'grades' && namespace == 'teachers'}" do %>
+      <%= link_to teachers_grades_path, class: "nav-link #{'active' if controller_name == 'grades' && controller.class.module_parent.name.downcase == 'teachers'}" do %>
         <i class="fas fa-star"></i> Notas
       <% end %>
     </li>
@@ -219,7 +219,7 @@
   <!-- Navegação para Aluno -->
   <ul class="nav flex-column">
     <li class="nav-item">
-      <%= link_to students_dashboard_path, class: "nav-link #{'active' if current_page?(students_dashboard_path)}" do %>
+      <%= link_to students_root_path, class: "nav-link #{'active' if current_page?(students_root_path)}" do %>
         <i class="fas fa-tachometer-alt"></i> Dashboard
       <% end %>
     </li>
@@ -231,43 +231,43 @@
     </li>
     
     <li class="nav-item">
-      <%= link_to students_profile_path, class: "nav-link #{'active' if controller_name == 'profile' && namespace == 'students'}" do %>
+      <%= link_to students_profile_path, class: "nav-link #{'active' if controller_name == 'profile' && controller.class.module_parent.name.downcase == 'students'}" do %>
         <i class="fas fa-user"></i> Meu Perfil
       <% end %>
     </li>
     
     <li class="nav-item">
-      <%= link_to students_grades_path, class: "nav-link #{'active' if controller_name == 'grades' && namespace == 'students'}" do %>
+      <%= link_to students_grades_path, class: "nav-link #{'active' if controller_name == 'grades' && controller.class.module_parent.name.downcase == 'students'}" do %>
         <i class="fas fa-star"></i> Notas e Boletim
       <% end %>
     </li>
     
     <li class="nav-item">
-      <%= link_to students_activities_path, class: "nav-link #{'active' if controller_name == 'activities' && namespace == 'students'}" do %>
+      <%= link_to students_activities_path, class: "nav-link #{'active' if controller_name == 'activities' && controller.class.module_parent.name.downcase == 'students'}" do %>
         <i class="fas fa-tasks"></i> Atividades
       <% end %>
     </li>
     
     <li class="nav-item">
-      <%= link_to students_events_path, class: "nav-link #{'active' if controller_name == 'events' && namespace == 'students'}" do %>
+      <%= link_to students_events_path, class: "nav-link #{'active' if controller_name == 'events' && controller.class.module_parent.name.downcase == 'students'}" do %>
         <i class="fas fa-calendar-alt"></i> Eventos
       <% end %>
     </li>
     
     <li class="nav-item">
-      <%= link_to students_absences_path, class: "nav-link #{'active' if controller_name == 'absences' && namespace == 'students'}" do %>
+      <%= link_to students_absences_path, class: "nav-link #{'active' if controller_name == 'absences' && controller.class.module_parent.name.downcase == 'students'}" do %>
         <i class="fas fa-user-times"></i> Faltas
       <% end %>
     </li>
     
     <li class="nav-item">
-      <%= link_to students_occurrences_path, class: "nav-link #{'active' if controller_name == 'occurrences' && namespace == 'students'}" do %>
+      <%= link_to students_occurrences_path, class: "nav-link #{'active' if controller_name == 'occurrences' && controller.class.module_parent.name.downcase == 'students'}" do %>
         <i class="fas fa-exclamation-triangle"></i> Ocorrências
       <% end %>
     </li>
     
     <li class="nav-item">
-      <%= link_to students_schedules_path, class: "nav-link #{'active' if controller_name == 'schedules' && namespace == 'students'}" do %>
+      <%= link_to students_schedules_path, class: "nav-link #{'active' if controller_name == 'schedules' && controller.class.module_parent.name.downcase == 'students'}" do %>
         <i class="fas fa-calendar-week"></i> Horários
       <% end %>
     </li>

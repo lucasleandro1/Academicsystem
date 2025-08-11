@@ -8,29 +8,19 @@ class User < ApplicationRecord
   enum :user_type, student: "student", teacher: "teacher", direction: "direction", admin: "admin"
 
   # Associações como estudante
-  has_many :student_enrollments, -> { where(users: { user_type: "student" }) },
-           class_name: "Enrollment", foreign_key: "user_id", dependent: :destroy
+  has_many :student_enrollments, class_name: "Enrollment", foreign_key: "user_id", dependent: :destroy
   has_many :enrolled_classrooms, through: :student_enrollments, source: :classroom
-  has_many :student_grades, -> { where(users: { user_type: "student" }) },
-           class_name: "Grade", foreign_key: "user_id", dependent: :destroy
-  has_many :student_absences, -> { where(users: { user_type: "student" }) },
-           class_name: "Absence", foreign_key: "user_id", dependent: :destroy
-  has_many :student_submissions, -> { where(users: { user_type: "student" }) },
-           class_name: "Submission", foreign_key: "user_id", dependent: :destroy
-  has_many :student_documents, -> { where(users: { user_type: "student" }) },
-           class_name: "Document", foreign_key: "user_id", dependent: :destroy
-  has_many :student_occurrences, -> { where(users: { user_type: "student" }) },
-           class_name: "Occurrence", foreign_key: "user_id", dependent: :destroy
+  has_many :student_grades, class_name: "Grade", foreign_key: "user_id", dependent: :destroy
+  has_many :student_absences, class_name: "Absence", foreign_key: "user_id", dependent: :destroy
+  has_many :student_submissions, class_name: "Submission", foreign_key: "user_id", dependent: :destroy
+  has_many :student_documents, class_name: "Document", foreign_key: "user_id", dependent: :destroy
+  has_many :student_occurrences, class_name: "Occurrence", foreign_key: "user_id", dependent: :destroy
 
   # Associações como professor
-  has_many :teacher_subjects, -> { where(users: { user_type: "teacher" }) },
-           class_name: "Subject", foreign_key: "user_id", dependent: :destroy
-  has_many :teacher_activities, -> { where(users: { user_type: "teacher" }) },
-           class_name: "Activity", foreign_key: "user_id", dependent: :destroy
-  has_many :teacher_documents, -> { where(users: { user_type: "teacher" }) },
-           class_name: "Document", foreign_key: "user_id", dependent: :destroy
-  has_many :authored_occurrences, -> { where(users: { user_type: "teacher" }) },
-           class_name: "Occurrence", as: :author, dependent: :destroy
+  has_many :teacher_subjects, class_name: "Subject", foreign_key: "user_id", dependent: :destroy
+  has_many :teacher_activities, class_name: "Activity", foreign_key: "user_id", dependent: :destroy
+  has_many :teacher_documents, class_name: "Document", foreign_key: "user_id", dependent: :destroy
+  has_many :authored_occurrences, class_name: "Occurrence", as: :author, dependent: :destroy
 
   # Mensagens
   has_many :sent_messages, class_name: "Message", foreign_key: "sender_id", dependent: :destroy
@@ -44,6 +34,33 @@ class User < ApplicationRecord
   alias_method :submissions, :student_submissions
   alias_method :subjects, :teacher_subjects
   alias_method :activities, :teacher_activities
+
+  # Método para obter turmas do professor através das disciplinas
+  def teacher_classrooms
+    return Classroom.none unless teacher?
+    Classroom.joins(:subjects).where(subjects: { user_id: id }).distinct
+  end
+
+  # Métodos para filtrar associações por contexto
+  def my_enrollments
+    return student_enrollments if student?
+    Enrollment.none
+  end
+
+  def my_grades
+    return student_grades if student?
+    Grade.none
+  end
+
+  def my_subjects
+    return teacher_subjects if teacher?
+    Subject.none
+  end
+
+  def my_activities
+    return teacher_activities if teacher?
+    Activity.none
+  end
 
   validates :email, presence: true, uniqueness: true
 

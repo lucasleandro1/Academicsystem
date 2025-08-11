@@ -15,10 +15,10 @@
   </div>
   <div class="btn-toolbar mb-2 mb-md-0">
     <div class="btn-group me-2">
-      <%= link_to "#", class: "btn btn-sm btn-outline-primary" do %>
+      <%= link_to students_subjects_path, class: "btn btn-sm btn-outline-primary" do %>
         <i class="fas fa-book"></i> Minhas Matérias
       <% end %>
-      <%= link_to "#", class: "btn btn-sm btn-outline-success" do %>
+      <%= link_to students_class_schedules_path, class: "btn btn-sm btn-outline-success" do %>
         <i class="fas fa-calendar"></i> Horários
       <% end %>
     </div>
@@ -56,7 +56,7 @@
               Média Geral
             </div>
             <div class="h5 mb-0 font-weight-bold text-gray-800">
-              <% avg = Grade.where(student: current_user).average(:score) %>
+              <% avg = Grade.where(student: current_user).average(:value) %>
               <%= avg ? number_with_precision(avg, precision: 1) : 'N/A' %>
             </div>
           </div>
@@ -98,15 +98,13 @@
         <div class="row no-gutters align-items-center">
           <div class="col mr-2">
             <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-              Presenças (%)
+              Faltas
             </div>
             <div class="h5 mb-0 font-weight-bold text-gray-800">
-              <% total_occurrences = Occurrence.joins(:classroom => :enrollments)
-                                              .where(enrollments: {student: current_user}).count %>
-              <% present_occurrences = Occurrence.joins(:classroom => :enrollments)
-                                                .where(enrollments: {student: current_user}, present: true).count %>
-              <% attendance_rate = total_occurrences > 0 ? (present_occurrences.to_f / total_occurrences * 100).round(1) : 0 %>
-              <%= attendance_rate %>%
+              <% total_absences = current_user.absences.count %>
+              <% justified_absences = current_user.absences.justified.count %>
+              <% attendance_info = total_absences > 0 ? "#{justified_absences}/#{total_absences} justificadas" : "Sem faltas" %>
+              <%= attendance_info %>
             </div>
           </div>
           <div class="col-auto">
@@ -129,7 +127,7 @@
         </h6>
       </div>
       <div class="card-body">
-        <% grades_by_subject = Grade.joins(:subject).where(student: current_user).group('subjects.name').average(:score) %>
+        <% grades_by_subject = Grade.joins(:subject).where(student: current_user).group('subjects.name').average(:value) %>
         <% if grades_by_subject.any? %>
           <div class="table-responsive">
             <table class="table table-hover">
@@ -292,8 +290,8 @@
       </div>
       <div class="card-body">
         <% recent_events = Event.where(school: current_user.school)
-                              .where('date >= ?', Date.current)
-                              .order(:date)
+                              .where('start_date >= ?', Date.current)
+                              .order(:start_date)
                               .limit(5) %>
         <% if recent_events.any? %>
           <% recent_events.each do |event| %>
@@ -308,7 +306,7 @@
                 <p class="mb-1 small"><%= truncate(event.description, length: 80) %></p>
                 <small class="text-muted">
                   <i class="fas fa-calendar me-1"></i>
-                  <%= event.date.strftime("%d/%m/%Y") %>
+                  <%= event.start_date.strftime("%d/%m/%Y") %>
                 </small>
               </div>
             </div>

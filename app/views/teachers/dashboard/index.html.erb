@@ -15,10 +15,10 @@
   </div>
   <div class="btn-toolbar mb-2 mb-md-0">
     <div class="btn-group me-2">
-      <%= link_to "teachers/activities/new", class: "btn btn-sm btn-outline-primary" do %>
+      <%= link_to new_teachers_activity_path, class: "btn btn-sm btn-outline-primary" do %>
         <i class="fas fa-plus"></i> Nova Atividade
       <% end %>
-      <%= link_to "teachers/grades/new", class: "btn btn-sm btn-outline-success" do %>
+      <%= link_to new_teachers_grade_path, class: "btn btn-sm btn-outline-success" do %>
         <i class="fas fa-clipboard-check"></i> Lançar Nota
       <% end %>
     </div>
@@ -33,10 +33,10 @@
         <div class="row no-gutters align-items-center">
           <div class="col mr-2">
             <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-              Minhas Turmas
+              Minhas Disciplinas
             </div>
             <div class="h5 mb-0 font-weight-bold text-gray-800">
-              <%= current_user.classrooms.count %>
+              <%= current_user.subjects.count %>
             </div>
           </div>
           <div class="col-auto">
@@ -56,7 +56,7 @@
               Total de Alunos
             </div>
             <div class="h5 mb-0 font-weight-bold text-gray-800">
-              <%= current_user.classrooms.joins(:enrollments).count %>
+              <%= current_user.teacher_classrooms.joins(:enrollments).distinct.count('enrollments.user_id') %>
             </div>
           </div>
           <div class="col-auto">
@@ -76,7 +76,7 @@
               Atividades Criadas
             </div>
             <div class="h5 mb-0 font-weight-bold text-gray-800">
-              <%= Activity.where(user: current_user).count %>
+              <%= current_user.activities.count %>
             </div>
           </div>
           <div class="col-auto">
@@ -96,7 +96,7 @@
               Notas Lançadas
             </div>
             <div class="h5 mb-0 font-weight-bold text-gray-800">
-              <%= Grade.joins(:subject).where(subjects: { user: current_user }).count %>
+              <%= Grade.joins(:subject).where(subjects: { user_id: current_user.id }).count %>
             </div>
           </div>
           <div class="col-auto">
@@ -131,7 +131,7 @@
                 </tr>
               </thead>
               <tbody>
-                <% current_user.classrooms.includes(:enrollments, :class_schedules).limit(5).each do |classroom| %>
+                <% current_user.teacher_classrooms.includes(:enrollments, :class_schedules).limit(5).each do |classroom| %>
                   <tr>
                     <td>
                       <div>
@@ -192,7 +192,7 @@
         </h6>
       </div>
       <div class="card-body">
-        <% upcoming_activities = Activity.where(user: current_user, due_date: Date.current..1.month.from_now).order(:due_date).limit(5) %>
+        <% upcoming_activities = current_user.activities.where(due_date: Date.current..1.month.from_now).order(:due_date).limit(5) %>
         <% if upcoming_activities.any? %>
           <% upcoming_activities.each do |activity| %>
             <div class="d-flex align-items-center mb-3 p-2 border rounded">
@@ -234,7 +234,7 @@
         </h6>
       </div>
       <div class="card-body">
-        <% recent_grades = Grade.joins(:subject).where(subjects: { user: current_user }).order(created_at: :desc).limit(5) %>
+        <% recent_grades = Grade.joins(:subject).where(subjects: { user_id: current_user.id }).order(created_at: :desc).limit(5) %>
         <% if recent_grades.any? %>
           <% recent_grades.each do |grade| %>
             <div class="d-flex align-items-center mb-3">

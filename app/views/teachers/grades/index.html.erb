@@ -1,0 +1,140 @@
+<%# Page Title %>
+<% content_for :title, "Notas - Professor" %>
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1 class="h2">
+    <i class="fas fa-clipboard-list text-primary me-2"></i>
+    Gerenciar Notas
+  </h1>
+  <div class="btn-toolbar mb-2 mb-md-0">
+    <div class="btn-group me-2">
+      <%= link_to new_teachers_grade_path, class: "btn btn-sm btn-primary" do %>
+        <i class="fas fa-plus"></i> Lançar Nota
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<!-- Subject Filter -->
+<% if @subjects.any? %>
+  <div class="row mb-4">
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-body">
+          <h6 class="card-title">Filtrar por Disciplina</h6>
+          <%= form_tag teachers_grades_path, method: :get, local: true, class: "d-flex" do %>
+            <%= select_tag :subject_id, 
+                options_from_collection_for_select(@subjects, :id, :name, params[:subject_id]), 
+                { prompt: "Todas as disciplinas", class: "form-select me-2" } %>
+            <%= submit_tag "Filtrar", class: "btn btn-outline-primary" %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">
+            <i class="fas fa-star text-warning me-2"></i>
+            Notas Lançadas
+            <% if @selected_subject %>
+              - <%= @selected_subject.name %>
+            <% end %>
+          </h5>
+          <span class="badge bg-primary"><%= @grades.count %> notas</span>
+        </div>
+        <div class="card-body">
+          <% if @grades.any? %>
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead class="table-light">
+                  <tr>
+                    <th>Aluno</th>
+                    <th>Disciplina</th>
+                    <th>Bimestre</th>
+                    <th>Tipo</th>
+                    <th>Nota</th>
+                    <th>Data</th>
+                    <th>Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% @grades.each do |grade| %>
+                    <tr>
+                      <td>
+                        <div class="d-flex align-items-center">
+                          <div class="rounded-circle bg-primary text-white me-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                            <%= grade.student.full_name.first.upcase %>
+                          </div>
+                          <%= grade.student.full_name %>
+                        </div>
+                      </td>
+                      <td>
+                        <span class="badge bg-info"><%= grade.subject.name %></span>
+                      </td>
+                      <td>
+                        <span class="badge bg-secondary"><%= grade.bimester %>º Bim</span>
+                      </td>
+                      <td>
+                        <span class="badge bg-light text-dark"><%= grade.grade_type.humanize %></span>
+                      </td>
+                      <td>
+                        <span class="badge <%= grade.value >= 7 ? 'bg-success' : grade.value >= 5 ? 'bg-warning' : 'bg-danger' %>">
+                          <%= number_with_precision(grade.value, precision: 1) %>
+                        </span>
+                      </td>
+                      <td>
+                        <small class="text-muted">
+                          <%= l(grade.created_at, format: :short) %>
+                        </small>
+                      </td>
+                      <td>
+                        <div class="btn-group" role="group">
+                          <%= link_to edit_teachers_grade_path(grade), class: "btn btn-sm btn-outline-primary", title: "Editar" do %>
+                            <i class="fas fa-edit"></i>
+                          <% end %>
+                          <%= link_to teachers_grade_path(grade), method: :delete, 
+                              confirm: "Tem certeza que deseja excluir esta nota?", 
+                              class: "btn btn-sm btn-outline-danger", title: "Excluir" do %>
+                            <i class="fas fa-trash"></i>
+                          <% end %>
+                        </div>
+                      </td>
+                    </tr>
+                  <% end %>
+                </tbody>
+              </table>
+            </div>
+          <% else %>
+            <div class="text-center py-4">
+              <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
+              <h5 class="text-muted">Nenhuma nota lançada</h5>
+              <p class="text-muted">
+                <% if @selected_subject %>
+                  Não há notas lançadas para a disciplina "<%= @selected_subject.name %>".
+                <% else %>
+                  Comece lançando a primeira nota para seus alunos.
+                <% end %>
+              </p>
+              <%= link_to new_teachers_grade_path, class: "btn btn-primary" do %>
+                <i class="fas fa-plus me-2"></i>Lançar Primeira Nota
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+<% else %>
+  <div class="row">
+    <div class="col-12">
+      <div class="alert alert-info">
+        <h5><i class="fas fa-info-circle me-2"></i>Nenhuma disciplina encontrada</h5>
+        <p class="mb-0">Você precisa estar vinculado a pelo menos uma disciplina para lançar notas. Entre em contato com a direção da escola.</p>
+      </div>
+    </div>
+  </div>
+<% end %>
