@@ -21,6 +21,9 @@
       <%= link_to new_admin_user_path, class: "btn btn-sm btn-outline-success" do %>
         <i class="fas fa-user-plus"></i> Novo Usuário
       <% end %>
+      <%= link_to new_admin_event_path, class: "btn btn-sm btn-outline-info" do %>
+        <i class="fas fa-calendar-plus"></i> Novo Evento
+      <% end %>
     </div>
   </div>
 </div>
@@ -200,6 +203,71 @@
         <div class="mb-3">
           <small class="text-muted">Última atualização</small>
           <div><strong><%= Date.current.strftime("%d/%m/%Y") %></strong></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mb-4">
+  <div class="col-12">
+    <div class="card shadow mb-4">
+      <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">
+          <i class="fas fa-tachometer-alt me-2"></i>
+          Ações Rápidas - Gestão Municipal
+        </h6>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-lg-3 col-md-6 mb-3">
+            <%= link_to admin_events_path, class: "text-decoration-none" do %>
+              <div class="card border-left-primary h-100">
+                <div class="card-body text-center">
+                  <i class="fas fa-calendar-alt fa-2x text-primary mb-2"></i>
+                  <h6 class="text-primary">Eventos Municipais</h6>
+                  <small class="text-muted">Gerenciar eventos e comunicados</small>
+                </div>
+              </div>
+            <% end %>
+          </div>
+          
+          <div class="col-lg-3 col-md-6 mb-3">
+            <%= link_to admin_documents_path, class: "text-decoration-none" do %>
+              <div class="card border-left-success h-100">
+                <div class="card-body text-center">
+                  <i class="fas fa-file-archive fa-2x text-success mb-2"></i>
+                  <h6 class="text-success">GED Municipal</h6>
+                  <small class="text-muted">Documentos oficiais</small>
+                </div>
+              </div>
+            <% end %>
+          </div>
+          
+          <div class="col-lg-3 col-md-6 mb-3">
+            <%= link_to admin_reports_path, class: "text-decoration-none" do %>
+              <div class="card border-left-info h-100">
+                <div class="card-body text-center">
+                  <i class="fas fa-chart-bar fa-2x text-info mb-2"></i>
+                  <h6 class="text-info">Relatórios</h6>
+                  <small class="text-muted">Análises e estatísticas</small>
+                </div>
+              </div>
+            <% end %>
+          </div>
+          
+          <div class="col-lg-3 col-md-6 mb-3">
+            <%= link_to admin_settings_path, class: "text-decoration-none" do %>
+              <div class="card border-left-warning h-100">
+                <div class="card-body text-center">
+                  <i class="fas fa-cogs fa-2x text-warning mb-2"></i>
+                  <h6 class="text-warning">Configurações</h6>
+                  <small class="text-muted">Sistema e permissões</small>
+                </div>
+              </div>
+            <% end %>
+          </div>
         </div>
       </div>
     </div>

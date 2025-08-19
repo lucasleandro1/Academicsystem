@@ -1,0 +1,209 @@
+<% content_for :title, "Novo Documento - Sistema GED" %>
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <div>
+    <h1 class="h2">
+      <i class="fas fa-file-upload text-success me-2"></i>
+      Novo Documento Municipal
+    </h1>
+    <p class="text-muted mb-0">Adicione um novo documento ao sistema GED (Gestão Eletrônica de Documentos).</p>
+  </div>
+  <div class="btn-toolbar mb-2 mb-md-0">
+    <%= link_to admin_documents_path, class: "btn btn-outline-secondary" do %>
+      <i class="fas fa-arrow-left"></i> Voltar
+    <% end %>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-header">
+        <h6 class="mb-0">
+          <i class="fas fa-info-circle me-2"></i>
+          Informações do Documento
+        </h6>
+      </div>
+      <div class="card-body">
+        <%= form_with model: [:admin, @document], local: true, multipart: true, class: "needs-validation", novalidate: true do |form| %>
+          <% if @document.errors.any? %>
+            <div class="alert alert-danger">
+              <h6><i class="fas fa-exclamation-triangle"></i> Erro ao salvar o documento:</h6>
+              <ul class="mb-0">
+                <% @document.errors.full_messages.each do |message| %>
+                  <li><%= message %></li>
+                <% end %>
+              </ul>
+            </div>
+          <% end %>
+
+          <div class="row">
+            <div class="col-md-8 mb-3">
+              <%= form.label :title, "Título do Documento", class: "form-label" %>
+              <%= form.text_field :title, class: "form-control", 
+                                 placeholder: "Ex: Circular Municipal nº 001/2025..." %>
+              <div class="invalid-feedback">Por favor, informe o título do documento.</div>
+            </div>
+            <div class="col-md-4 mb-3">
+              <%= form.label :document_type, "Tipo", class: "form-label" %>
+              <%= form.select :document_type, 
+                             options_for_select(@document.class::DOCUMENT_TYPES.map { |type| 
+                               [@document.class.new(document_type: type).type_description, type] 
+                             }), 
+                             { prompt: "Selecione..." }, 
+                             { class: "form-select" } %>
+              <div class="invalid-feedback">Por favor, selecione o tipo de documento.</div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <%= form.label :file, "Arquivo", class: "form-label" %>
+            <%= form.file_field :file, class: "form-control", accept: ".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.jpg,.jpeg,.png" %>
+            <div class="form-text">
+              Formatos aceitos: PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, TXT, JPG, JPEG, PNG (máx. 10MB)
+            </div>
+            <div class="invalid-feedback">Por favor, selecione um arquivo.</div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Distribuição</label>
+            <div class="form-check">
+              <%= form.radio_button :is_municipal, true, class: "form-check-input", id: "municipal_yes" %>
+              <%= form.label :is_municipal, "Municipal (todas as escolas)", for: "municipal_yes", class: "form-check-label" %>
+            </div>
+            <div class="form-check">
+              <%= form.radio_button :is_municipal, false, class: "form-check-input", id: "municipal_no", checked: true %>
+              <%= form.label :is_municipal, "Escola específica", for: "municipal_no", class: "form-check-label" %>
+            </div>
+          </div>
+
+          <div class="mb-3" id="school-selection">
+            <%= form.label :school_id, "Escola", class: "form-label" %>
+            <%= form.select :school_id, 
+                           options_for_select([['Selecione uma escola...', '']] + 
+                           @schools.map { |school| [school.name, school.id] }), 
+                           {}, { class: "form-select" } %>
+            <div class="form-text">Selecione a escola específica para este documento.</div>
+          </div>
+
+          <div class="mb-4">
+            <%= form.label :description, "Descrição", class: "form-label" %>
+            <%= form.text_area :description, rows: 4, class: "form-control", 
+                              placeholder: "Descreva o conteúdo do documento, instruções especiais, etc." %>
+            <div class="form-text">Informações adicionais sobre o documento (opcional).</div>
+          </div>
+
+          <%= form.hidden_field :user_id, value: current_user.id %>
+
+          <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+            <%= link_to "Cancelar", admin_documents_path, class: "btn btn-outline-secondary me-md-2" %>
+            <%= form.submit "Salvar Documento", class: "btn btn-success" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <!-- Ajuda e Dicas -->
+    <div class="card">
+      <div class="card-header">
+        <h6 class="mb-0">
+          <i class="fas fa-lightbulb text-warning me-2"></i>
+          Sistema GED
+        </h6>
+      </div>
+      <div class="card-body">
+        <div class="alert alert-info">
+          <h6><i class="fas fa-info-circle"></i> Documentos Municipais</h6>
+          <p class="small mb-0">Documentos marcados como "Municipal" serão automaticamente disponibilizados para todas as escolas da rede.</p>
+        </div>
+        
+        <h6 class="mt-3">Tipos de Documentos:</h6>
+        <ul class="small text-muted">
+          <li><strong>Circular:</strong> Comunicados oficiais</li>
+          <li><strong>Comunicado:</strong> Avisos gerais</li>
+          <li><strong>Regulamento:</strong> Normas e regras</li>
+          <li><strong>Ata:</strong> Registros de reuniões</li>
+          <li><strong>Certificado:</strong> Documentos de certificação</li>
+          <li><strong>Declaração:</strong> Documentos declaratórios</li>
+          <li><strong>Boletim:</strong> Boletins informativos</li>
+          <li><strong>Histórico:</strong> Documentos históricos</li>
+          <li><strong>Ocorrência:</strong> Registros de ocorrências</li>
+        </ul>
+
+        <div class="mt-3">
+          <h6>Estatísticas:</h6>
+          <p class="small text-muted mb-1">
+            <i class="fas fa-school"></i> <%= @schools.count %> escolas na rede
+          </p>
+          <p class="small text-muted mb-0">
+            <i class="fas fa-file"></i> <%= Document.count %> documentos no sistema
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Segurança -->
+    <div class="card mt-3">
+      <div class="card-header">
+        <h6 class="mb-0">
+          <i class="fas fa-shield-alt text-success me-2"></i>
+          Segurança dos Dados
+        </h6>
+      </div>
+      <div class="card-body">
+        <ul class="small text-muted">
+          <li>Arquivos são armazenados com segurança</li>
+          <li>Controle de acesso por escola</li>
+          <li>Log de todas as ações</li>
+          <li>Backup automático diário</li>
+          <li>Assinatura digital disponível</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Controle de exibição da seleção de escola
+document.addEventListener('DOMContentLoaded', function() {
+  const municipalYes = document.getElementById('municipal_yes');
+  const municipalNo = document.getElementById('municipal_no');
+  const schoolSelection = document.getElementById('school-selection');
+
+  function toggleSchoolSelection() {
+    if (municipalNo.checked) {
+      schoolSelection.style.display = 'block';
+    } else {
+      schoolSelection.style.display = 'none';
+    }
+  }
+
+  municipalYes.addEventListener('change', toggleSchoolSelection);
+  municipalNo.addEventListener('change', toggleSchoolSelection);
+  
+  // Verificar estado inicial
+  toggleSchoolSelection();
+
+  // Validação do formulário
+  const form = document.querySelector('.needs-validation');
+  form.addEventListener('submit', function(event) {
+    if (!form.checkValidity()) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    form.classList.add('was-validated');
+  });
+
+  // Validação de arquivo
+  const fileInput = document.querySelector('input[type="file"]');
+  fileInput.addEventListener('change', function() {
+    const file = this.files[0];
+    if (file && file.size > 10 * 1024 * 1024) { // 10MB
+      alert('O arquivo deve ter no máximo 10MB');
+      this.value = '';
+    }
+  });
+});
+</script>

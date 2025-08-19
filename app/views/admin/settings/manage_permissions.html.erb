@@ -1,0 +1,180 @@
+<% content_for :title, "Gerenciar Permissões - Administrador" %>
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <div>
+    <h1 class="h2">
+      <i class="fas fa-shield-alt text-warning me-2"></i>
+      Gerenciar Permissões
+    </h1>
+    <p class="text-muted mb-0">Gerencie tipos de usuários, associações com escolas e reset de acessos.</p>
+  </div>
+  <div class="btn-toolbar mb-2 mb-md-0">
+    <%= link_to admin_settings_path, class: "btn btn-outline-secondary" do %>
+      <i class="fas fa-arrow-left"></i> Voltar
+    <% end %>
+  </div>
+</div>
+
+<!-- Filtros -->
+<div class="card mb-4">
+  <div class="card-body">
+    <%= form_with url: manage_permissions_admin_settings_path, method: :get, local: true, class: "row g-3" do |form| %>
+      <div class="col-md-4">
+        <%= form.text_field :search, placeholder: "Buscar por nome ou email...", 
+                           value: params[:search], class: "form-control" %>
+      </div>
+      <div class="col-md-3">
+        <%= form.select :user_type, 
+                       options_for_select([
+                         ['Todos os tipos', ''],
+                         ['Direção', 'direction'],
+                         ['Professor', 'teacher'],
+                         ['Aluno', 'student']
+                       ], params[:user_type]),
+                       {}, { class: "form-select" } %>
+      </div>
+      <div class="col-md-3">
+        <%= form.select :school_id, 
+                       options_from_collection_for_select(@schools, :id, :name, params[:school_id]),
+                       { prompt: "Todas as escolas" }, 
+                       { class: "form-select" } %>
+      </div>
+      <div class="col-md-2">
+        <%= form.submit "Buscar", class: "btn btn-outline-primary w-100" %>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<!-- Lista de Usuários -->
+<div class="card">
+  <div class="card-header">
+    <h6 class="mb-0">
+      <i class="fas fa-users me-2"></i>
+      Usuários Cadastrados (<%= @users.count %>)
+    </h6>
+  </div>
+  <div class="card-body">
+    <% if @users.any? %>
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>Usuário</th>
+              <th>Tipo</th>
+              <th>Escola</th>
+              <th>Status</th>
+              <th width="200">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @users.each do |user| %>
+              <tr>
+                <td>
+                  <div class="d-flex align-items-center">
+                    <div class="rounded-circle bg-<%= user.user_type == 'direction' ? 'warning' : user.user_type == 'teacher' ? 'info' : 'success' %> text-white d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px; font-size: 12px;">
+                      <i class="fas fa-user"></i>
+                    </div>
+                    <div>
+                      <strong><%= user.full_name %></strong>
+                      <br><small class="text-muted"><%= user.email %></small>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <span class="badge bg-<%= user.user_type == 'direction' ? 'warning' : user.user_type == 'teacher' ? 'info' : 'success' %>">
+                    <%= user.user_type.humanize %>
+                  </span>
+                </td>
+                <td>
+                  <%= user.school&.name || "Sem escola" %>
+                </td>
+                <td>
+                  <% if user.active %>
+                    <span class="badge bg-success">Ativo</span>
+                  <% else %>
+                    <span class="badge bg-danger">Inativo</span>
+                  <% end %>
+                </td>
+                <td>
+                  <div class="btn-group btn-group-sm">
+                    <!-- Editar Tipo -->
+                    <div class="dropdown">
+                      <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-edit"></i>
+                      </button>
+                      <ul class="dropdown-menu">
+                        <li><h6 class="dropdown-header">Alterar Tipo</h6></li>
+                        <% ['direction', 'teacher', 'student'].each do |type| %>
+                          <% next if user.user_type == type %>
+                          <li>
+                            <%= link_to admin_settings_path, 
+                                       method: :patch, 
+                                       params: { user_id: user.id, user: { user_type: type } },
+                                       class: "dropdown-item",
+                                       confirm: "Confirma alteração para #{type.humanize}?" do %>
+                              <%= type.humanize %>
+                            <% end %>
+                          </li>
+                        <% end %>
+                      </ul>
+                    </div>
+
+                    <!-- Reset de Senha -->
+                    <%= link_to admin_settings_path, 
+                               method: :patch, 
+                               params: { user_id: user.id },
+                               class: "btn btn-outline-warning",
+                               title: "Reset de Senha",
+                               confirm: "Tem certeza que deseja resetar a senha deste usuário?" do %>
+                      <i class="fas fa-key"></i>
+                    <% end %>
+
+                    <!-- Ativar/Desativar -->
+                    <%= link_to admin_settings_path, 
+                               method: :patch, 
+                               params: { user_id: user.id, user: { active: !user.active } },
+                               class: "btn btn-outline-#{user.active ? 'danger' : 'success'}",
+                               title: user.active ? "Desativar" : "Ativar",
+                               confirm: "Confirma #{user.active ? 'desativação' : 'ativação'} deste usuário?" do %>
+                      <i class="fas fa-#{user.active ? 'ban' : 'check'}"></i>
+                    <% end %>
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <div class="text-center py-5">
+        <i class="fas fa-users fa-3x text-muted mb-3"></i>
+        <h5 class="text-muted">Nenhum usuário encontrado</h5>
+        <p class="text-muted">Ajuste os filtros para encontrar usuários.</p>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<!-- Legendas -->
+<div class="card mt-4">
+  <div class="card-body">
+    <h6 class="card-title">Legendas</h6>
+    <div class="row">
+      <div class="col-md-6">
+        <small class="text-muted">
+          <i class="fas fa-edit text-primary"></i> Alterar tipo de usuário<br>
+          <i class="fas fa-key text-warning"></i> Reset de senha<br>
+          <i class="fas fa-ban text-danger"></i> Desativar usuário
+        </small>
+      </div>
+      <div class="col-md-6">
+        <small class="text-muted">
+          <span class="badge bg-warning">Direção</span> Diretor/a da escola<br>
+          <span class="badge bg-info">Professor</span> Professor/a<br>
+          <span class="badge bg-success">Aluno</span> Estudante
+        </small>
+      </div>
+    </div>
+  </div>
+</div>

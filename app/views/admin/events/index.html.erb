@@ -1,0 +1,123 @@
+<% content_for :title, "Eventos Municipais - Administrador" %>
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <div>
+    <h1 class="h2">
+      <i class="fas fa-calendar-alt text-primary me-2"></i>
+      Eventos Municipais
+    </h1>
+    <p class="text-muted mb-0">Gerencie eventos e comunicados para todas as escolas da rede.</p>
+  </div>
+  <div class="btn-toolbar mb-2 mb-md-0">
+    <%= link_to new_admin_event_path, class: "btn btn-primary" do %>
+      <i class="fas fa-plus"></i> Novo Evento
+    <% end %>
+  </div>
+</div>
+
+<!-- Filtros -->
+<div class="card mb-4">
+  <div class="card-body">
+    <%= form_with url: admin_events_path, method: :get, local: true, class: "row g-3" do |form| %>
+      <div class="col-md-4">
+        <%= form.text_field :search, placeholder: "Buscar por título ou descrição...", 
+                           value: params[:search], class: "form-control" %>
+      </div>
+      <div class="col-md-3">
+        <%= form.select :school_id, 
+                       options_from_collection_for_select(@schools, :id, :name, params[:school_id]),
+                       { prompt: "Todas as escolas" }, 
+                       { class: "form-select" } %>
+      </div>
+      <div class="col-md-3">
+        <%= form.submit "Buscar", class: "btn btn-outline-primary" %>
+        <%= link_to "Limpar", admin_events_path, class: "btn btn-outline-secondary" %>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<!-- Lista de Eventos -->
+<div class="card">
+  <div class="card-header">
+    <h6 class="mb-0">
+      <i class="fas fa-list me-2"></i>
+      Eventos Cadastrados (<%= @events.count %>)
+    </h6>
+  </div>
+  <div class="card-body">
+    <% if @events.any? %>
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>Título</th>
+              <th>Data</th>
+              <th>Tipo</th>
+              <th>Escola</th>
+              <th>Municipal</th>
+              <th width="150">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @events.each do |event| %>
+              <tr>
+                <td>
+                  <strong><%= event.title %></strong>
+                  <% if event.description.present? %>
+                    <br><small class="text-muted"><%= truncate(event.description, length: 60) %></small>
+                  <% end %>
+                </td>
+                <td>
+                  <%= event.event_date&.strftime("%d/%m/%Y") || "N/A" %>
+                  <% if event.upcoming? %>
+                    <span class="badge bg-success ms-1">Próximo</span>
+                  <% else %>
+                    <span class="badge bg-secondary ms-1">Passado</span>
+                  <% end %>
+                </td>
+                <td>
+                  <span class="badge bg-info"><%= event.event_type&.humanize || "N/A" %></span>
+                </td>
+                <td>
+                  <%= event.school.name %>
+                </td>
+                <td>
+                  <% if event.municipal? %>
+                    <span class="badge bg-warning">Sim</span>
+                  <% else %>
+                    <span class="badge bg-light text-dark">Não</span>
+                  <% end %>
+                </td>
+                <td>
+                  <div class="btn-group btn-group-sm">
+                    <%= link_to admin_event_path(event), class: "btn btn-outline-info", title: "Ver" do %>
+                      <i class="fas fa-eye"></i>
+                    <% end %>
+                    <%= link_to edit_admin_event_path(event), class: "btn btn-outline-warning", title: "Editar" do %>
+                      <i class="fas fa-edit"></i>
+                    <% end %>
+                    <%= link_to admin_event_path(event), method: :delete, 
+                               class: "btn btn-outline-danger", title: "Excluir",
+                               confirm: "Tem certeza que deseja excluir este evento?" do %>
+                      <i class="fas fa-trash"></i>
+                    <% end %>
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <div class="text-center py-5">
+        <i class="fas fa-calendar-alt fa-3x text-muted mb-3"></i>
+        <h5 class="text-muted">Nenhum evento encontrado</h5>
+        <p class="text-muted">Comece criando um novo evento municipal.</p>
+        <%= link_to new_admin_event_path, class: "btn btn-primary" do %>
+          <i class="fas fa-plus"></i> Criar Primeiro Evento
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</div>

@@ -10,7 +10,7 @@
     
     <li class="nav-item">
       <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
-        <span>Gestão do Sistema</span>
+        <span>Gestão da Rede</span>
       </h6>
     </li>
     
@@ -22,13 +22,43 @@
     
     <li class="nav-item">
       <%= link_to admin_users_path, class: "nav-link #{'active' if current_page?(admin_users_path)}" do %>
+        <i class="fas fa-users"></i> Usuários
+      <% end %>
+    </li>
+    
+    <li class="nav-item">
+      <%= link_to admin_directions_path, class: "nav-link #{'active' if current_page?(admin_directions_path)}" do %>
         <i class="fas fa-user-tie"></i> Diretores
       <% end %>
     </li>
     
     <li class="nav-item">
-      <%= link_to admin_reports_path, class: "nav-link #{'active' if current_page?(admin_reports_path)}" do %>
-        <i class="fas fa-chart-bar"></i> Relatórios Gerais
+      <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+        <span>Gestão Municipal</span>
+      </h6>
+    </li>
+    
+    <li class="nav-item">
+      <%= link_to admin_events_path, class: "nav-link #{'active' if controller_name == 'events' && controller.class.module_parent.name.downcase == 'admin'}" do %>
+        <i class="fas fa-calendar-alt"></i> Eventos Municipais
+      <% end %>
+    </li>
+    
+    <li class="nav-item">
+      <%= link_to admin_documents_path, class: "nav-link #{'active' if controller_name == 'documents' && controller.class.module_parent.name.downcase == 'admin'}" do %>
+        <i class="fas fa-file-archive"></i> GED Municipal
+      <% end %>
+    </li>
+    
+    <li class="nav-item">
+      <%= link_to admin_reports_path, class: "nav-link #{'active' if controller_name == 'reports' && controller.class.module_parent.name.downcase == 'admin'}" do %>
+        <i class="fas fa-chart-bar"></i> Relatórios
+      <% end %>
+    </li>
+    
+    <li class="nav-item">
+      <%= link_to admin_settings_path, class: "nav-link #{'active' if controller_name == 'settings' && controller.class.module_parent.name.downcase == 'admin'}" do %>
+        <i class="fas fa-cogs"></i> Configurações
       <% end %>
     </li>
   </ul>

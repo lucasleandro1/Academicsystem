@@ -1,0 +1,173 @@
+<% content_for :title, "Novo Evento - Calendário Acadêmico" %>
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <div>
+    <h1 class="h2">
+      <i class="fas fa-calendar-plus text-success me-2"></i>
+      Novo Evento do Calendário
+    </h1>
+    <p class="text-muted mb-0">Adicione um novo evento ao calendário acadêmico municipal.</p>
+  </div>
+  <div class="btn-toolbar mb-2 mb-md-0">
+    <%= link_to admin_calendars_path, class: "btn btn-outline-secondary" do %>
+      <i class="fas fa-arrow-left"></i> Voltar
+    <% end %>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-header">
+        <h6 class="mb-0">
+          <i class="fas fa-info-circle me-2"></i>
+          Informações do Evento
+        </h6>
+      </div>
+      <div class="card-body">
+        <%= form_with model: [:admin, @calendar], local: true, class: "needs-validation", novalidate: true do |form| %>
+          <% if @calendar.errors.any? %>
+            <div class="alert alert-danger">
+              <h6><i class="fas fa-exclamation-triangle"></i> Erro ao salvar o evento:</h6>
+              <ul class="mb-0">
+                <% @calendar.errors.full_messages.each do |message| %>
+                  <li><%= message %></li>
+                <% end %>
+              </ul>
+            </div>
+          <% end %>
+
+          <div class="row">
+            <div class="col-md-8 mb-3">
+              <%= form.label :title, "Título do Evento", class: "form-label" %>
+              <%= form.text_field :title, class: "form-control", placeholder: "Ex: Feriado Municipal, Reunião Pedagógica..." %>
+              <div class="invalid-feedback">Por favor, informe o título do evento.</div>
+            </div>
+            <div class="col-md-4 mb-3">
+              <%= form.label :date, "Data", class: "form-label" %>
+              <%= form.date_field :date, class: "form-control" %>
+              <div class="invalid-feedback">Por favor, informe a data do evento.</div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <%= form.label :calendar_type, "Tipo de Evento", class: "form-label" %>
+              <%= form.select :calendar_type, 
+                             options_for_select(@calendar_types.map { |type| 
+                               [AcademicCalendar.new(calendar_type: type).type_description, type] 
+                             }), 
+                             { prompt: "Selecione o tipo..." }, 
+                             { class: "form-select" } %>
+              <div class="invalid-feedback">Por favor, selecione o tipo de evento.</div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Abrangência</label>
+              <div class="form-check">
+                <%= form.radio_button :all_schools, true, class: "form-check-input", id: "municipal_yes" %>
+                <%= form.label :all_schools, "Municipal (todas as escolas)", for: "municipal_yes", class: "form-check-label" %>
+              </div>
+              <div class="form-check">
+                <%= form.radio_button :all_schools, false, class: "form-check-input", id: "municipal_no" %>
+                <%= form.label :all_schools, "Escola específica", for: "municipal_no", class: "form-check-label" %>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3" id="school-selection" style="display: none;">
+            <%= form.label :school_id, "Escola", class: "form-label" %>
+            <%= form.select :school_id, 
+                           options_for_select([['Selecione uma escola...', '']] + 
+                           @schools.map { |school| [school.name, school.id] }), 
+                           {}, { class: "form-select" } %>
+            <div class="form-text">Selecione a escola específica para este evento.</div>
+          </div>
+
+          <div class="mb-4">
+            <%= form.label :description, "Descrição", class: "form-label" %>
+            <%= form.text_area :description, rows: 4, class: "form-control", 
+                              placeholder: "Descreva detalhes sobre o evento, instruções especiais, etc." %>
+            <div class="form-text">Informações adicionais sobre o evento (opcional).</div>
+          </div>
+
+          <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+            <%= link_to "Cancelar", admin_calendars_path, class: "btn btn-outline-secondary me-md-2" %>
+            <%= form.submit "Salvar Evento", class: "btn btn-success" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <!-- Ajuda e Dicas -->
+    <div class="card">
+      <div class="card-header">
+        <h6 class="mb-0">
+          <i class="fas fa-lightbulb text-warning me-2"></i>
+          Dicas Importantes
+        </h6>
+      </div>
+      <div class="card-body">
+        <div class="alert alert-info">
+          <h6><i class="fas fa-info-circle"></i> Eventos Municipais</h6>
+          <p class="small mb-0">Eventos marcados como "Municipal" serão automaticamente adicionados ao calendário de todas as escolas da rede.</p>
+        </div>
+        
+        <h6 class="mt-3">Tipos de Eventos:</h6>
+        <ul class="small text-muted">
+          <li><strong>Feriado:</strong> Dias sem aula</li>
+          <li><strong>Férias:</strong> Períodos de recesso</li>
+          <li><strong>Período de Provas:</strong> Avaliações</li>
+          <li><strong>Matrícula:</strong> Períodos de inscrição</li>
+          <li><strong>Reunião:</strong> Encontros pedagógicos</li>
+          <li><strong>Evento Especial:</strong> Comemorações</li>
+          <li><strong>Prazo:</strong> Datas limites</li>
+        </ul>
+
+        <div class="mt-3">
+          <h6>Estatísticas Atuais:</h6>
+          <p class="small text-muted mb-1">
+            <i class="fas fa-school"></i> <%= @schools.count %> escolas na rede
+          </p>
+          <p class="small text-muted mb-0">
+            <i class="fas fa-calendar"></i> <%= AcademicCalendar.count %> eventos no calendário
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Controle de exibição da seleção de escola
+document.addEventListener('DOMContentLoaded', function() {
+  const municipalYes = document.getElementById('municipal_yes');
+  const municipalNo = document.getElementById('municipal_no');
+  const schoolSelection = document.getElementById('school-selection');
+
+  function toggleSchoolSelection() {
+    if (municipalNo.checked) {
+      schoolSelection.style.display = 'block';
+    } else {
+      schoolSelection.style.display = 'none';
+    }
+  }
+
+  municipalYes.addEventListener('change', toggleSchoolSelection);
+  municipalNo.addEventListener('change', toggleSchoolSelection);
+  
+  // Verificar estado inicial
+  toggleSchoolSelection();
+
+  // Validação do formulário
+  const form = document.querySelector('.needs-validation');
+  form.addEventListener('submit', function(event) {
+    if (!form.checkValidity()) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    form.classList.add('was-validated');
+  });
+});
+</script>

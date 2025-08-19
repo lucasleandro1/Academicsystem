@@ -1,0 +1,114 @@
+<% content_for :title, "Novo Evento - Administrador" %>
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <div>
+    <h1 class="h2">
+      <i class="fas fa-calendar-plus text-primary me-2"></i>
+      Novo Evento Municipal
+    </h1>
+    <p class="text-muted mb-0">Crie um evento para uma escola específica ou para toda a rede municipal.</p>
+  </div>
+  <div class="btn-toolbar mb-2 mb-md-0">
+    <%= link_to admin_events_path, class: "btn btn-outline-secondary" do %>
+      <i class="fas fa-arrow-left"></i> Voltar
+    <% end %>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body">
+    <%= form_with model: [:admin, @event], local: true, class: "row g-3" do |form| %>
+      <% if @event.errors.any? %>
+        <div class="col-12">
+          <div class="alert alert-danger">
+            <h6>Erro ao salvar evento:</h6>
+            <ul class="mb-0">
+              <% @event.errors.full_messages.each do |message| %>
+                <li><%= message %></li>
+              <% end %>
+            </ul>
+          </div>
+        </div>
+      <% end %>
+
+      <div class="col-md-8">
+        <%= form.label :title, "Título do Evento", class: "form-label" %>
+        <%= form.text_field :title, class: "form-control", placeholder: "Ex: Semana Pedagógica 2025" %>
+      </div>
+
+      <div class="col-md-4">
+        <%= form.label :event_date, "Data do Evento", class: "form-label" %>
+        <%= form.date_field :event_date, class: "form-control" %>
+      </div>
+
+      <div class="col-md-6">
+        <%= form.label :event_type, "Tipo de Evento", class: "form-label" %>
+        <%= form.select :event_type, 
+                       options_for_select([
+                         ['Geral', 'general'],
+                         ['Reunião', 'meeting'],
+                         ['Feriado', 'holiday'],
+                         ['Acadêmico', 'academic'],
+                         ['Celebração', 'celebration'],
+                         ['Treinamento', 'training'],
+                         ['Outro', 'other']
+                       ]), 
+                       { prompt: "Selecione o tipo" }, 
+                       { class: "form-select" } %>
+      </div>
+
+      <div class="col-md-6">
+        <%= form.label :school_id, "Escola", class: "form-label" %>
+        <%= form.select :school_id, 
+                       options_from_collection_for_select(@schools, :id, :name),
+                       { prompt: "Selecione a escola" }, 
+                       { class: "form-select", id: "school_select" } %>
+      </div>
+
+      <div class="col-12">
+        <%= form.label :description, "Descrição", class: "form-label" %>
+        <%= form.text_area :description, class: "form-control", rows: 4, 
+                          placeholder: "Descreva os detalhes do evento..." %>
+      </div>
+
+      <div class="col-12">
+        <div class="form-check">
+          <%= check_box_tag 'event[is_municipal]', '1', false, 
+                           class: "form-check-input", id: "municipal_check" %>
+          <%= label_tag 'event[is_municipal]', class: "form-check-label" do %>
+            <strong>Evento Municipal</strong> - Criar este evento para todas as escolas da rede
+          <% end %>
+          <div class="form-text">
+            Marque esta opção para enviar este evento para todas as escolas automaticamente.
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12">
+        <hr>
+        <%= form.submit "Criar Evento", class: "btn btn-primary" %>
+        <%= link_to admin_events_path, class: "btn btn-secondary" do %>
+          Cancelar
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const municipalCheck = document.getElementById('municipal_check');
+  const schoolSelect = document.getElementById('school_select');
+  
+  municipalCheck.addEventListener('change', function() {
+    if (this.checked) {
+      schoolSelect.value = '';
+      schoolSelect.disabled = true;
+      schoolSelect.parentElement.querySelector('label').innerHTML = 'Escola <small class="text-muted">(Será aplicado a todas)</small>';
+    } else {
+      schoolSelect.disabled = false;
+      schoolSelect.parentElement.querySelector('label').innerHTML = 'Escola';
+    }
+  });
+});
+</script>
