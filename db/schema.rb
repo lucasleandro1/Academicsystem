@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_08_06_165714) do
+ActiveRecord::Schema[8.0].define(version: 2025_08_19_175937) do
   create_table "absences", force: :cascade do |t|
     t.integer "subject_id", null: false
     t.date "date"
@@ -36,6 +36,21 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_06_165714) do
     t.index ["user_id"], name: "index_activities_on_user_id"
   end
 
+  create_table "announcements", force: :cascade do |t|
+    t.string "title"
+    t.text "content"
+    t.string "announcement_type"
+    t.text "target_schools"
+    t.integer "user_id", null: false
+    t.integer "priority"
+    t.datetime "published_at"
+    t.datetime "expires_at"
+    t.boolean "active"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_announcements_on_user_id"
+  end
+
   create_table "attachments", force: :cascade do |t|
     t.string "attachable_type", null: false
     t.integer "attachable_id", null: false
@@ -44,6 +59,18 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_06_165714) do
     t.datetime "updated_at", null: false
     t.index ["attachable_type", "attachable_id"], name: "index_attachments_on_attachable"
     t.index ["school_id"], name: "index_attachments_on_school_id"
+  end
+
+  create_table "calendars", force: :cascade do |t|
+    t.string "title"
+    t.date "date"
+    t.string "calendar_type"
+    t.text "description"
+    t.boolean "all_schools"
+    t.integer "school_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["school_id"], name: "index_calendars_on_school_id"
   end
 
   create_table "class_schedules", force: :cascade do |t|
@@ -79,6 +106,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_06_165714) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "user_id", null: false
+    t.boolean "is_municipal"
+    t.string "file_path"
+    t.string "file_name"
     t.index ["school_id"], name: "index_documents_on_school_id"
     t.index ["user_id"], name: "index_documents_on_user_id"
   end
@@ -102,6 +132,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_06_165714) do
     t.integer "school_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "is_municipal"
+    t.string "event_type"
+    t.date "event_date"
     t.index ["school_id"], name: "index_events_on_school_id"
   end
 
@@ -131,6 +164,22 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_06_165714) do
     t.index ["school_id"], name: "index_messages_on_school_id"
     t.index ["sender_id", "created_at"], name: "index_messages_on_sender_id_and_created_at"
     t.index ["sender_id"], name: "index_messages_on_sender_id"
+  end
+
+  create_table "municipal_events", force: :cascade do |t|
+    t.string "title"
+    t.text "description"
+    t.string "event_type"
+    t.datetime "start_date"
+    t.datetime "end_date"
+    t.string "location"
+    t.integer "user_id", null: false
+    t.text "schools_participating"
+    t.boolean "registration_required"
+    t.integer "max_participants"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_municipal_events_on_user_id"
   end
 
   create_table "occurrences", force: :cascade do |t|
@@ -217,7 +266,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_06_165714) do
   add_foreign_key "activities", "schools"
   add_foreign_key "activities", "subjects"
   add_foreign_key "activities", "users"
+  add_foreign_key "announcements", "users"
   add_foreign_key "attachments", "schools"
+  add_foreign_key "calendars", "schools"
   add_foreign_key "class_schedules", "classrooms"
   add_foreign_key "class_schedules", "schools"
   add_foreign_key "class_schedules", "subjects"
@@ -232,6 +283,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_06_165714) do
   add_foreign_key "messages", "schools"
   add_foreign_key "messages", "users", column: "recipient_id"
   add_foreign_key "messages", "users", column: "sender_id"
+  add_foreign_key "municipal_events", "users"
   add_foreign_key "occurrences", "schools"
   add_foreign_key "occurrences", "users"
   add_foreign_key "subjects", "classrooms"
