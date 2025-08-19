@@ -9,7 +9,38 @@ Rails.application.routes.draw do
     resources :schools
     resources :users
     resources :directions, except: [ :show, :edit, :update ]
-    resources :reports, only: [ :index ]
+    resources :events
+    resources :documents do
+      member do
+        get :download
+      end
+    end
+    resources :reports, only: [ :index ] do
+      collection do
+        get :municipal_overview
+        get :attendance_report
+        get :performance_report
+        get :student_distribution
+        get :evasion_report
+        get :export_pdf
+        get :export_excel
+      end
+    end
+    resources :calendars do
+      collection do
+        get :municipal
+      end
+    end
+    resources :settings, only: [ :index ] do
+      collection do
+        patch :update_academic_calendar
+        get :manage_permissions
+        patch :update_user_permissions
+        patch :reset_user_access
+        post :backup_system
+        get :system_info
+      end
+    end
     root to: "dashboard#index"
   end
 
@@ -67,8 +98,4 @@ Rails.application.routes.draw do
     resources :occurrences, only: [ :index, :show ]
     root to: "dashboard#index"
   end
-
-  # Rotas de teste (apenas para desenvolvimento)
-  get "/test/users", to: "test#users"
-  post "/test/login_as/:id", to: "test#login_as", as: "test_login_as"
 end
