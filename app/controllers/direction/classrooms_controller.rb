@@ -4,7 +4,7 @@ class Direction::ClassroomsController < ApplicationController
   before_action :set_classroom, only: [ :show, :edit, :update, :destroy ]
 
   def index
-    @classrooms = current_user.school.classrooms.includes(:students, :subjects)
+    @classrooms = current_user.school.classrooms.includes(:enrollments, :subjects)
   end
 
   def show

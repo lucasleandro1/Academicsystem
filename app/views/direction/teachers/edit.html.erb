@@ -1,0 +1,235 @@
+<div class="container-fluid py-4">
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <h2 class="h3 mb-0">
+            <i class="fas fa-chalkboard-teacher me-2"></i>
+            Editar Professor
+          </h2>
+          <p class="text-muted mb-0">Atualize as informações do professor</p>
+        </div>
+        <div class="d-flex gap-2">
+          <%= link_to direction_teachers_path, class: "btn btn-outline-secondary" do %>
+            <i class="fas fa-arrow-left me-1"></i>
+            Voltar
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-lg-8">
+      <div class="card shadow-sm">
+        <div class="card-header bg-white border-bottom-0">
+          <h5 class="card-title mb-0">
+            <i class="fas fa-user-edit me-2"></i>
+            Dados do Professor
+          </h5>
+        </div>
+        <div class="card-body">
+          <%= form_with model: [:direction, @teacher], local: true, class: "row g-3" do |form| %>
+            <% if @teacher.errors.any? %>
+              <div class="col-12">
+                <div class="alert alert-danger">
+                  <h6>Foram encontrados os seguintes erros:</h6>
+                  <ul class="mb-0">
+                    <% @teacher.errors.full_messages.each do |message| %>
+                      <li><%= message %></li>
+                    <% end %>
+                  </ul>
+                </div>
+              </div>
+            <% end %>
+
+            <!-- Informações Pessoais -->
+            <div class="col-12">
+              <h6 class="text-muted border-bottom pb-2 mb-3">
+                <i class="fas fa-user me-1"></i>
+                Informações Pessoais
+              </h6>
+            </div>
+
+            <div class="col-md-6">
+              <%= form.label :first_name, "Nome", class: "form-label" %>
+              <%= form.text_field :first_name, class: "form-control", placeholder: "Digite o nome" %>
+            </div>
+
+            <div class="col-md-6">
+              <%= form.label :last_name, "Sobrenome", class: "form-label" %>
+              <%= form.text_field :last_name, class: "form-control", placeholder: "Digite o sobrenome" %>
+            </div>
+
+            <div class="col-md-6">
+              <%= form.label :email, "E-mail", class: "form-label" %>
+              <%= form.email_field :email, class: "form-control", placeholder: "exemplo@email.com" %>
+            </div>
+
+            <div class="col-md-6">
+              <%= form.label :phone, "Telefone", class: "form-label" %>
+              <%= form.text_field :phone, class: "form-control", placeholder: "(11) 99999-9999" %>
+            </div>
+
+            <div class="col-md-6">
+              <%= form.label :document_number, "CPF", class: "form-label" %>
+              <%= form.text_field :document_number, class: "form-control", placeholder: "000.000.000-00" %>
+            </div>
+
+            <div class="col-md-6">
+              <%= form.label :birth_date, "Data de Nascimento", class: "form-label" %>
+              <%= form.date_field :birth_date, class: "form-control" %>
+            </div>
+
+            <!-- Informações Profissionais -->
+            <div class="col-12 mt-4">
+              <h6 class="text-muted border-bottom pb-2 mb-3">
+                <i class="fas fa-briefcase me-1"></i>
+                Informações Profissionais
+              </h6>
+            </div>
+
+            <div class="col-md-6">
+              <%= form.label :specialization, "Especialização", class: "form-label" %>
+              <%= form.text_field :specialization, class: "form-control", placeholder: "Ex: Matemática, Português..." %>
+            </div>
+
+            <div class="col-md-6">
+              <%= form.label :hire_date, "Data de Contratação", class: "form-label" %>
+              <%= form.date_field :hire_date, class: "form-control" %>
+            </div>
+
+            <!-- Endereço -->
+            <div class="col-12 mt-4">
+              <h6 class="text-muted border-bottom pb-2 mb-3">
+                <i class="fas fa-map-marker-alt me-1"></i>
+                Endereço
+              </h6>
+            </div>
+
+            <div class="col-md-3">
+              <%= form.label :zip_code, "CEP", class: "form-label" %>
+              <%= form.text_field :zip_code, class: "form-control", placeholder: "00000-000" %>
+            </div>
+
+            <div class="col-md-6">
+              <%= form.label :address, "Endereço", class: "form-label" %>
+              <%= form.text_field :address, class: "form-control", placeholder: "Rua, Avenida..." %>
+            </div>
+
+            <div class="col-md-3">
+              <%= form.label :address_number, "Número", class: "form-label" %>
+              <%= form.text_field :address_number, class: "form-control", placeholder: "123" %>
+            </div>
+
+            <div class="col-md-4">
+              <%= form.label :neighborhood, "Bairro", class: "form-label" %>
+              <%= form.text_field :neighborhood, class: "form-control", placeholder: "Nome do bairro" %>
+            </div>
+
+            <div class="col-md-4">
+              <%= form.label :city, "Cidade", class: "form-label" %>
+              <%= form.text_field :city, class: "form-control", placeholder: "Nome da cidade" %>
+            </div>
+
+            <div class="col-md-4">
+              <%= form.label :state, "Estado", class: "form-label" %>
+              <%= form.select :state, 
+                  options_for_select([
+                    ['Acre', 'AC'], ['Alagoas', 'AL'], ['Amapá', 'AP'], ['Amazonas', 'AM'],
+                    ['Bahia', 'BA'], ['Ceará', 'CE'], ['Distrito Federal', 'DF'], ['Espírito Santo', 'ES'],
+                    ['Goiás', 'GO'], ['Maranhão', 'MA'], ['Mato Grosso', 'MT'], ['Mato Grosso do Sul', 'MS'],
+                    ['Minas Gerais', 'MG'], ['Pará', 'PA'], ['Paraíba', 'PB'], ['Paraná', 'PR'],
+                    ['Pernambuco', 'PE'], ['Piauí', 'PI'], ['Rio de Janeiro', 'RJ'], ['Rio Grande do Norte', 'RN'],
+                    ['Rio Grande do Sul', 'RS'], ['Rondônia', 'RO'], ['Roraima', 'RR'], ['Santa Catarina', 'SC'],
+                    ['São Paulo', 'SP'], ['Sergipe', 'SE'], ['Tocantins', 'TO']
+                  ], @teacher.state), 
+                  { prompt: "Selecione o estado" }, 
+                  { class: "form-select" } %>
+            </div>
+
+            <!-- Status -->
+            <div class="col-12 mt-4">
+              <h6 class="text-muted border-bottom pb-2 mb-3">
+                <i class="fas fa-toggle-on me-1"></i>
+                Status
+              </h6>
+            </div>
+
+            <div class="col-md-6">
+              <div class="form-check form-switch">
+                <%= form.check_box :active, class: "form-check-input", checked: @teacher.active? %>
+                <%= form.label :active, "Professor Ativo", class: "form-check-label" %>
+              </div>
+              <small class="text-muted">Desmarque para inativar o professor</small>
+            </div>
+
+            <!-- Botões -->
+            <div class="col-12 mt-4">
+              <div class="d-flex justify-content-between">
+                <%= link_to direction_teachers_path, class: "btn btn-outline-secondary" do %>
+                  <i class="fas fa-times me-1"></i>
+                  Cancelar
+                <% end %>
+                
+                <div class="d-flex gap-2">
+                  <%= form.submit "Atualizar Professor", class: "btn btn-primary" do %>
+                    <i class="fas fa-save me-1"></i>
+                    Atualizar Professor
+                  <% end %>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <!-- Informações Adicionais -->
+      <div class="card shadow-sm">
+        <div class="card-header bg-light">
+          <h6 class="card-title mb-0">
+            <i class="fas fa-info-circle me-2"></i>
+            Informações Adicionais
+          </h6>
+        </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <small class="text-muted d-block">Cadastrado em:</small>
+            <strong><%= @teacher.created_at.strftime("%d/%m/%Y às %H:%M") %></strong>
+          </div>
+
+          <div class="mb-3">
+            <small class="text-muted d-block">Última atualização:</small>
+            <strong><%= @teacher.updated_at.strftime("%d/%m/%Y às %H:%M") %></strong>
+          </div>
+
+          <% if @teacher.subjects.any? %>
+            <div class="mb-3">
+              <small class="text-muted d-block">Disciplinas:</small>
+              <% @teacher.subjects.each do |subject| %>
+                <span class="badge bg-primary me-1 mb-1"><%= subject.name %></span>
+              <% end %>
+            </div>
+          <% end %>
+
+          <div class="border-top pt-3">
+            <h6 class="text-muted">Ações Rápidas</h6>
+            <%= link_to direction_teacher_path(@teacher), class: "btn btn-outline-info btn-sm w-100 mb-2" do %>
+              <i class="fas fa-eye me-1"></i>
+              Ver Perfil Completo
+            <% end %>
+            
+            <% if @teacher.subjects.any? %>
+              <%= link_to "#", class: "btn btn-outline-success btn-sm w-100 mb-2" do %>
+                <i class="fas fa-book me-1"></i>
+                Gerenciar Disciplinas
+              <% end %>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

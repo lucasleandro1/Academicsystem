@@ -1,0 +1,377 @@
+<!-- Show Student -->
+<% content_for :title, "Perfil do Aluno" %>
+<% content_for :page_title, "#{@student.name}" %>
+
+<div class="container-fluid">
+  <!-- Breadcrumb -->
+  <div class="row">
+    <div class="col-12">
+      <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+        <h4 class="mb-sm-0">Perfil do Aluno</h4>
+        <div class="page-title-right">
+          <ol class="breadcrumb m-0">
+            <li class="breadcrumb-item">
+              <%= link_to "Direção", direction_root_path, class: "text-decoration-none" %>
+            </li>
+            <li class="breadcrumb-item">
+              <%= link_to "Alunos", direction_students_path, class: "text-decoration-none" %>
+            </li>
+            <li class="breadcrumb-item active"><%= @student.name %></li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Student Profile -->
+  <div class="row">
+    <!-- Basic Info -->
+    <div class="col-xl-8">
+      <div class="card">
+        <div class="card-header">
+          <div class="d-flex align-items-center">
+            <div class="flex-shrink-0">
+              <div class="avatar-lg">
+                <div class="avatar-title bg-primary rounded-circle fs-2">
+                  <%= @student.name.first.upcase %>
+                </div>
+              </div>
+            </div>
+            <div class="flex-grow-1 ms-3">
+              <h5 class="card-title mb-1"><%= @student.name %></h5>
+              <p class="text-muted mb-0">
+                <i class="fas fa-id-card me-1"></i>
+                ID: #<%= @student.id.to_s.rjust(4, '0') %>
+              </p>
+              <p class="text-muted mb-0">
+                <i class="fas fa-envelope me-1"></i>
+                <%= @student.email %>
+              </p>
+            </div>
+            <div class="flex-shrink-0">
+              <%= link_to edit_direction_student_path(@student), 
+                  class: "btn btn-primary" do %>
+                <i class="fas fa-edit me-1"></i> Editar
+              <% end %>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <h6 class="text-primary mb-3">
+                <i class="fas fa-user me-2"></i>Informações Pessoais
+              </h6>
+              <table class="table table-borderless table-sm">
+                <tr>
+                  <td class="fw-semibold text-muted">Nome Completo:</td>
+                  <td><%= @student.name %></td>
+                </tr>
+                <tr>
+                  <td class="fw-semibold text-muted">Email:</td>
+                  <td><%= @student.email %></td>
+                </tr>
+                <tr>
+                  <td class="fw-semibold text-muted">Data de Nascimento:</td>
+                  <td>
+                    <% if @student.birth_date %>
+                      <%= @student.birth_date.strftime("%d/%m/%Y") %>
+                    <% else %>
+                      <span class="text-muted">Não informado</span>
+                    <% end %>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="fw-semibold text-muted">Telefone:</td>
+                  <td>
+                    <% if @student.phone.present? %>
+                      <%= @student.phone %>
+                    <% else %>
+                      <span class="text-muted">Não informado</span>
+                    <% end %>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="fw-semibold text-muted">Status:</td>
+                  <td>
+                    <% if @student.active? %>
+                      <span class="badge bg-success">Ativo</span>
+                    <% else %>
+                      <span class="badge bg-danger">Inativo</span>
+                    <% end %>
+                  </td>
+                </tr>
+              </table>
+            </div>
+            
+            <div class="col-md-6">
+              <h6 class="text-primary mb-3">
+                <i class="fas fa-home me-2"></i>Responsável
+              </h6>
+              <table class="table table-borderless table-sm">
+                <tr>
+                  <td class="fw-semibold text-muted">Nome:</td>
+                  <td>
+                    <% if @student.guardian_name.present? %>
+                      <%= @student.guardian_name %>
+                    <% else %>
+                      <span class="text-muted">Não informado</span>
+                    <% end %>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="fw-semibold text-muted">Telefone:</td>
+                  <td>
+                    <% if @student.respond_to?(:guardian_phone) && @student.guardian_phone.present? %>
+                      <%= @student.guardian_phone %>
+                    <% else %>
+                      <span class="text-muted">Não informado</span>
+                    <% end %>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="fw-semibold text-muted">Endereço:</td>
+                  <td>
+                    <% if @student.address.present? %>
+                      <%= @student.address %>
+                    <% else %>
+                      <span class="text-muted">Não informado</span>
+                    <% end %>
+                  </td>
+                </tr>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Academic Info -->
+    <div class="col-xl-4">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">
+            <i class="fas fa-graduation-cap me-2"></i>Informações Acadêmicas
+          </h5>
+        </div>
+        <div class="card-body">
+          <% if @student.active_enrollment %>
+            <div class="text-center mb-3">
+              <h6 class="text-primary">Turma Atual</h6>
+              <h5 class="mb-1"><%= @student.active_enrollment.classroom.name %></h5>
+              <p class="text-muted mb-0">
+                <%= @student.active_enrollment.classroom.level.humanize %> - 
+                <%= @student.active_enrollment.classroom.shift.humanize %>
+              </p>
+            </div>
+            
+            <div class="row text-center">
+              <div class="col-6">
+                <div class="border rounded p-3">
+                  <h6 class="text-primary mb-2">Média Geral</h6>
+                  <h4 class="mb-0">
+                    <% if @student.grades.any? %>
+                      <%= number_with_precision(@student.grades.average(:value), precision: 1) %>
+                    <% else %>
+                      --
+                    <% end %>
+                  </h4>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="border rounded p-3">
+                  <h6 class="text-primary mb-2">Frequência</h6>
+                  <h4 class="mb-0">
+                    <% total_classes = 100 # Placeholder %>
+                    <% absences = @student.absences.count %>
+                    <% attendance = total_classes > 0 ? ((total_classes - absences) * 100.0 / total_classes).round(1) : 0 %>
+                    <%= attendance %>%
+                  </h4>
+                </div>
+              </div>
+            </div>
+          <% else %>
+            <div class="text-center text-muted">
+              <i class="fas fa-info-circle fs-1 mb-3 d-block"></i>
+              <p>Este aluno não possui matrícula ativa.</p>
+            </div>
+          <% end %>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">
+            <i class="fas fa-bolt me-2"></i>Ações Rápidas
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="d-grid gap-2">
+            <%= link_to direction_enrollments_path(student_id: @student.id), 
+                class: "btn btn-outline-primary" do %>
+              <i class="fas fa-file-alt me-2"></i>Ver Matrículas
+            <% end %>
+            
+            <%= link_to direction_occurrences_path(student_id: @student.id), 
+                class: "btn btn-outline-warning" do %>
+              <i class="fas fa-exclamation-triangle me-2"></i>Ocorrências
+            <% end %>
+            
+            <%= link_to direction_reports_path(student_id: @student.id), 
+                class: "btn btn-outline-info" do %>
+              <i class="fas fa-chart-line me-2"></i>Relatórios
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Academic History -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <ul class="nav nav-tabs nav-tabs-custom" role="tablist">
+            <li class="nav-item">
+              <a class="nav-link active" data-bs-toggle="tab" href="#grades-tab" role="tab">
+                <i class="fas fa-star me-2"></i>Notas
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" data-bs-toggle="tab" href="#absences-tab" role="tab">
+                <i class="fas fa-calendar-times me-2"></i>Faltas
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" data-bs-toggle="tab" href="#occurrences-tab" role="tab">
+                <i class="fas fa-exclamation-circle me-2"></i>Ocorrências
+              </a>
+            </li>
+          </ul>
+        </div>
+        <div class="card-body">
+          <div class="tab-content">
+            <!-- Grades Tab -->
+            <div class="tab-pane active" id="grades-tab">
+              <% if @student.grades.any? %>
+                <div class="table-responsive">
+                  <table class="table table-hover">
+                    <thead class="table-light">
+                      <tr>
+                        <th>Disciplina</th>
+                        <th>Nota</th>
+                        <th>Data</th>
+                        <th>Tipo</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <% @student.grades.includes(:subject).recent.limit(10).each do |grade| %>
+                        <tr>
+                          <td><%= grade.subject&.name || "N/A" %></td>
+                          <td>
+                            <span class="badge bg-<%= grade.value >= 7 ? 'success' : grade.value >= 5 ? 'warning' : 'danger' %>">
+                              <%= grade.value %>
+                            </span>
+                          </td>
+                          <td><%= grade.created_at.strftime("%d/%m/%Y") %></td>
+                          <td><%= grade.activity_type&.humanize || "Avaliação" %></td>
+                        </tr>
+                      <% end %>
+                    </tbody>
+                  </table>
+                </div>
+              <% else %>
+                <div class="text-center text-muted py-4">
+                  <i class="fas fa-star fs-1 mb-3 d-block"></i>
+                  <p>Nenhuma nota registrada ainda.</p>
+                </div>
+              <% end %>
+            </div>
+
+            <!-- Absences Tab -->
+            <div class="tab-pane" id="absences-tab">
+              <% if @student.absences.any? %>
+                <div class="table-responsive">
+                  <table class="table table-hover">
+                    <thead class="table-light">
+                      <tr>
+                        <th>Data</th>
+                        <th>Disciplina</th>
+                        <th>Justificativa</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <% @student.absences.includes(:subject).recent.limit(10).each do |absence| %>
+                        <tr>
+                          <td><%= absence.date.strftime("%d/%m/%Y") %></td>
+                          <td><%= absence.subject&.name || "N/A" %></td>
+                          <td>
+                            <% if absence.justified? %>
+                              <span class="badge bg-success">Justificada</span>
+                            <% else %>
+                              <span class="badge bg-danger">Não Justificada</span>
+                            <% end %>
+                          </td>
+                        </tr>
+                      <% end %>
+                    </tbody>
+                  </table>
+                </div>
+              <% else %>
+                <div class="text-center text-muted py-4">
+                  <i class="fas fa-calendar-check fs-1 mb-3 d-block"></i>
+                  <p>Nenhuma falta registrada.</p>
+                </div>
+              <% end %>
+            </div>
+
+            <!-- Occurrences Tab -->
+            <div class="tab-pane" id="occurrences-tab">
+              <% if @student.occurrences.any? %>
+                <div class="table-responsive">
+                  <table class="table table-hover">
+                    <thead class="table-light">
+                      <tr>
+                        <th>Data</th>
+                        <th>Tipo</th>
+                        <th>Descrição</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <% @student.occurrences.recent.limit(10).each do |occurrence| %>
+                        <tr>
+                          <td><%= occurrence.date.strftime("%d/%m/%Y") %></td>
+                          <td>
+                            <span class="badge bg-<%= occurrence.occurrence_type == 'positive' ? 'success' : 'warning' %>">
+                              <%= occurrence.occurrence_type&.humanize || "Disciplinar" %>
+                            </span>
+                          </td>
+                          <td><%= truncate(occurrence.description, length: 100) %></td>
+                          <td>
+                            <% if occurrence.resolved? %>
+                              <span class="badge bg-success">Resolvida</span>
+                            <% else %>
+                              <span class="badge bg-warning">Pendente</span>
+                            <% end %>
+                          </td>
+                        </tr>
+                      <% end %>
+                    </tbody>
+                  </table>
+                </div>
+              <% else %>
+                <div class="text-center text-muted py-4">
+                  <i class="fas fa-check-circle fs-1 mb-3 d-block"></i>
+                  <p>Nenhuma ocorrência registrada.</p>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

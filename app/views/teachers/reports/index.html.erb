@@ -1,0 +1,314 @@
+<% content_for :title, "Relatórios" %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1><i class="fas fa-chart-bar"></i> Relatórios</h1>
+  <div class="text-muted">
+    <small>Relatórios de desempenho e frequência</small>
+  </div>
+</div>
+
+<!-- Cards de Acesso Rápido -->
+<div class="row mb-4">
+  <div class="col-md-4">
+    <div class="card h-100">
+      <div class="card-body text-center">
+        <div class="mb-3">
+          <i class="fas fa-chart-line fa-3x text-primary"></i>
+        </div>
+        <h5>Desempenho dos Alunos</h5>
+        <p class="text-muted">Relatório detalhado do desempenho acadêmico por disciplina</p>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#performanceModal">
+          <i class="fas fa-eye"></i> Gerar Relatório
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-md-4">
+    <div class="card h-100">
+      <div class="card-body text-center">
+        <div class="mb-3">
+          <i class="fas fa-calendar-check fa-3x text-success"></i>
+        </div>
+        <h5>Frequência da Turma</h5>
+        <p class="text-muted">Controle de faltas e presença dos alunos</p>
+        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#attendanceModal">
+          <i class="fas fa-eye"></i> Gerar Relatório
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-md-4">
+    <div class="card h-100">
+      <div class="card-body text-center">
+        <div class="mb-3">
+          <i class="fas fa-clipboard-list fa-3x text-warning"></i>
+        </div>
+        <h5>Resumo de Notas</h5>
+        <p class="text-muted">Estatísticas e distribuição das notas lançadas</p>
+        <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#gradesModal">
+          <i class="fas fa-eye"></i> Gerar Relatório
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Resumo Geral -->
+<div class="row">
+  <div class="col-md-12">
+    <div class="card">
+      <div class="card-header">
+        <h5><i class="fas fa-info-circle"></i> Resumo Geral das Suas Atividades</h5>
+      </div>
+      <div class="card-body">
+        <div class="row text-center">
+          <div class="col-md-2">
+            <h4 class="text-primary"><%= @subjects.count %></h4>
+            <small class="text-muted">Disciplinas</small>
+          </div>
+          <div class="col-md-2">
+            <h4 class="text-success"><%= @classrooms.count %></h4>
+            <small class="text-muted">Turmas</small>
+          </div>
+          <div class="col-md-2">
+            <h4 class="text-info">
+              <%= current_user.subjects.joins(:classroom).joins('JOIN enrollments ON enrollments.classroom_id = classrooms.id').where('enrollments.status = ?', 'active').distinct.count('enrollments.user_id') %>
+            </h4>
+            <small class="text-muted">Alunos Total</small>
+          </div>
+          <div class="col-md-2">
+            <h4 class="text-warning">
+              <%= Grade.joins(:subject).where(subjects: { user_id: current_user.id }).count %>
+            </h4>
+            <small class="text-muted">Notas Lançadas</small>
+          </div>
+          <div class="col-md-2">
+            <h4 class="text-danger">
+              <%= Absence.joins(:subject).where(subjects: { user_id: current_user.id }).count %>
+            </h4>
+            <small class="text-muted">Faltas Registradas</small>
+          </div>
+          <div class="col-md-2">
+            <h4 class="text-secondary">
+              <%= current_user.activities.count %>
+            </h4>
+            <small class="text-muted">Atividades Criadas</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Relatório de Desempenho -->
+<div class="modal fade" id="performanceModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Relatório de Desempenho dos Alunos</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="performance-form" action="<%= student_performance_teachers_reports_path %>" method="get">
+          <div class="mb-3">
+            <label class="form-label">Filtrar por:</label>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="filter_type" id="by_subject" value="subject" checked>
+              <label class="form-check-label" for="by_subject">Por Disciplina</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="filter_type" id="by_classroom" value="classroom">
+              <label class="form-check-label" for="by_classroom">Por Turma</label>
+            </div>
+          </div>
+          
+          <div class="mb-3" id="subject-select">
+            <label class="form-label">Disciplina:</label>
+            <select name="subject_id" class="form-select">
+              <option value="">Selecione uma disciplina</option>
+              <% @subjects.each do |subject| %>
+                <option value="<%= subject.id %>"><%= subject.name %> - <%= subject.classroom.name %></option>
+              <% end %>
+            </select>
+          </div>
+          
+          <div class="mb-3" id="classroom-select" style="display: none;">
+            <label class="form-label">Turma:</label>
+            <select name="classroom_id" class="form-select">
+              <option value="">Selecione uma turma</option>
+              <% @classrooms.each do |classroom| %>
+                <option value="<%= classroom.id %>"><%= classroom.name %></option>
+              <% end %>
+            </select>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" form="performance-form" class="btn btn-primary">Gerar Relatório</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Relatório de Frequência -->
+<div class="modal fade" id="attendanceModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Relatório de Frequência</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="attendance-form" action="<%= classroom_attendance_teachers_reports_path %>" method="get">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Data Inicial:</label>
+                <input type="date" name="start_date" class="form-control" value="<%= 1.month.ago.strftime('%Y-%m-%d') %>">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Data Final:</label>
+                <input type="date" name="end_date" class="form-control" value="<%= Date.current.strftime('%Y-%m-%d') %>">
+              </div>
+            </div>
+          </div>
+          
+          <div class="mb-3">
+            <label class="form-label">Filtrar por:</label>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="filter_type" id="att_by_subject" value="subject" checked>
+              <label class="form-check-label" for="att_by_subject">Por Disciplina</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="filter_type" id="att_by_classroom" value="classroom">
+              <label class="form-check-label" for="att_by_classroom">Por Turma</label>
+            </div>
+          </div>
+          
+          <div class="mb-3" id="att-subject-select">
+            <label class="form-label">Disciplina:</label>
+            <select name="subject_id" class="form-select">
+              <option value="">Selecione uma disciplina</option>
+              <% @subjects.each do |subject| %>
+                <option value="<%= subject.id %>"><%= subject.name %> - <%= subject.classroom.name %></option>
+              <% end %>
+            </select>
+          </div>
+          
+          <div class="mb-3" id="att-classroom-select" style="display: none;">
+            <label class="form-label">Turma:</label>
+            <select name="classroom_id" class="form-select">
+              <option value="">Selecione uma turma</option>
+              <% @classrooms.each do |classroom| %>
+                <option value="<%= classroom.id %>"><%= classroom.name %></option>
+              <% end %>
+            </select>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" form="attendance-form" class="btn btn-success">Gerar Relatório</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Relatório de Notas -->
+<div class="modal fade" id="gradesModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Resumo de Notas</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="grades-form" action="<%= grade_summary_teachers_reports_path %>" method="get">
+          <div class="mb-3">
+            <label class="form-label">Filtrar por:</label>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="filter_type" id="grades_by_subject" value="subject" checked>
+              <label class="form-check-label" for="grades_by_subject">Por Disciplina</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="filter_type" id="grades_by_classroom" value="classroom">
+              <label class="form-check-label" for="grades_by_classroom">Por Turma</label>
+            </div>
+          </div>
+          
+          <div class="mb-3" id="grades-subject-select">
+            <label class="form-label">Disciplina:</label>
+            <select name="subject_id" class="form-select">
+              <option value="">Selecione uma disciplina</option>
+              <% @subjects.each do |subject| %>
+                <option value="<%= subject.id %>"><%= subject.name %> - <%= subject.classroom.name %></option>
+              <% end %>
+            </select>
+          </div>
+          
+          <div class="mb-3" id="grades-classroom-select" style="display: none;">
+            <label class="form-label">Turma:</label>
+            <select name="classroom_id" class="form-select">
+              <option value="">Selecione uma turma</option>
+              <% @classrooms.each do |classroom| %>
+                <option value="<%= classroom.id %>"><%= classroom.name %></option>
+              <% end %>
+            </select>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" form="grades-form" class="btn btn-warning">Gerar Relatório</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Performance Modal
+  document.querySelectorAll('input[name="filter_type"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+      if (this.value === 'subject') {
+        document.getElementById('subject-select').style.display = 'block';
+        document.getElementById('classroom-select').style.display = 'none';
+      } else {
+        document.getElementById('subject-select').style.display = 'none';
+        document.getElementById('classroom-select').style.display = 'block';
+      }
+    });
+  });
+
+  // Attendance Modal
+  document.querySelectorAll('input[name="filter_type"][id^="att_"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+      if (this.value === 'subject') {
+        document.getElementById('att-subject-select').style.display = 'block';
+        document.getElementById('att-classroom-select').style.display = 'none';
+      } else {
+        document.getElementById('att-subject-select').style.display = 'none';
+        document.getElementById('att-classroom-select').style.display = 'block';
+      }
+    });
+  });
+
+  // Grades Modal
+  document.querySelectorAll('input[name="filter_type"][id^="grades_"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+      if (this.value === 'subject') {
+        document.getElementById('grades-subject-select').style.display = 'block';
+        document.getElementById('grades-classroom-select').style.display = 'none';
+      } else {
+        document.getElementById('grades-subject-select').style.display = 'none';
+        document.getElementById('grades-classroom-select').style.display = 'block';
+      }
+    });
+  });
+});
+</script>

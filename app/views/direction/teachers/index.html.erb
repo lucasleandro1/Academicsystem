@@ -55,7 +55,7 @@
   <div class="col-md-3">
     <div class="card text-center">
       <div class="card-body">
-        <h3 class="text-info"><%= @teachers.joins(:subjects).distinct.count %></h3>
+        <h3 class="text-info"><%= Subject.where(user_id: @teachers.pluck(:id)).select(:user_id).distinct.count %></h3>
         <small class="text-muted">Com Disciplinas</small>
       </div>
     </div>
@@ -96,18 +96,14 @@
                 <td>
                   <div class="d-flex align-items-center">
                     <div class="avatar me-3">
-                      <% if teacher.avatar.present? %>
-                        <%= image_tag teacher.avatar, class: "rounded-circle", size: "40x40" %>
-                      <% else %>
-                        <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center text-white" 
-                             style="width: 40px; height: 40px;">
-                          <%= teacher.full_name.first.upcase %>
-                        </div>
-                      <% end %>
+                      <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center text-white" 
+                           style="width: 40px; height: 40px;">
+                        <%= teacher.first_name&.first&.upcase || 'P' %>
+                      </div>
                     </div>
                     <div>
-                      <div class="fw-medium"><%= teacher.full_name %></div>
-                      <small class="text-muted">Prof. <%= teacher.position || 'Geral' %></small>
+                      <div class="fw-medium"><%= "#{teacher.first_name} #{teacher.last_name}" %></div>
+                      <small class="text-muted">Prof. <%= teacher.specialization || 'Geral' %></small>
                     </div>
                   </div>
                 </td>
@@ -154,7 +150,7 @@
                   <% end %>
                 </td>
                 <td>
-                  <% if teacher.last_sign_in_at %>
+                  <% if teacher.respond_to?(:last_sign_in_at) && teacher.last_sign_in_at %>
                     <%= time_ago_in_words(teacher.last_sign_in_at) %> atrás
                   <% else %>
                     <span class="text-muted">Nunca acessou</span>
@@ -209,7 +205,7 @@
         <i class="fas fa-chalkboard-teacher fa-3x text-muted mb-3"></i>
         <h5 class="text-muted">Nenhum professor encontrado</h5>
         <p class="text-muted">
-          <% if params.any? %>
+          <% if params.except(:action, :controller).any? %>
             Não há professores que correspondam aos filtros selecionados.
           <% else %>
             Nenhum professor foi cadastrado ainda.

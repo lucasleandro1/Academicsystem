@@ -1,0 +1,240 @@
+<% content_for :title, "Relatório Disciplinar" %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1><i class="fas fa-exclamation-triangle"></i> Relatório Disciplinar</h1>
+  <%= link_to direction_reports_path, class: "btn btn-outline-secondary" do %>
+    <i class="fas fa-arrow-left"></i> Voltar
+  <% end %>
+</div>
+
+<!-- Filtros -->
+<div class="card mb-4">
+  <div class="card-body">
+    <%= form_with url: disciplinary_report_direction_reports_path, method: :get, local: true, class: "row g-3" do |form| %>
+      <div class="col-md-4">
+        <%= form.label :date_from, "Data Inicial", class: "form-label" %>
+        <%= form.date_field :date_from, value: @date_from, class: "form-control" %>
+      </div>
+      <div class="col-md-4">
+        <%= form.label :date_to, "Data Final", class: "form-label" %>
+        <%= form.date_field :date_to, value: @date_to, class: "form-control" %>
+      </div>
+      <div class="col-md-4 d-flex align-items-end">
+        <%= form.submit "Filtrar", class: "btn btn-primary" %>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<div class="row">
+  <!-- Ocorrências por Mês -->
+  <div class="col-md-6 mb-4">
+    <div class="card">
+      <div class="card-header">
+        <h5><i class="fas fa-calendar"></i> Ocorrências por Mês</h5>
+      </div>
+      <div class="card-body">
+        <% if @disciplinary_data[:occurrences_by_month].any? %>
+          <% @disciplinary_data[:occurrences_by_month].each do |month, count| %>
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span><%= month %></span>
+              <span class="badge bg-<%= count > 10 ? 'danger' : count > 5 ? 'warning' : 'success' %>">
+                <%= count %> ocorrências
+              </span>
+            </div>
+            <div class="progress mb-3" style="height: 15px;">
+              <% max_occurrences = @disciplinary_data[:occurrences_by_month].values.max %>
+              <% percentage = max_occurrences > 0 ? (count.to_f / max_occurrences * 100).round(1) : 0 %>
+              <div class="progress-bar bg-<%= count > 10 ? 'danger' : count > 5 ? 'warning' : 'success' %>" 
+                   style="width: <%= percentage %>%">
+              </div>
+            </div>
+          <% end %>
+        <% else %>
+          <p class="text-muted">Nenhuma ocorrência registrada no período.</p>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ocorrências por Tipo -->
+  <div class="col-md-6 mb-4">
+    <div class="card">
+      <div class="card-header">
+        <h5><i class="fas fa-list"></i> Ocorrências por Tipo</h5>
+      </div>
+      <div class="card-body">
+        <% if @disciplinary_data[:occurrences_by_type].any? %>
+          <% @disciplinary_data[:occurrences_by_type].sort_by { |type, count| -count }.each do |type, count| %>
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span><%= type.humanize %></span>
+              <span class="badge bg-primary"><%= count %></span>
+            </div>
+          <% end %>
+        <% else %>
+          <p class="text-muted">Nenhuma ocorrência registrada no período.</p>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <!-- Alunos com Mais Ocorrências -->
+  <div class="col-md-6 mb-4">
+    <div class="card">
+      <div class="card-header">
+        <h5><i class="fas fa-user-times"></i> Alunos com Mais Ocorrências</h5>
+      </div>
+      <div class="card-body">
+        <% if @disciplinary_data[:students_with_most_occurrences].any? %>
+          <div class="table-responsive">
+            <table class="table table-sm">
+              <thead>
+                <tr>
+                  <th>Posição</th>
+                  <th>Aluno</th>
+                  <th>Ocorrências</th>
+                  <th>Nível</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% @disciplinary_data[:students_with_most_occurrences].each_with_index do |(student_name, count), index| %>
+                  <tr>
+                    <td>
+                      <%= index + 1 %>º
+                      <% if index == 0 %>
+                        <i class="fas fa-exclamation-circle text-danger ms-1"></i>
+                      <% end %>
+                    </td>
+                    <td><%= student_name %></td>
+                    <td>
+                      <span class="badge bg-<%= count >= 5 ? 'danger' : count >= 3 ? 'warning' : 'primary' %>">
+                        <%= count %>
+                      </span>
+                    </td>
+                    <td>
+                      <% if count >= 5 %>
+                        <span class="text-danger fw-bold">Crítico</span>
+                      <% elsif count >= 3 %>
+                        <span class="text-warning fw-bold">Atenção</span>
+                      <% else %>
+                        <span class="text-primary">Normal</span>
+                      <% end %>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        <% else %>
+          <p class="text-muted">Nenhuma ocorrência registrada no período.</p>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ocorrências por Turma -->
+  <div class="col-md-6 mb-4">
+    <div class="card">
+      <div class="card-header">
+        <h5><i class="fas fa-users"></i> Ocorrências por Turma</h5>
+      </div>
+      <div class="card-body">
+        <% if @disciplinary_data[:occurrences_by_classroom].any? %>
+          <% @disciplinary_data[:occurrences_by_classroom].sort_by { |classroom, count| -count }.each do |classroom_name, count| %>
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span><%= classroom_name %></span>
+              <span class="badge bg-<%= count > 10 ? 'danger' : count > 5 ? 'warning' : 'primary' %>">
+                <%= count %> ocorrências
+              </span>
+            </div>
+            <div class="progress mb-3" style="height: 15px;">
+              <% max_classroom_occurrences = @disciplinary_data[:occurrences_by_classroom].values.max %>
+              <% percentage = max_classroom_occurrences > 0 ? (count.to_f / max_classroom_occurrences * 100).round(1) : 0 %>
+              <div class="progress-bar bg-<%= count > 10 ? 'danger' : count > 5 ? 'warning' : 'primary' %>" 
+                   style="width: <%= percentage %>%">
+              </div>
+            </div>
+          <% end %>
+        <% else %>
+          <p class="text-muted">Nenhuma ocorrência registrada no período.</p>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Resumo do Período -->
+<div class="card">
+  <div class="card-header">
+    <h5><i class="fas fa-chart-area"></i> Resumo do Período</h5>
+    <small class="text-muted">
+      <%= @date_from.strftime("%d/%m/%Y") %> a <%= @date_to.strftime("%d/%m/%Y") %>
+    </small>
+  </div>
+  <div class="card-body">
+    <div class="row text-center">
+      <div class="col-md-3">
+        <h4 class="text-danger">
+          <%= @disciplinary_data[:occurrences_by_month].values.sum %>
+        </h4>
+        <small class="text-muted">Total de Ocorrências</small>
+      </div>
+      <div class="col-md-3">
+        <h4 class="text-warning">
+          <%= @disciplinary_data[:students_with_most_occurrences].size %>
+        </h4>
+        <small class="text-muted">Alunos Envolvidos</small>
+      </div>
+      <div class="col-md-3">
+        <h4 class="text-primary">
+          <% most_common_type = @disciplinary_data[:occurrences_by_type].max_by { |type, count| count } %>
+          <%= most_common_type&.first&.humanize || "N/A" %>
+        </h4>
+        <small class="text-muted">Tipo Mais Comum</small>
+      </div>
+      <div class="col-md-3">
+        <h4 class="text-info">
+          <% worst_classroom = @disciplinary_data[:occurrences_by_classroom].max_by { |classroom, count| count } %>
+          <%= worst_classroom&.first || "N/A" %>
+        </h4>
+        <small class="text-muted">Turma com Mais Ocorrências</small>
+      </div>
+    </div>
+    
+    <hr>
+    
+    <div class="row text-center">
+      <div class="col-md-12">
+        <% total_occurrences = @disciplinary_data[:occurrences_by_month].values.sum %>
+        <% days_in_period = (@date_to - @date_from).to_i + 1 %>
+        <% average_per_day = days_in_period > 0 ? (total_occurrences.to_f / days_in_period).round(2) : 0 %>
+        
+        <p class="mb-2">
+          <strong>Média de ocorrências por dia:</strong> 
+          <span class="badge bg-<%= average_per_day > 1 ? 'danger' : average_per_day > 0.5 ? 'warning' : 'success' %> fs-6">
+            <%= average_per_day %>
+          </span>
+        </p>
+        
+        <% if average_per_day > 1 %>
+          <div class="alert alert-danger">
+            <i class="fas fa-exclamation-triangle"></i> 
+            <strong>Atenção:</strong> Número elevado de ocorrências. Recomenda-se ações preventivas.
+          </div>
+        <% elsif average_per_day > 0.5 %>
+          <div class="alert alert-warning">
+            <i class="fas fa-info-circle"></i> 
+            <strong>Moderado:</strong> Acompanhar de perto as ocorrências disciplinares.
+          </div>
+        <% else %>
+          <div class="alert alert-success">
+            <i class="fas fa-check-circle"></i> 
+            <strong>Excelente:</strong> Baixo índice de ocorrências disciplinares.
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

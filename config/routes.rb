@@ -2,7 +2,6 @@ Rails.application.routes.draw do
   devise_for :users
   root "application#dashboard"
 
-  # Mensagens (disponível para todos os usuários logados)
   resources :messages, except: [ :edit, :update ]
 
   namespace :admin do
@@ -63,10 +62,23 @@ Rails.application.routes.draw do
     resources :reports, only: [ :index, :show ] do
       collection do
         get :generate_pdf
+        get :attendance_report
+        get :grades_report
+        get :student_bulletin
+        get :performance_stats
+        get :disciplinary_report
       end
     end
     resources :documents
     resources :class_schedules
+    resources :messages, only: [ :index, :new, :create, :show ] do
+      collection do
+        post :broadcast_to_all
+        post :broadcast_to_teachers
+        post :broadcast_to_students
+        post :broadcast_to_classroom
+      end
+    end
     root to: "dashboard#index"
   end
 
@@ -78,9 +90,31 @@ Rails.application.routes.draw do
     resources :grades
     resources :absences
     resources :occurrences
-    resources :subjects, only: [ :index, :show ]
+    resources :subjects, only: [ :index, :show ] do
+      resources :class_schedules, only: [ :index, :show ]
+    end
     resources :class_schedules, only: [ :index, :show ]
     resources :submissions, only: [ :index, :show, :edit, :update ]
+    resources :documents do
+      member do
+        get :download
+      end
+    end
+    resources :messages, only: [ :index, :new, :create, :show ] do
+      collection do
+        post :send_to_student
+        post :send_to_classroom
+        post :send_to_direction
+      end
+    end
+    resources :reports, only: [ :index ] do
+      collection do
+        get :student_performance
+        get :classroom_attendance
+        get :grade_summary
+        get :export_pdf
+      end
+    end
     root to: "dashboard#index"
   end
 

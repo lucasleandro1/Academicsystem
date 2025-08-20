@@ -86,7 +86,7 @@
   <div class="col-md-3">
     <div class="card text-center">
       <div class="card-body">
-        <h3 class="text-info"><%= @events.where(status: 'ongoing').count %></h3>
+        <h3 class="text-info"><%= @events.where("start_date >= ?", Date.current).count %></h3>
         <small class="text-muted">Em Andamento</small>
       </div>
     </div>

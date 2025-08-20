@@ -1,0 +1,150 @@
+<% content_for :title, "Mensagens" %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1><i class="fas fa-envelope"></i> Mensagens</h1>
+  <%= link_to new_teachers_message_path, class: "btn btn-primary" do %>
+    <i class="fas fa-plus"></i> Nova Mensagem
+  <% end %>
+</div>
+
+<!-- Estatísticas -->
+<div class="row mb-4">
+  <div class="col-md-3">
+    <div class="card text-center">
+      <div class="card-body">
+        <h4 class="text-primary"><%= @sent_messages.count %></h4>
+        <small class="text-muted">Mensagens Enviadas</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center">
+      <div class="card-body">
+        <h4 class="text-success"><%= @received_messages.count %></h4>
+        <small class="text-muted">Mensagens Recebidas</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center">
+      <div class="card-body">
+        <h4 class="text-warning"><%= @received_messages.where(read: false).count %></h4>
+        <small class="text-muted">Não Lidas</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center">
+      <div class="card-body">
+        <h4 class="text-info"><%= (@sent_messages.count + @received_messages.count) %></h4>
+        <small class="text-muted">Total</small>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tabs -->
+<ul class="nav nav-tabs" id="messagesTab" role="tablist">
+  <li class="nav-item" role="presentation">
+    <button class="nav-link active" id="received-tab" data-bs-toggle="tab" data-bs-target="#received" type="button" role="tab">
+      <i class="fas fa-inbox"></i> Recebidas 
+      <% if @received_messages.where(read: false).any? %>
+        <span class="badge bg-danger"><%= @received_messages.where(read: false).count %></span>
+      <% end %>
+    </button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="sent-tab" data-bs-toggle="tab" data-bs-target="#sent" type="button" role="tab">
+      <i class="fas fa-paper-plane"></i> Enviadas
+    </button>
+  </li>
+</ul>
+
+<div class="tab-content" id="messagesTabContent">
+  <!-- Mensagens Recebidas -->
+  <div class="tab-pane fade show active" id="received" role="tabpanel">
+    <div class="card">
+      <div class="card-body">
+        <% if @received_messages.any? %>
+          <div class="list-group list-group-flush">
+            <% @received_messages.each do |message| %>
+              <div class="list-group-item <%= 'border-start border-primary border-3' unless message.read? %>">
+                <div class="d-flex w-100 justify-content-between">
+                  <h6 class="mb-1">
+                    <% unless message.read? %>
+                      <i class="fas fa-circle text-primary" style="font-size: 8px;"></i>
+                    <% end %>
+                    <%= message.subject %>
+                  </h6>
+                  <small class="text-muted"><%= time_ago_in_words(message.created_at) %> atrás</small>
+                </div>
+                <p class="mb-1"><%= truncate(message.content, length: 100) %></p>
+                <div class="d-flex justify-content-between align-items-center">
+                  <small class="text-muted">
+                    <i class="fas fa-user"></i> <%= message.sender.full_name %>
+                    (<%= message.sender.profile.humanize %>)
+                  </small>
+                  <%= link_to teachers_message_path(message), class: "btn btn-sm btn-outline-primary" do %>
+                    <i class="fas fa-eye"></i> Ler
+                  <% end %>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        <% else %>
+          <div class="text-center py-4">
+            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+            <h6 class="text-muted">Nenhuma mensagem recebida</h6>
+            <p class="text-muted">Suas mensagens recebidas aparecerão aqui.</p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mensagens Enviadas -->
+  <div class="tab-pane fade" id="sent" role="tabpanel">
+    <div class="card">
+      <div class="card-body">
+        <% if @sent_messages.any? %>
+          <div class="list-group list-group-flush">
+            <% @sent_messages.each do |message| %>
+              <div class="list-group-item">
+                <div class="d-flex w-100 justify-content-between">
+                  <h6 class="mb-1"><%= message.subject %></h6>
+                  <small class="text-muted"><%= message.created_at.strftime("%d/%m/%Y %H:%M") %></small>
+                </div>
+                <p class="mb-1"><%= truncate(message.content, length: 100) %></p>
+                <div class="d-flex justify-content-between align-items-center">
+                  <small class="text-muted">
+                    <i class="fas fa-user"></i> Para: <%= message.recipient.full_name %>
+                    (<%= message.recipient.profile.humanize %>)
+                  </small>
+                  <div>
+                    <% if message.read? %>
+                      <span class="badge bg-success me-2">Lida</span>
+                    <% else %>
+                      <span class="badge bg-secondary me-2">Não lida</span>
+                    <% end %>
+                    <%= link_to teachers_message_path(message), class: "btn btn-sm btn-outline-primary" do %>
+                      <i class="fas fa-eye"></i> Ver
+                    <% end %>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        <% else %>
+          <div class="text-center py-4">
+            <i class="fas fa-paper-plane fa-3x text-muted mb-3"></i>
+            <h6 class="text-muted">Nenhuma mensagem enviada</h6>
+            <p class="text-muted">Suas mensagens enviadas aparecerão aqui.</p>
+            <%= link_to new_teachers_message_path, class: "btn btn-primary" do %>
+              <i class="fas fa-plus"></i> Enviar Primeira Mensagem
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

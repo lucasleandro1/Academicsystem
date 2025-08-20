@@ -55,7 +55,7 @@
   <div class="col-md-3">
     <div class="card text-center">
       <div class="card-body">
-        <h3 class="text-info"><%= Enrollment.joins(:student).where(students: { school: current_user.school }).where(status: 'active').count %></h3>
+        <h3 class="text-info"><%= Enrollment.joins(:classroom).where(classrooms: { school_id: current_user.school.id }).where(status: 'active').count %></h3>
         <small class="text-muted">Matriculados</small>
       </div>
     </div>
@@ -63,7 +63,7 @@
   <div class="col-md-3">
     <div class="card text-center">
       <div class="card-body">
-        <h3 class="text-warning"><%= Enrollment.joins(:student).where(students: { school: current_user.school }).where(status: 'pending').count %></h3>
+        <h3 class="text-warning"><%= Enrollment.joins(:student).joins(:classroom).where(classrooms: { school: current_user.school }).where(users: { user_type: 'student' }).where(status: 'pending').count %></h3>
         <small class="text-muted">Pendentes</small>
       </div>
     </div>
@@ -145,7 +145,7 @@
                 <td>
                   <% if student.guardian_name.present? %>
                     <strong><%= student.guardian_name %></strong>
-                    <% if student.guardian_phone.present? %>
+                    <% if student.respond_to?(:guardian_phone) && student.guardian_phone.present? %>
                       <br>
                       <small class="text-muted">
                         <i class="fas fa-phone"></i> <%= student.guardian_phone %>

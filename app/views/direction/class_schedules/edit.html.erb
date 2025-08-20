@@ -1,0 +1,325 @@
+<!-- Edit Class Schedule -->
+<% content_for :title, "Editar Horário" %>
+<% content_for :page_title, "Editar Horário da Turma" %>
+
+<div class="container-fluid">
+  <!-- Breadcrumb -->
+  <div class="row">
+    <div class="col-12">
+      <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+        <h4 class="mb-sm-0">Editar Horário</h4>
+        <div class="page-title-right">
+          <ol class="breadcrumb m-0">
+            <li class="breadcrumb-item">
+              <%= link_to "Direção", direction_root_path, class: "text-decoration-none" %>
+            </li>
+            <li class="breadcrumb-item">
+              <%= link_to "Grade de Horários", direction_class_schedules_path, class: "text-decoration-none" %>
+            </li>
+            <li class="breadcrumb-item active">Editar</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%= form_with model: [:direction, @class_schedule], local: true, 
+      class: "needs-validation", novalidate: true do |form| %>
+    
+    <div class="row">
+      <!-- Form Principal -->
+      <div class="col-xl-8">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title mb-0">
+              <i class="fas fa-edit me-2"></i>Editar Informações do Horário
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <!-- Seleção de Turma -->
+              <div class="col-md-6 mb-3">
+                <%= form.label :classroom_id, "Turma", class: "form-label" %>
+                <%= form.select :classroom_id, 
+                    options_from_collection_for_select(@classrooms, :id, :name, @class_schedule.classroom_id),
+                    { prompt: "Selecione uma turma" },
+                    { class: "form-select #{'is-invalid' if @class_schedule.errors[:classroom_id].any?}",
+                      required: true,
+                      onchange: "loadClassroomSubjects(this.value)" } %>
+                <div class="invalid-feedback">
+                  <%= @class_schedule.errors[:classroom_id].first if @class_schedule.errors[:classroom_id].any? %>
+                </div>
+              </div>
+
+              <!-- Seleção de Disciplina -->
+              <div class="col-md-6 mb-3">
+                <%= form.label :subject_id, "Disciplina", class: "form-label" %>
+                <%= form.select :subject_id, 
+                    options_from_collection_for_select(@subjects, :id, :name, @class_schedule.subject_id),
+                    { prompt: "Selecione uma disciplina" },
+                    { class: "form-select #{'is-invalid' if @class_schedule.errors[:subject_id].any?}",
+                      required: true,
+                      id: "subject_select" } %>
+                <div class="invalid-feedback">
+                  <%= @class_schedule.errors[:subject_id].first if @class_schedule.errors[:subject_id].any? %>
+                </div>
+              </div>
+
+              <!-- Dia da Semana -->
+              <div class="col-md-6 mb-3">
+                <%= form.label :day_of_week, "Dia da Semana", class: "form-label" %>
+                <%= form.select :day_of_week,
+                    options_for_select([
+                      ['Segunda-feira', 1],
+                      ['Terça-feira', 2],
+                      ['Quarta-feira', 3],
+                      ['Quinta-feira', 4],
+                      ['Sexta-feira', 5],
+                      ['Sábado', 6]
+                    ], @class_schedule.day_of_week),
+                    { prompt: "Selecione o dia" },
+                    { class: "form-select #{'is-invalid' if @class_schedule.errors[:day_of_week].any?}",
+                      required: true } %>
+                <div class="invalid-feedback">
+                  <%= @class_schedule.errors[:day_of_week].first if @class_schedule.errors[:day_of_week].any? %>
+                </div>
+              </div>
+
+              <!-- Turno -->
+              <div class="col-md-6 mb-3">
+                <%= form.label :shift, "Turno", class: "form-label" %>
+                <%= form.select :shift,
+                    options_for_select([
+                      ['Matutino', 'morning'],
+                      ['Vespertino', 'afternoon'],
+                      ['Noturno', 'evening']
+                    ], @class_schedule.shift),
+                    { prompt: "Selecione o turno" },
+                    { class: "form-select #{'is-invalid' if @class_schedule.errors[:shift].any?}",
+                      required: true } %>
+                <div class="invalid-feedback">
+                  <%= @class_schedule.errors[:shift].first if @class_schedule.errors[:shift].any? %>
+                </div>
+              </div>
+
+              <!-- Horário de Início -->
+              <div class="col-md-6 mb-3">
+                <%= form.label :start_time, "Horário de Início", class: "form-label" %>
+                <%= form.time_field :start_time, 
+                    class: "form-control #{'is-invalid' if @class_schedule.errors[:start_time].any?}",
+                    required: true %>
+                <div class="invalid-feedback">
+                  <%= @class_schedule.errors[:start_time].first if @class_schedule.errors[:start_time].any? %>
+                </div>
+              </div>
+
+              <!-- Horário de Término -->
+              <div class="col-md-6 mb-3">
+                <%= form.label :end_time, "Horário de Término", class: "form-label" %>
+                <%= form.time_field :end_time, 
+                    class: "form-control #{'is-invalid' if @class_schedule.errors[:end_time].any?}",
+                    required: true %>
+                <div class="invalid-feedback">
+                  <%= @class_schedule.errors[:end_time].first if @class_schedule.errors[:end_time].any? %>
+                </div>
+              </div>
+
+              <!-- Status -->
+              <div class="col-md-6 mb-3">
+                <div class="form-check form-switch">
+                  <%= form.check_box :active, 
+                      class: "form-check-input",
+                      id: "schedule_active" %>
+                  <%= form.label :active, "Horário Ativo", 
+                      class: "form-check-label",
+                      for: "schedule_active" %>
+                </div>
+                <small class="form-text text-muted">
+                  Horários inativos não aparecem na grade
+                </small>
+              </div>
+
+              <!-- Observações -->
+              <div class="col-12 mb-3">
+                <%= form.label :notes, "Observações", class: "form-label" %>
+                <%= form.text_area :notes, 
+                    class: "form-control #{'is-invalid' if @class_schedule.errors[:notes].any?}",
+                    rows: 3,
+                    placeholder: "Observações sobre este horário..." %>
+                <div class="invalid-feedback">
+                  <%= @class_schedule.errors[:notes].first if @class_schedule.errors[:notes].any? %>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar com Informações -->
+      <div class="col-xl-4">
+        <!-- Informações Atuais -->
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title mb-0">
+              <i class="fas fa-info-circle me-2"></i>Informações Atuais
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="border rounded p-3 mb-3">
+              <h6 class="text-primary mb-2">Turma</h6>
+              <p class="mb-0"><%= @class_schedule.classroom.name %></p>
+              <small class="text-muted"><%= @class_schedule.classroom.shift.humanize %></small>
+            </div>
+            
+            <div class="border rounded p-3 mb-3">
+              <h6 class="text-info mb-2">Disciplina</h6>
+              <p class="mb-0"><%= @class_schedule.subject.name %></p>
+              <% if @class_schedule.subject.user %>
+                <small class="text-muted">Prof. <%= @class_schedule.subject.user.name %></small>
+              <% end %>
+            </div>
+            
+            <div class="border rounded p-3 mb-3">
+              <h6 class="text-warning mb-2">Horário Atual</h6>
+              <p class="mb-0">
+                <%= @class_schedule.start_time.strftime("%H:%M") %> até 
+                <%= @class_schedule.end_time.strftime("%H:%M") %>
+              </p>
+              <small class="text-muted">
+                <%= 
+                  case @class_schedule.day_of_week
+                  when 1 then 'Segunda-feira'
+                  when 2 then 'Terça-feira'
+                  when 3 then 'Quarta-feira'
+                  when 4 then 'Quinta-feira'
+                  when 5 then 'Sexta-feira'
+                  when 6 then 'Sábado'
+                  else 'Dia não definido'
+                  end
+                %>
+              </small>
+            </div>
+
+            <div class="border rounded p-3">
+              <h6 class="text-success mb-2">Status</h6>
+              <span class="badge bg-<%= @class_schedule.active? ? 'success' : 'danger' %>">
+                <%= @class_schedule.active? ? 'Ativo' : 'Inativo' %>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Outros Horários da Turma -->
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title mb-0">
+              <i class="fas fa-calendar me-2"></i>Outros Horários desta Turma
+            </h5>
+          </div>
+          <div class="card-body">
+            <% other_schedules = @class_schedule.classroom.class_schedules.where.not(id: @class_schedule.id).limit(5) %>
+            <% if other_schedules.any? %>
+              <% other_schedules.each do |schedule| %>
+                <div class="border rounded p-2 mb-2">
+                  <small>
+                    <strong><%= schedule.subject.name %></strong><br>
+                    <%= schedule.start_time.strftime("%H:%M") %> - <%= schedule.end_time.strftime("%H:%M") %>
+                    <span class="text-muted">
+                      (<%= 
+                        case schedule.day_of_week
+                        when 1 then 'Seg'
+                        when 2 then 'Ter'
+                        when 3 then 'Qua'
+                        when 4 then 'Qui'
+                        when 5 then 'Sex'
+                        when 6 then 'Sáb'
+                        end
+                      %>)
+                    </span>
+                  </small>
+                </div>
+              <% end %>
+            <% else %>
+              <div class="text-center text-muted">
+                <i class="fas fa-calendar-times fs-1 mb-2 d-block"></i>
+                <small>Nenhum outro horário</small>
+              </div>
+            <% end %>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title mb-0">
+              <i class="fas fa-bolt me-2"></i>Ações Rápidas
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="d-grid gap-2">
+              <%= link_to direction_class_schedules_path(classroom_id: @class_schedule.classroom_id), 
+                  class: "btn btn-outline-info" do %>
+                <i class="fas fa-table me-2"></i>Ver Grade da Turma
+              <% end %>
+              
+              <%= link_to new_direction_class_schedule_path(classroom_id: @class_schedule.classroom_id), 
+                  class: "btn btn-outline-success" do %>
+                <i class="fas fa-plus me-2"></i>Novo Horário
+              <% end %>
+              
+              <%= link_to direction_class_schedule_path(@class_schedule), 
+                  method: :delete,
+                  class: "btn btn-outline-danger",
+                  confirm: "Tem certeza que deseja excluir este horário?" do %>
+                <i class="fas fa-trash me-2"></i>Excluir
+              <% end %>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Form Actions -->
+    <div class="row">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-body text-end">
+            <%= link_to "Cancelar", direction_class_schedules_path, 
+                class: "btn btn-secondary me-2" %>
+            <%= form.submit "Salvar Alterações", 
+                class: "btn btn-primary",
+                data: { disable_with: "Salvando..." } %>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Form validation
+  const form = document.querySelector('.needs-validation');
+  if (form) {
+    form.addEventListener('submit', function(event) {
+      if (!form.checkValidity()) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      form.classList.add('was-validated');
+    });
+  }
+});
+
+// Load subjects for selected classroom
+function loadClassroomSubjects(classroomId) {
+  if (!classroomId) {
+    document.querySelector('#subject_select').innerHTML = '<option value="">Selecione uma disciplina</option>';
+    return;
+  }
+
+  // This would typically make an AJAX call to load subjects
+  // For now, we'll keep the existing options
+  console.log('Loading subjects for classroom:', classroomId);
+}
+</script>

@@ -5,8 +5,8 @@ class Direction::StudentsController < ApplicationController
 
   def index
     @school = current_user.school
-    @students = User.joins(:student_enrollments)
-                   .where(enrollments: { school_id: @school.id }, user_type: "student")
+    @students = User.joins(student_enrollments: :classroom)
+                   .where(classrooms: { school_id: @school.id }, user_type: "student")
                    .includes(:student_enrollments)
                    .distinct
 

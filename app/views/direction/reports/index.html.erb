@@ -2,9 +2,84 @@
 
 <div class="d-flex justify-content-between align-items-center mb-4">
   <h1><i class="fas fa-chart-bar"></i> Relatórios Gerais</h1>
-  <%= link_to direction_reports_path(format: :pdf), class: "btn btn-primary", target: "_blank" do %>
-    <i class="fas fa-file-pdf"></i> Gerar PDF
-  <% end %>
+  <div class="btn-group">
+    <%= link_to direction_reports_path(format: :pdf), class: "btn btn-primary", target: "_blank" do %>
+      <i class="fas fa-file-pdf"></i> Gerar PDF
+    <% end %>
+  </div>
+</div>
+
+<!-- Cards de Relatórios Específicos -->
+<div class="row mb-4">
+  <div class="col-md-3 mb-3">
+    <%= link_to attendance_report_direction_reports_path, class: "text-decoration-none" do %>
+      <div class="card text-center h-100 hover-shadow">
+        <div class="card-body">
+          <i class="fas fa-chart-line fa-2x text-primary mb-2"></i>
+          <h6>Frequência de Alunos</h6>
+          <small class="text-muted">Relatórios detalhados de presença</small>
+        </div>
+      </div>
+    <% end %>
+  </div>
+  <div class="col-md-3 mb-3">
+    <%= link_to grades_report_direction_reports_path, class: "text-decoration-none" do %>
+      <div class="card text-center h-100 hover-shadow">
+        <div class="card-body">
+          <i class="fas fa-chart-bar fa-2x text-success mb-2"></i>
+          <h6>Relatório de Notas</h6>
+          <small class="text-muted">Desempenho por turma/disciplina</small>
+        </div>
+      </div>
+    <% end %>
+  </div>
+  <div class="col-md-3 mb-3">
+    <%= link_to student_bulletin_direction_reports_path, class: "text-decoration-none" do %>
+      <div class="card text-center h-100 hover-shadow">
+        <div class="card-body">
+          <i class="fas fa-user-graduate fa-2x text-info mb-2"></i>
+          <h6>Boletim por Aluno</h6>
+          <small class="text-muted">Boletim individual detalhado</small>
+        </div>
+      </div>
+    <% end %>
+  </div>
+  <div class="col-md-3 mb-3">
+    <%= link_to performance_stats_direction_reports_path, class: "text-decoration-none" do %>
+      <div class="card text-center h-100 hover-shadow">
+        <div class="card-body">
+          <i class="fas fa-chart-pie fa-2x text-warning mb-2"></i>
+          <h6>Estatísticas de Desempenho</h6>
+          <small class="text-muted">Análises comparativas</small>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<div class="row mb-4">
+  <div class="col-md-6 mb-3">
+    <%= link_to disciplinary_report_direction_reports_path, class: "text-decoration-none" do %>
+      <div class="card text-center h-100 hover-shadow">
+        <div class="card-body">
+          <i class="fas fa-exclamation-triangle fa-2x text-danger mb-2"></i>
+          <h6>Ocorrências Disciplinares</h6>
+          <small class="text-muted">Relatório de disciplina</small>
+        </div>
+      </div>
+    <% end %>
+  </div>
+  <div class="col-md-6 mb-3">
+    <%= link_to direction_messages_path, class: "text-decoration-none" do %>
+      <div class="card text-center h-100 hover-shadow">
+        <div class="card-body">
+          <i class="fas fa-envelope fa-2x text-secondary mb-2"></i>
+          <h6>Mensagens Internas</h6>
+          <small class="text-muted">Sistema de comunicação</small>
+        </div>
+      </div>
+    <% end %>
+  </div>
 </div>
 
 <div class="row">

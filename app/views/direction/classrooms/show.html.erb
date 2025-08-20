@@ -287,42 +287,138 @@
 <!-- Lista de Disciplinas -->
 <div class="card mb-4">
   <div class="card-header d-flex justify-content-between align-items-center">
-    <h5><i class="fas fa-book"></i> Disciplinas</h5>
+    <h5><i class="fas fa-books"></i> Disciplinas da Turma</h5>
     <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#subjectModal">
-      <i class="fas fa-plus"></i> Atribuir Disciplina
+      <i class="fas fa-book"></i> Atribuir Disciplina
     </button>
   </div>
   <div class="card-body">
     <% if @classroom.subjects.any? %>
       <div class="row">
         <% @classroom.subjects.each do |subject| %>
-          <div class="col-md-6 col-lg-4 mb-3">
-            <div class="card">
+          <div class="col-md-4 mb-3">
+            <div class="card border-left-primary">
               <div class="card-body">
-                <h6 class="card-title"><%= subject.name %></h6>
+                <div class="d-flex justify-content-between align-items-start">
+                  <div>
+                    <h6 class="card-title mb-1"><%= subject.name %></h6>
+                    <% if subject.code.present? %>
+                      <small class="text-muted"><%= subject.code %></small>
+                    <% end %>
+                  </div>
+                  <div class="dropdown">
+                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" 
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                      <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                      <li>
+                        <%= link_to "#", class: "dropdown-item" do %>
+                          <i class="fas fa-edit me-2"></i>Editar
+                        <% end %>
+                      </li>
+                      <li>
+                        <%= link_to "#", class: "dropdown-item" do %>
+                          <i class="fas fa-calendar me-2"></i>Horários
+                        <% end %>
+                      </li>
+                      <li><hr class="dropdown-divider"></li>
+                      <li>
+                        <%= link_to direction_subject_path(subject), 
+                            method: :delete,
+                            class: "dropdown-item text-danger",
+                            confirm: "Tem certeza que deseja remover esta disciplina da turma?" do %>
+                          <i class="fas fa-trash me-2"></i>Remover
+                        <% end %>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                
                 <% if subject.user %>
-                  <p class="card-text">
+                  <div class="mt-2">
                     <small class="text-muted">
-                      <i class="fas fa-user"></i> <%= subject.user.name %>
+                      <i class="fas fa-user me-1"></i>
+                      Prof. <%= subject.user.name %>
                     </small>
-                  </p>
+                  </div>
                 <% end %>
-                <% if subject.workload %>
-                  <p class="card-text">
+                
+                <% if subject.workload.present? %>
+                  <div class="mt-1">
                     <small class="text-muted">
-                      <i class="fas fa-clock"></i> <%= subject.workload %>h/semana
+                      <i class="fas fa-clock me-1"></i>
+                      <%= subject.workload %>h/semana
                     </small>
-                  </p>
+                  </div>
                 <% end %>
+                
+                <div class="mt-2">
+                  <span class="badge bg-<%= subject.active? ? 'success' : 'secondary' %>">
+                    <%= subject.active? ? 'Ativa' : 'Inativa' %>
+                  </span>
+                  <% if subject.required? %>
+                    <span class="badge bg-warning text-dark">Obrigatória</span>
+                  <% end %>
+                </div>
+                
+                <!-- Progresso/Estatísticas da Disciplina -->
+                <div class="mt-3">
+                  <div class="row text-center">
+                    <div class="col-6">
+                      <div class="border-end">
+                        <div class="fs-6 fw-bold text-primary">
+                          <%= subject.class_schedules.count %>
+                        </div>
+                        <div class="small text-muted">Horários</div>
+                      </div>
+                    </div>
+                    <div class="col-6">
+                      <div class="fs-6 fw-bold text-info">
+                        <%= subject.grades.count %>
+                      </div>
+                      <div class="small text-muted">Avaliações</div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         <% end %>
       </div>
+      
+      <!-- Resumo das Disciplinas -->
+      <div class="row mt-3">
+        <div class="col-md-3">
+          <div class="text-center">
+            <h6 class="text-primary mb-1"><%= @classroom.subjects.count %></h6>
+            <small class="text-muted">Total de Disciplinas</small>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="text-center">
+            <h6 class="text-success mb-1"><%= @classroom.subjects.where(active: true).count %></h6>
+            <small class="text-muted">Disciplinas Ativas</small>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="text-center">
+            <h6 class="text-warning mb-1"><%= @classroom.subjects.where(required: true).count %></h6>
+            <small class="text-muted">Obrigatórias</small>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="text-center">
+            <h6 class="text-info mb-1"><%= @classroom.subjects.sum(:workload) %></h6>
+            <small class="text-muted">Carga Horária Total</small>
+          </div>
+        </div>
+      </div>
     <% else %>
       <div class="text-center py-4">
         <i class="fas fa-book fa-3x text-muted mb-3"></i>
         <h6 class="text-muted">Nenhuma disciplina atribuída</h6>
+        <p class="text-muted">Comece atribuindo disciplinas para esta turma.</p>
         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#subjectModal">
           <i class="fas fa-book"></i> Atribuir Primeira Disciplina
         </button>
@@ -340,33 +436,50 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
-        <%= form_with url: "#", local: true do |form| %>
+        <%= form_with url: direction_enrollments_path, local: true, class: "enrollment-form" do |form| %>
+          <%= form.hidden_field :classroom_id, value: @classroom.id %>
+          
           <div class="mb-3">
-            <%= form.label :student_id, "Selecionar Aluno", class: "form-label" %>
-            <%= form.select :student_id, 
-                            options_from_collection_for_select(User.where(user_type: 'student'), :id, :name),
+            <%= form.label :user_id, "Selecionar Aluno", class: "form-label" %>
+            <%= form.select :user_id, 
+                            options_from_collection_for_select(
+                              User.where(user_type: 'student', school_id: current_user.school_id)
+                                  .where.not(id: @classroom.enrollments.select(:user_id)), 
+                              :id, :name),
                             { prompt: "Selecione um aluno..." }, 
-                            { class: "form-select" } %>
+                            { class: "form-select", required: true } %>
+            <small class="form-text text-muted">
+              Apenas alunos sem matrícula nesta turma aparecem na lista
+            </small>
           </div>
           
           <div class="mb-3">
             <%= form.label :enrollment_date, "Data de Matrícula", class: "form-label" %>
-            <%= form.date_field :enrollment_date, value: Date.current, class: "form-control" %>
+            <%= form.date_field :enrollment_date, value: Date.current, class: "form-control", required: true %>
+          </div>
+          
+          <div class="mb-3">
+            <%= form.label :status, "Status da Matrícula", class: "form-label" %>
+            <%= form.select :status, 
+                            options_for_select([
+                              ['Ativa', 'active'],
+                              ['Pendente', 'pending']
+                            ], 'active'),
+                            {}, { class: "form-select" } %>
           </div>
           
           <div class="mb-3">
             <div class="form-check">
-              <%= form.check_box :active, checked: true, class: "form-check-input" %>
-              <%= form.label :active, "Matrícula ativa", class: "form-check-label" %>
+              <%= form.check_box :send_notification, checked: true, class: "form-check-input" %>
+              <%= form.label :send_notification, "Enviar notificação ao aluno", class: "form-check-label" %>
             </div>
           </div>
+          
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <%= form.submit "Matricular Aluno", class: "btn btn-primary" %>
+          </div>
         <% end %>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-primary">
-          <i class="fas fa-save"></i> Matricular
-        </button>
       </div>
     </div>
   </div>
@@ -374,41 +487,75 @@
 
 <!-- Modal Atribuir Disciplina -->
 <div class="modal fade" id="subjectModal" tabindex="-1">
-  <div class="modal-dialog">
+  <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title"><i class="fas fa-book"></i> Atribuir Disciplina</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
-        <%= form_with url: "#", local: true do |form| %>
-          <div class="mb-3">
-            <%= form.label :subject_id, "Selecionar Disciplina", class: "form-label" %>
-            <%= form.select :subject_id, 
-                            options_from_collection_for_select(Subject.all, :id, :name),
-                            { prompt: "Selecione uma disciplina..." }, 
-                            { class: "form-select" } %>
+        <%= form_with url: direction_subjects_path, local: true, class: "subject-form" do |form| %>
+          <%= form.hidden_field :classroom_id, value: @classroom.id %>
+          
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <%= form.label :name, "Nome da Disciplina", class: "form-label" %>
+              <%= form.text_field :name, class: "form-control", 
+                  placeholder: "Ex: Matemática, Português...", required: true %>
+            </div>
+            
+            <div class="col-md-6 mb-3">
+              <%= form.label :code, "Código da Disciplina", class: "form-label" %>
+              <%= form.text_field :code, class: "form-control", 
+                  placeholder: "Ex: MAT01, POR01" %>
+            </div>
+          </div>
+          
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <%= form.label :user_id, "Professor Responsável", class: "form-label" %>
+              <%= form.select :user_id, 
+                              options_from_collection_for_select(
+                                User.where(user_type: 'teacher', school_id: current_user.school_id), 
+                                :id, :name),
+                              { prompt: "Selecione um professor..." }, 
+                              { class: "form-select", required: true } %>
+            </div>
+            
+            <div class="col-md-6 mb-3">
+              <%= form.label :workload, "Carga Horária Semanal", class: "form-label" %>
+              <%= form.number_field :workload, min: 1, max: 40, class: "form-control", 
+                  placeholder: "Horas por semana", required: true %>
+            </div>
           </div>
           
           <div class="mb-3">
-            <%= form.label :teacher_id, "Professor Responsável", class: "form-label" %>
-            <%= form.select :teacher_id, 
-                            options_from_collection_for_select(User.where(user_type: 'teacher'), :id, :name),
-                            { prompt: "Selecione um professor..." }, 
-                            { class: "form-select" } %>
+            <%= form.label :description, "Descrição", class: "form-label" %>
+            <%= form.text_area :description, class: "form-control", rows: 3,
+                placeholder: "Descrição da disciplina..." %>
           </div>
           
-          <div class="mb-3">
-            <%= form.label :workload, "Carga Horária Semanal", class: "form-label" %>
-            <%= form.number_field :workload, min: 1, max: 40, class: "form-control", placeholder: "Horas por semana" %>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <div class="form-check">
+                <%= form.check_box :active, checked: true, class: "form-check-input" %>
+                <%= form.label :active, "Disciplina ativa", class: "form-check-label" %>
+              </div>
+            </div>
+            
+            <div class="col-md-6 mb-3">
+              <div class="form-check">
+                <%= form.check_box :required, checked: true, class: "form-check-input" %>
+                <%= form.label :required, "Disciplina obrigatória", class: "form-check-label" %>
+              </div>
+            </div>
+          </div>
+          
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <%= form.submit "Atribuir Disciplina", class: "btn btn-primary" %>
           </div>
         <% end %>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-primary">
-          <i class="fas fa-save"></i> Atribuir
-        </button>
       </div>
     </div>
   </div>

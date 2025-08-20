@@ -1,0 +1,299 @@
+<!-- Edit School -->
+<% content_for :title, "Editar Escola" %>
+<% content_for :page_title, "Editar Dados da Escola" %>
+
+<div class="container-fluid">
+  <!-- Breadcrumb -->
+  <div class="row">
+    <div class="col-12">
+      <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+        <h4 class="mb-sm-0">Editar Dados da Escola</h4>
+        <div class="page-title-right">
+          <ol class="breadcrumb m-0">
+            <li class="breadcrumb-item">
+              <%= link_to "Direção", direction_root_path, class: "text-decoration-none" %>
+            </li>
+            <li class="breadcrumb-item">
+              <%= link_to "Dados da Escola", direction_school_path, class: "text-decoration-none" %>
+            </li>
+            <li class="breadcrumb-item active">Editar</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%= form_with model: @school, url: direction_school_path, method: :patch, 
+      local: true, class: "needs-validation", novalidate: true do |form| %>
+    
+    <div class="row">
+      <!-- Basic Information -->
+      <div class="col-xl-8">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title mb-0">
+              <i class="fas fa-school me-2"></i>Informações Básicas
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-6">
+                <%= form.label :name, "Nome da Escola", class: "form-label" %>
+                <%= form.text_field :name, 
+                    class: "form-control #{'is-invalid' if @school.errors[:name].any?}",
+                    placeholder: "Ex: Escola Municipal João Silva",
+                    required: true %>
+                <div class="invalid-feedback">
+                  <%= @school.errors[:name].first if @school.errors[:name].any? %>
+                </div>
+              </div>
+              
+              <div class="col-md-6">
+                <%= form.label :code, "Código da Escola", class: "form-label" %>
+                <%= form.text_field :code, 
+                    class: "form-control #{'is-invalid' if @school.errors[:code].any?}",
+                    placeholder: "Ex: EM001",
+                    required: true %>
+                <div class="invalid-feedback">
+                  <%= @school.errors[:code].first if @school.errors[:code].any? %>
+                </div>
+              </div>
+            </div>
+
+            <div class="row mt-3">
+              <div class="col-md-6">
+                <%= form.label :email, "Email da Escola", class: "form-label" %>
+                <%= form.email_field :email, 
+                    class: "form-control #{'is-invalid' if @school.errors[:email].any?}",
+                    placeholder: "escola@exemplo.com" %>
+                <div class="invalid-feedback">
+                  <%= @school.errors[:email].first if @school.errors[:email].any? %>
+                </div>
+              </div>
+              
+              <div class="col-md-6">
+                <%= form.label :phone, "Telefone", class: "form-label" %>
+                <%= form.text_field :phone, 
+                    class: "form-control #{'is-invalid' if @school.errors[:phone].any?}",
+                    placeholder: "(11) 99999-9999" %>
+                <div class="invalid-feedback">
+                  <%= @school.errors[:phone].first if @school.errors[:phone].any? %>
+                </div>
+              </div>
+            </div>
+
+            <div class="row mt-3">
+              <div class="col-12">
+                <%= form.label :address, "Endereço Completo", class: "form-label" %>
+                <%= form.text_area :address, 
+                    class: "form-control #{'is-invalid' if @school.errors[:address].any?}",
+                    rows: 3,
+                    placeholder: "Rua, número, bairro, cidade - estado, CEP" %>
+                <div class="invalid-feedback">
+                  <%= @school.errors[:address].first if @school.errors[:address].any? %>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Educational Information -->
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title mb-0">
+              <i class="fas fa-graduation-cap me-2"></i>Informações Educacionais
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-6">
+                <%= form.label :principal_name, "Nome do(a) Diretor(a)", class: "form-label" %>
+                <%= form.text_field :principal_name, 
+                    class: "form-control #{'is-invalid' if @school.errors[:principal_name].any?}",
+                    placeholder: "Nome completo do diretor" %>
+                <div class="invalid-feedback">
+                  <%= @school.errors[:principal_name].first if @school.errors[:principal_name].any? %>
+                </div>
+              </div>
+              
+              <div class="col-md-6">
+                <%= form.label :school_type, "Tipo de Escola", class: "form-label" %>
+                <%= form.select :school_type, 
+                    options_for_select([
+                      ['Educação Infantil', 'pre_school'],
+                      ['Ensino Fundamental I', 'elementary_1'],
+                      ['Ensino Fundamental II', 'elementary_2'],
+                      ['Ensino Médio', 'high_school'],
+                      ['Educação Integral', 'full_time'],
+                      ['Educação de Jovens e Adultos', 'adult_education']
+                    ], @school.school_type),
+                    { prompt: "Selecione o tipo" },
+                    class: "form-select #{'is-invalid' if @school.errors[:school_type].any?}" %>
+                <div class="invalid-feedback">
+                  <%= @school.errors[:school_type].first if @school.errors[:school_type].any? %>
+                </div>
+              </div>
+            </div>
+
+            <div class="row mt-3">
+              <div class="col-md-6">
+                <%= form.label :inep_code, "Código INEP", class: "form-label" %>
+                <%= form.text_field :inep_code, 
+                    class: "form-control #{'is-invalid' if @school.errors[:inep_code].any?}",
+                    placeholder: "Código INEP da escola" %>
+                <div class="invalid-feedback">
+                  <%= @school.errors[:inep_code].first if @school.errors[:inep_code].any? %>
+                </div>
+              </div>
+              
+              <div class="col-md-6">
+                <%= form.label :founded_at, "Data de Fundação", class: "form-label" %>
+                <%= form.date_field :founded_at, 
+                    class: "form-control #{'is-invalid' if @school.errors[:founded_at].any?}" %>
+                <div class="invalid-feedback">
+                  <%= @school.errors[:founded_at].first if @school.errors[:founded_at].any? %>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Additional Settings -->
+      <div class="col-xl-4">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title mb-0">
+              <i class="fas fa-cogs me-2"></i>Configurações
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="form-check form-switch mb-3">
+              <%= form.check_box :active, 
+                  class: "form-check-input",
+                  id: "school_active" %>
+              <%= form.label :active, "Escola Ativa", 
+                  class: "form-check-label",
+                  for: "school_active" %>
+              <small class="form-text text-muted">
+                Desative apenas para escolas que não estão mais funcionando
+              </small>
+            </div>
+
+            <div class="mb-3">
+              <%= form.label :capacity, "Capacidade de Alunos", class: "form-label" %>
+              <%= form.number_field :capacity, 
+                  class: "form-control #{'is-invalid' if @school.errors[:capacity].any?}",
+                  min: 1,
+                  placeholder: "Ex: 500" %>
+              <div class="invalid-feedback">
+                <%= @school.errors[:capacity].first if @school.errors[:capacity].any? %>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <%= form.label :description, "Descrição", class: "form-label" %>
+              <%= form.text_area :description, 
+                  class: "form-control #{'is-invalid' if @school.errors[:description].any?}",
+                  rows: 4,
+                  placeholder: "Breve descrição sobre a escola..." %>
+              <div class="invalid-feedback">
+                <%= @school.errors[:description].first if @school.errors[:description].any? %>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Current Statistics -->
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title mb-0">
+              <i class="fas fa-chart-bar me-2"></i>Estatísticas Atuais
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="row text-center">
+              <div class="col-6">
+                <div class="border rounded p-3 mb-3">
+                  <h6 class="text-primary mb-2">Alunos</h6>
+                  <h4 class="mb-0">
+                    <%= @school.users.where(user_type: 'student').count %>
+                  </h4>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="border rounded p-3 mb-3">
+                  <h6 class="text-primary mb-2">Professores</h6>
+                  <h4 class="mb-0">
+                    <%= @school.users.where(user_type: 'teacher').count %>
+                  </h4>
+                </div>
+              </div>
+            </div>
+            
+            <div class="row text-center">
+              <div class="col-6">
+                <div class="border rounded p-3 mb-3">
+                  <h6 class="text-primary mb-2">Turmas</h6>
+                  <h4 class="mb-0">
+                    <%= @school.classrooms.count %>
+                  </h4>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="border rounded p-3">
+                  <h6 class="text-primary mb-2">Disciplinas</h6>
+                  <h4 class="mb-0">
+                    <%= @school.subjects.count %>
+                  </h4>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Form Actions -->
+    <div class="row">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-body text-end">
+            <%= link_to "Cancelar", direction_school_path, 
+                class: "btn btn-secondary me-2" %>
+            <%= form.submit "Salvar Alterações", 
+                class: "btn btn-primary",
+                data: { disable_with: "Salvando..." } %>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Form validation
+  const form = document.querySelector('.needs-validation');
+  if (form) {
+    form.addEventListener('submit', function(event) {
+      if (!form.checkValidity()) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      form.classList.add('was-validated');
+    });
+  }
+
+  // Phone mask
+  const phoneInput = document.querySelector('input[name="school[phone]"]');
+  if (phoneInput) {
+    phoneInput.addEventListener('input', function(e) {
+      let value = e.target.value.replace(/\D/g, '');
+      value = value.replace(/(\d{2})(\d)/, '($1) $2');
+      value = value.replace(/(\d{5})(\d)/, '$1-$2');
+      e.target.value = value;
+    });
+  }
+});
+</script>

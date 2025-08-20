@@ -4,12 +4,9 @@ class Direction::EnrollmentsController < ApplicationController
   before_action :set_enrollment, only: [ :show, :approve, :reject, :destroy ]
 
   def index
-    @pending_enrollments = current_user.school.enrollments
-                                      .where(status: "pending")
-                                      .includes(:student, :classroom)
-    @active_enrollments = current_user.school.enrollments
-                                     .where(status: "active")
-                                     .includes(:student, :classroom)
+    @enrollments = current_user.school.enrollments.includes(:student, :classroom)
+    @pending_enrollments = @enrollments.where(status: "pending")
+    @active_enrollments = @enrollments.where(status: "active")
   end
 
   def show
@@ -17,19 +14,54 @@ class Direction::EnrollmentsController < ApplicationController
 
   def new
     @enrollment = Enrollment.new
-    @students = current_user.school.students.active
-    @classrooms = current_user.school.classrooms
+    @school = current_user.school
+    @students = @school.students.active
+    @classrooms = @school.classrooms
   end
 
   def create
-    @enrollment = Enrollment.new(enrollment_params)
-    @enrollment.status = "active"
+    # Primeiro, criar o usuário estudante
+    student_params = {
+      name: params[:enrollment][:student_name],
+      email: params[:enrollment][:student_email],
+      cpf: params[:enrollment][:student_cpf],
+      phone: params[:enrollment][:student_phone],
+      address: params[:enrollment][:student_address],
+      birth_date: params[:enrollment][:student_birth_date],
+      user_type: "student",
+      school: current_user.school,
+      active: true,
+      password: "password123", # Senha temporária
+      password_confirmation: "password123"
+    }
 
-    if @enrollment.save
-      redirect_to direction_enrollments_path, notice: "Matrícula criada com sucesso."
+    @student = User.new(student_params)
+
+    if @student.save
+      # Criar a matrícula
+      @enrollment = Enrollment.new(
+        user: @student,
+        classroom_id: params[:enrollment][:classroom_id],
+        enrollment_date: params[:enrollment][:enrollment_date] || Date.current,
+        status: params[:enrollment][:status] || "pending",
+        notes: params[:enrollment][:notes]
+      )
+
+      if @enrollment.save
+        redirect_to direction_enrollments_path, notice: "Matrícula criada com sucesso. Estudante: #{@student.name}"
+      else
+        @student.destroy # Remove o usuário se a matrícula falhar
+        @school = current_user.school
+        @students = @school.students.active
+        @classrooms = @school.classrooms
+        flash.now[:error] = "Erro ao criar matrícula: #{@enrollment.errors.full_messages.join(', ')}"
+        render :new
+      end
     else
-      @students = current_user.school.students.active
-      @classrooms = current_user.school.classrooms
+      @school = current_user.school
+      @students = @school.students.active
+      @classrooms = @school.classrooms
+      flash.now[:error] = "Erro ao criar estudante: #{@student.errors.full_messages.join(', ')}"
       render :new
     end
   end

@@ -1,0 +1,215 @@
+<% content_for :title, "Mensagens Internas" %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1><i class="fas fa-envelope"></i> Mensagens Internas</h1>
+  <div class="btn-group">
+    <%= link_to new_direction_message_path, class: "btn btn-primary" do %>
+      <i class="fas fa-plus"></i> Nova Mensagem
+    <% end %>
+    <button type="button" class="btn btn-outline-primary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown">
+      <i class="fas fa-bullhorn"></i> Comunicados
+    </button>
+    <ul class="dropdown-menu">
+      <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#broadcastAllModal">Para Todos</a></li>
+      <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#broadcastTeachersModal">Para Professores</a></li>
+      <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#broadcastStudentsModal">Para Alunos</a></li>
+      <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#broadcastClassroomModal">Para Turma Específica</a></li>
+    </ul>
+  </div>
+</div>
+
+<!-- Alert for unread messages -->
+<% if @unread_count > 0 %>
+  <div class="alert alert-info alert-dismissible fade show" role="alert">
+    <i class="fas fa-info-circle"></i> Você tem <strong><%= @unread_count %></strong> mensagem(ns) não lida(s).
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+<% end %>
+
+<div class="row">
+  <!-- Received Messages -->
+  <div class="col-md-6 mb-4">
+    <div class="card">
+      <div class="card-header">
+        <h5><i class="fas fa-inbox"></i> Mensagens Recebidas</h5>
+      </div>
+      <div class="card-body">
+        <% if @received_messages.any? %>
+          <% @received_messages.each do |message| %>
+            <div class="message-item border-bottom py-2 <%= 'fw-bold' unless message.read? %>">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <strong><%= message.sender.full_name %></strong>
+                  <span class="text-muted small">(<%= message.sender.user_type_humanized %>)</span>
+                  <br>
+                  <%= link_to message.subject, direction_message_path(message), class: "text-decoration-none" %>
+                  <br>
+                  <small class="text-muted"><%= time_ago_in_words(message.created_at) %> atrás</small>
+                </div>
+                <% unless message.read? %>
+                  <span class="badge bg-primary">Nova</span>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+        <% else %>
+          <p class="text-muted">Nenhuma mensagem recebida.</p>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sent Messages -->
+  <div class="col-md-6 mb-4">
+    <div class="card">
+      <div class="card-header">
+        <h5><i class="fas fa-paper-plane"></i> Mensagens Enviadas</h5>
+      </div>
+      <div class="card-body">
+        <% if @sent_messages.any? %>
+          <% @sent_messages.each do |message| %>
+            <div class="message-item border-bottom py-2">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <strong>Para: <%= message.recipient.full_name %></strong>
+                  <span class="text-muted small">(<%= message.recipient.user_type_humanized %>)</span>
+                  <br>
+                  <%= link_to message.subject, direction_message_path(message), class: "text-decoration-none" %>
+                  <br>
+                  <small class="text-muted"><%= time_ago_in_words(message.created_at) %> atrás</small>
+                </div>
+                <% if message.read? %>
+                  <span class="badge bg-success">Lida</span>
+                <% else %>
+                  <span class="badge bg-secondary">Não lida</span>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+        <% else %>
+          <p class="text-muted">Nenhuma mensagem enviada.</p>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Broadcast Modals -->
+<!-- Modal for All Users -->
+<div class="modal fade" id="broadcastAllModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <%= form_with url: broadcast_to_all_direction_messages_path, method: :post, local: true do |form| %>
+        <div class="modal-header">
+          <h5 class="modal-title">Comunicado para Todos</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <%= form.label :subject, "Assunto", class: "form-label" %>
+            <%= form.text_field :subject, class: "form-control" %>
+          </div>
+          <div class="mb-3">
+            <%= form.label :body, "Mensagem", class: "form-label" %>
+            <%= form.text_area :body, rows: 5, class: "form-control" %>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <%= form.submit "Enviar Comunicado", class: "btn btn-primary" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<!-- Modal for Teachers -->
+<div class="modal fade" id="broadcastTeachersModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <%= form_with url: broadcast_to_teachers_direction_messages_path, method: :post, local: true do |form| %>
+        <div class="modal-header">
+          <h5 class="modal-title">Comunicado para Professores</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <%= form.label :subject, "Assunto", class: "form-label" %>
+            <%= form.text_field :subject, class: "form-control" %>
+          </div>
+          <div class="mb-3">
+            <%= form.label :body, "Mensagem", class: "form-label" %>
+            <%= form.text_area :body, rows: 5, class: "form-control" %>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <%= form.submit "Enviar para Professores", class: "btn btn-primary" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<!-- Modal for Students -->
+<div class="modal fade" id="broadcastStudentsModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <%= form_with url: broadcast_to_students_direction_messages_path, method: :post, local: true do |form| %>
+        <div class="modal-header">
+          <h5 class="modal-title">Comunicado para Alunos</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <%= form.label :subject, "Assunto", class: "form-label" %>
+            <%= form.text_field :subject, class: "form-control" %>
+          </div>
+          <div class="mb-3">
+            <%= form.label :body, "Mensagem", class: "form-label" %>
+            <%= form.text_area :body, rows: 5, class: "form-control" %>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <%= form.submit "Enviar para Alunos", class: "btn btn-primary" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<!-- Modal for Specific Classroom -->
+<div class="modal fade" id="broadcastClassroomModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <%= form_with url: broadcast_to_classroom_direction_messages_path, method: :post, local: true do |form| %>
+        <div class="modal-header">
+          <h5 class="modal-title">Comunicado para Turma</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <%= form.label :classroom_id, "Turma", class: "form-label" %>
+            <%= form.select :classroom_id, 
+                           options_from_collection_for_select(current_user.school.classrooms, :id, :name), 
+                           { prompt: "Selecione uma turma" }, 
+                           { class: "form-select" } %>
+          </div>
+          <div class="mb-3">
+            <%= form.label :subject, "Assunto", class: "form-label" %>
+            <%= form.text_field :subject, class: "form-control" %>
+          </div>
+          <div class="mb-3">
+            <%= form.label :body, "Mensagem", class: "form-label" %>
+            <%= form.text_area :body, rows: 5, class: "form-control" %>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <%= form.submit "Enviar para Turma", class: "btn btn-primary" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

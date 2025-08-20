@@ -63,7 +63,6 @@
               </div>
             </div>
           </div>
-
           <div class="row">
             <div class="col-md-6">
               <div class="mb-3">
@@ -74,6 +73,17 @@
               </div>
             </div>
             <div class="col-md-6">
+              <div class="mb-3">
+                <%= f.label :school_id, "Escola *", class: "form-label" %>
+                <%= f.collection_select :school_id, @schools, :id, :name, 
+                                          { prompt: "Selecione uma escola" }, 
+                                          { class: "form-select" } %>
+                <% if @user.errors[:school_id].any? %>
+                <div class="invalid-feedback">
+                  <%= @user.errors[:school_id].first %>
+                </div>
+                <% end %>
+              </div>
             </div>
           </div>
 
