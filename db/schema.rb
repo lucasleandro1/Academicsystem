@@ -182,6 +182,26 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_19_175937) do
     t.index ["user_id"], name: "index_municipal_events_on_user_id"
   end
 
+  create_table "notifications", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.integer "sender_id", null: false
+    t.integer "school_id"
+    t.string "title", null: false
+    t.text "content", null: false
+    t.string "notification_type", null: false
+    t.boolean "read", default: false
+    t.datetime "read_at"
+    t.json "metadata"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_at"], name: "index_notifications_on_created_at"
+    t.index ["school_id", "notification_type"], name: "index_notifications_on_school_id_and_notification_type"
+    t.index ["school_id"], name: "index_notifications_on_school_id"
+    t.index ["sender_id"], name: "index_notifications_on_sender_id"
+    t.index ["user_id", "read"], name: "index_notifications_on_user_id_and_read"
+    t.index ["user_id"], name: "index_notifications_on_user_id"
+  end
+
   create_table "occurrences", force: :cascade do |t|
     t.text "description"
     t.string "occurrence_type"
@@ -284,6 +304,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_19_175937) do
   add_foreign_key "messages", "users", column: "recipient_id"
   add_foreign_key "messages", "users", column: "sender_id"
   add_foreign_key "municipal_events", "users"
+  add_foreign_key "notifications", "schools"
+  add_foreign_key "notifications", "users"
+  add_foreign_key "notifications", "users", column: "sender_id"
   add_foreign_key "occurrences", "schools"
   add_foreign_key "occurrences", "users"
   add_foreign_key "subjects", "classrooms"

@@ -53,17 +53,4 @@ module ApplicationHelper
       "Em andamento"
     end
   end
-
-  def occurrence_type_color(type)
-    case type
-    when "disciplinary"
-      "danger"
-    when "academic"
-      "warning"
-    when "attendance"
-      "info"
-    else
-      "secondary"
-    end
-  end
 end

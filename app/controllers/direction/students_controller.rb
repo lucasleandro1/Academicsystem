@@ -32,7 +32,6 @@ class Direction::StudentsController < ApplicationController
     @enrollments = @student.student_enrollments.where(school: current_user.school).includes(:classroom)
     @grades = Grade.where(user: @student).includes(:subject, :activity).order(created_at: :desc).limit(10)
     @absences = Absence.where(user: @student).order(date: :desc).limit(10)
-    @occurrences = Occurrence.where(user: @student).order(date: :desc).limit(5)
   end
 
   def new

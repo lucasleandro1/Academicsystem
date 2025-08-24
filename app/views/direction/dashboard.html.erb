@@ -180,39 +180,6 @@
 </div>
 
 <div class="row">
-  <!-- Ocorrências Recentes -->
-  <div class="col-md-6 mb-4">
-    <div class="card">
-      <div class="card-header d-flex justify-content-between">
-        <h5><i class="fas fa-exclamation-triangle"></i> Ocorrências Recentes</h5>
-        <%= link_to direction_occurrences_path, class: "btn btn-sm btn-outline-warning" do %>
-          <i class="fas fa-eye"></i> Ver todas
-        <% end %>
-      </div>
-      <div class="card-body">
-        <% if @recent_occurrences.any? %>
-          <% @recent_occurrences.limit(3).each do |occurrence| %>
-            <div class="d-flex align-items-center mb-2">
-              <div class="bg-warning rounded-circle me-2 p-2">
-                <i class="fas fa-exclamation text-white"></i>
-              </div>
-              <div class="flex-grow-1">
-                <strong><%= occurrence.student.full_name %></strong>
-                <br>
-                <small class="text-muted">
-                  <%= occurrence.occurrence_type.humanize %> - 
-                  <%= occurrence.date.strftime("%d/%m/%Y") %>
-                </small>
-              </div>
-            </div>
-          <% end %>
-        <% else %>
-          <p class="text-muted text-center">Nenhuma ocorrência recente</p>
-        <% end %>
-      </div>
-    </div>
-  </div>
-
   <!-- Matrículas Pendentes -->
   <div class="col-md-6 mb-4">
     <div class="card">

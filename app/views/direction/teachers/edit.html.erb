@@ -205,10 +205,10 @@
             <strong><%= @teacher.updated_at.strftime("%d/%m/%Y às %H:%M") %></strong>
           </div>
 
-          <% if @teacher.subjects.any? %>
+          <% if @teacher.teacher_subjects.any? %>
             <div class="mb-3">
               <small class="text-muted d-block">Disciplinas:</small>
-              <% @teacher.subjects.each do |subject| %>
+              <% @teacher.teacher_subjects.each do |subject| %>
                 <span class="badge bg-primary me-1 mb-1"><%= subject.name %></span>
               <% end %>
             </div>
@@ -221,7 +221,7 @@
               Ver Perfil Completo
             <% end %>
             
-            <% if @teacher.subjects.any? %>
+            <% if @teacher.teacher_subjects.any? %>
               <%= link_to "#", class: "btn btn-outline-success btn-sm w-100 mb-2" do %>
                 <i class="fas fa-book me-1"></i>
                 Gerenciar Disciplinas

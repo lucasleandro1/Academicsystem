@@ -13,7 +13,7 @@
     <%= form_with url: teachers_activities_path, method: :get, local: true, class: "row g-3" do |form| %>
       <div class="col-md-3">
         <%= form.select :subject_id, 
-                        options_from_collection_for_select(current_user.subjects, :id, :name, params[:subject_id]),
+                        options_from_collection_for_select(current_user.teacher_subjects, :id, :name, params[:subject_id]),
                         { prompt: "Todas as disciplinas" }, { class: "form-select" } %>
       </div>
       <div class="col-md-3">

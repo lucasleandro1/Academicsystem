@@ -127,12 +127,12 @@
                   <% end %>
                 </td>
                 <td>
-                  <% if teacher.subjects.any? %>
-                    <% teacher.subjects.limit(3).each do |subject| %>
+                  <% if teacher.teacher_subjects.any? %>
+                    <% teacher.teacher_subjects.limit(3).each do |subject| %>
                       <span class="badge bg-secondary me-1"><%= subject.name %></span>
                     <% end %>
-                    <% if teacher.subjects.count > 3 %>
-                      <small class="text-muted">+<%= teacher.subjects.count - 3 %> mais</small>
+                    <% if teacher.teacher_subjects.count > 3 %>
+                      <small class="text-muted">+<%= teacher.teacher_subjects.count - 3 %> mais</small>
                     <% end %>
                   <% else %>
                     <span class="text-muted">Nenhuma</span>
@@ -227,7 +227,7 @@
     </div>
     <div class="card-body">
       <div class="row">
-        <% subject_stats = @teachers.joins(:subjects).group('subjects.name').count %>
+        <% subject_stats = @teachers.joins(:teacher_subjects).group('subjects.name').count %>
         <% subject_stats.each do |subject_name, count| %>
           <div class="col-md-6 col-lg-3 mb-3">
             <div class="text-center">

@@ -4,7 +4,7 @@ class Teachers::DashboardController < ApplicationController
 
   def index
     @teacher = current_user
-    @subjects = @teacher.subjects.includes(:classroom, :school)
+    @subjects = @teacher.teacher_subjects.includes(:classroom, :school)
     @recent_activities = @teacher.activities.recent.limit(5)
     @pending_submissions = pending_submissions
     @recent_messages = @teacher.received_messages.unread.recent.limit(5)
@@ -29,13 +29,13 @@ class Teachers::DashboardController < ApplicationController
   end
 
   def total_students_count
-    classroom_ids = @teacher.subjects.pluck(:classroom_id).uniq
+    classroom_ids = @teacher.teacher_subjects.pluck(:classroom_id).uniq
     Enrollment.where(classroom_id: classroom_ids, status: "active").count
   end
 
   def classes_today
     today_weekday = Date.current.wday
-    @teacher.subjects
+    @teacher.teacher_subjects
             .joins(:class_schedules)
             .where(class_schedules: { weekday: today_weekday })
             .includes(:classroom, :class_schedules)

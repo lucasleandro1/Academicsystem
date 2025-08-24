@@ -13,7 +13,7 @@
     <%= form_with url: teachers_classrooms_path, method: :get, local: true, class: "row g-3" do |form| %>
       <div class="col-md-4">
         <%= form.select :subject_id, 
-                        options_from_collection_for_select(current_user.subjects, :id, :name, params[:subject_id]),
+                        options_from_collection_for_select(current_user.teacher_subjects, :id, :name, params[:subject_id]),
                         { prompt: "Todas as disciplinas" }, { class: "form-select" } %>
       </div>
       <div class="col-md-3">
@@ -69,7 +69,7 @@
             <div class="mb-3">
               <small class="text-muted">Minhas Disciplinas:</small>
               <div class="mt-1">
-                <% my_subjects = current_user.subjects.where(classroom: classroom) %>
+                <% my_subjects = current_user.teacher_subjects.where(classroom: classroom) %>
                 <% my_subjects.each do |subject| %>
                   <span class="badge bg-primary me-1"><%= subject.name %></span>
                 <% end %>
@@ -175,7 +175,7 @@
               <small class="text-muted">Total de Alunos</small>
             </div>
             <div class="col-md-3">
-              <h4 class="text-info"><%= current_user.subjects.count %></h4>
+              <h4 class="text-info"><%= current_user.teacher_subjects.count %></h4>
               <small class="text-muted">Disciplinas Ministradas</small>
             </div>
             <div class="col-md-3">

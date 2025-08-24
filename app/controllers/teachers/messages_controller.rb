@@ -97,7 +97,7 @@ class Teachers::MessagesController < ApplicationController
   end
 
   def available_students
-    classroom_ids = current_user.subjects.pluck(:classroom_id).uniq
+    classroom_ids = current_user.teacher_subjects.pluck(:classroom_id).uniq
     User.joins(:enrollments)
         .where(enrollments: { classroom_id: classroom_ids, status: "active" })
         .where(profile: "student")
@@ -105,7 +105,7 @@ class Teachers::MessagesController < ApplicationController
   end
 
   def available_classrooms
-    classroom_ids = current_user.subjects.pluck(:classroom_id).uniq
+    classroom_ids = current_user.teacher_subjects.pluck(:classroom_id).uniq
     Classroom.where(id: classroom_ids)
   end
 

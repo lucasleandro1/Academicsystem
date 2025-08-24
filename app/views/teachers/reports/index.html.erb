@@ -74,7 +74,7 @@
           </div>
           <div class="col-md-2">
             <h4 class="text-info">
-              <%= current_user.subjects.joins(:classroom).joins('JOIN enrollments ON enrollments.classroom_id = classrooms.id').where('enrollments.status = ?', 'active').distinct.count('enrollments.user_id') %>
+              <%= current_user.teacher_subjects.joins(:classroom).joins('JOIN enrollments ON enrollments.classroom_id = classrooms.id').where('enrollments.status = ?', 'active').distinct.count('enrollments.user_id') %>
             </h4>
             <small class="text-muted">Alunos Total</small>
           </div>

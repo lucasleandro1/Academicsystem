@@ -27,13 +27,6 @@ class Direction::ReportsController < ApplicationController
       total_activities: Activity.joins(subject: { classrooms: :school }).where(schools: { id: @school.id }).count,
       completed_activities: Activity.joins(subject: { classrooms: :school }).where(schools: { id: @school.id }, active: false).count
     }
-
-    # Relatórios de ocorrências
-    @occurrences_report = {
-      total_this_month: Occurrence.joins(student: :enrollments).where(enrollments: { school_id: @school.id }).where("date >= ?", 1.month.ago).count,
-      by_type: occurrence_type_stats,
-      recent: Occurrence.joins(student: :enrollments).where(enrollments: { school_id: @school.id }).order(date: :desc).limit(10)
-    }
   end
 
   def attendance_report
@@ -86,19 +79,6 @@ class Direction::ReportsController < ApplicationController
       attendance_trends: calculate_attendance_trends,
       subject_performance: calculate_subject_performance,
       classroom_comparison: calculate_classroom_comparison
-    }
-  end
-
-  def disciplinary_report
-    @school = current_user.school
-    @date_from = params[:date_from].present? ? Date.parse(params[:date_from]) : 3.months.ago.to_date
-    @date_to = params[:date_to].present? ? Date.parse(params[:date_to]) : Date.current
-
-    @disciplinary_data = {
-      occurrences_by_month: occurrences_by_month(@date_from, @date_to),
-      occurrences_by_type: occurrences_by_type(@date_from, @date_to),
-      students_with_most_occurrences: students_with_most_occurrences(@date_from, @date_to),
-      occurrences_by_classroom: occurrences_by_classroom(@date_from, @date_to)
     }
   end
 
@@ -156,14 +136,6 @@ class Direction::ReportsController < ApplicationController
          .where(enrollments: { school_id: current_user.school.id })
          .where("grades.created_at >= ?", 30.days.ago)
          .average(:value)&.round(2) || 0
-  end
-
-  def occurrence_type_stats
-    Occurrence.joins(student: :enrollments)
-              .where(enrollments: { school_id: current_user.school.id })
-              .where("date >= ?", 1.month.ago)
-              .group(:occurrence_type)
-              .count
   end
 
   def attendance_data_for_classroom(classroom, date_from, date_to)
@@ -324,41 +296,5 @@ class Direction::ReportsController < ApplicationController
         students_count: students_count
       }
     end
-  end
-
-  def occurrences_by_month(date_from, date_to)
-    Occurrence.joins(student: :enrollments)
-              .where(enrollments: { school_id: current_user.school.id })
-              .where(date: date_from..date_to)
-              .group("DATE_TRUNC('month', date)")
-              .count
-              .transform_keys { |date| date.strftime("%B/%Y") }
-  end
-
-  def occurrences_by_type(date_from, date_to)
-    Occurrence.joins(student: :enrollments)
-              .where(enrollments: { school_id: current_user.school.id })
-              .where(date: date_from..date_to)
-              .group(:occurrence_type)
-              .count
-  end
-
-  def students_with_most_occurrences(date_from, date_to)
-    Occurrence.joins(student: :enrollments)
-              .where(enrollments: { school_id: current_user.school.id })
-              .where(date: date_from..date_to)
-              .joins(:student)
-              .group("users.full_name")
-              .count
-              .sort_by { |name, count| -count }
-              .first(10)
-  end
-
-  def occurrences_by_classroom(date_from, date_to)
-    Occurrence.joins(student: { enrollments: :classroom })
-              .where(enrollments: { school_id: current_user.school.id })
-              .where(date: date_from..date_to)
-              .group("classrooms.name")
-              .count
   end
 end

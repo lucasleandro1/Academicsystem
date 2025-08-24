@@ -29,27 +29,121 @@
 </div>
 
 <!-- Statistics Cards -->
-        <div class="row text-center">
-          <div class="col-6 col-md-3 mb-3">
-            <h3 class="text-primary mb-1"><%= @total_students %></h3>
-            <small class="text-muted">Alunos</small>
+<div class="row mb-4">
+  <div class="col-xl-3 col-md-6 mb-4">
+    <div class="card card-stat border-left-primary shadow h-100 py-2">
+      <div class="card-body">
+        <div class="row no-gutters align-items-center">
+          <div class="col mr-2">
+            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+              Alunos Matriculados
+            </div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800">
+              <%= @total_students %>
+            </div>
           </div>
-          <div class="col-6 col-md-3 mb-3">
-            <h3 class="text-success mb-1"><%= @total_teachers %></h3>
-            <small class="text-muted">Professores</small>
-          </div>
-          <div class="col-6 col-md-3 mb-3">
-            <h3 class="text-info mb-1"><%= @total_classrooms %></h3>
-            <small class="text-muted">Turmas</small>
-          </div>
-          <div class="col-6 col-md-3 mb-3">
-            <h3 class="text-warning mb-1"><%= @total_subjects %></h3>
-            <small class="text-muted">Disciplinas</small>
+          <div class="col-auto">
+            <i class="fas fa-user-graduate fa-2x text-gray-300"></i>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xl-3 col-md-6 mb-4">
+    <div class="card card-stat border-left-success shadow h-100 py-2">
+      <div class="card-body">
+        <div class="row no-gutters align-items-center">
+          <div class="col mr-2">
+            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+              Professores Ativos
+            </div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800">
+              <%= @total_teachers %>
+            </div>
+          </div>
+          <div class="col-auto">
+            <i class="fas fa-chalkboard-teacher fa-2x text-gray-300"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xl-3 col-md-6 mb-4">
+    <div class="card card-stat border-left-info shadow h-100 py-2">
+      <div class="card-body">
+        <div class="row no-gutters align-items-center">
+          <div class="col mr-2">
+            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+              Turmas Ativas
+            </div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800">
+              <%= @total_classrooms %>
+            </div>
+          </div>
+          <div class="col-auto">
+            <i class="fas fa-school fa-2x text-gray-300"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xl-3 col-md-6 mb-4">
+    <div class="card card-stat border-left-warning shadow h-100 py-2">
+      <div class="card-body">
+        <div class="row no-gutters align-items-center">
+          <div class="col mr-2">
+            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+              Disciplinas
+            </div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800">
+              <%= @total_subjects %>
+            </div>
+          </div>
+          <div class="col-auto">
+            <i class="fas fa-book fa-2x text-gray-300"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- Content Row -->
 <div class="row">
+  <!-- Alerts and Important Notifications -->
+  <% if @important_notifications.any? || @alerts.any? %>
+    <div class="col-12 mb-4">
+      <div class="card shadow">
+        <div class="card-header">
+          <h6 class="m-0 font-weight-bold text-primary">
+            <i class="fas fa-bell me-2"></i>Avisos Importantes
+          </h6>
+        </div>
+        <div class="card-body">
+          <% @important_notifications.each do |notification| %>
+            <div class="alert alert-<%= notification[:type] %> alert-dismissible fade show" role="alert">
+              <i class="<%= notification[:icon] %> me-2"></i>
+              <strong><%= notification[:title] %>:</strong> <%= notification[:message] %>
+              <% if notification[:link] %>
+                <%= link_to "Ver detalhes", notification[:link], class: "btn btn-sm btn-outline-#{notification[:type]} ms-2" %>
+              <% end %>
+              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+          <% end %>
+          
+          <% @alerts.each do |alert| %>
+            <div class="alert alert-<%= alert[:type] %>" role="alert">
+              <strong><%= alert[:title] %>:</strong> <%= alert[:message] %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
   <!-- Pending Enrollments -->
   <div class="col-lg-6 mb-4">
     <div class="card shadow mb-4">
@@ -130,65 +224,6 @@
             <i class="fas fa-calendar-plus fa-3x mb-3"></i>
             <p>Nenhum evento programado</p>
             <%= link_to "Criar Evento", new_direction_event_path, class: "btn btn-primary btn-sm" %>
-          </div>
-        <% end %>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Recent Occurrences -->
-<div class="row">
-  <div class="col-12">
-    <div class="card shadow mb-4">
-      <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-        <h6 class="m-0 font-weight-bold text-primary">
-          <i class="fas fa-exclamation-triangle me-2"></i>
-          Ocorrências Recentes
-        </h6>
-        <%= link_to direction_occurrences_path, class: "btn btn-sm btn-primary" do %>
-          Ver Todas
-        <% end %>
-      </div>
-      <div class="card-body">
-        <% recent_occurrences = @recent_occurrences || Occurrence.where(school: current_user.school).order(created_at: :desc).limit(5) %>
-        <% if recent_occurrences.any? %>
-          <div class="table-responsive">
-            <table class="table">
-              <thead>
-                <tr>
-                  <th>Aluno</th>
-                  <th>Disciplina</th>
-                  <th>Tipo</th>
-                  <th>Data</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                <% recent_occurrences.each do |occurrence| %>
-                  <tr>
-                    <td><%= occurrence.user.full_name %></td>
-                    <td><%= occurrence.subject.name %></td>
-                    <td>
-                      <span class="badge bg-<%= occurrence.occurrence_type == 'disciplinary' ? 'danger' : 'warning' %>">
-                        <%= occurrence.occurrence_type.humanize %>
-                      </span>
-                    </td>
-                    <td><%= occurrence.date.strftime("%d/%m/%Y") %></td>
-                    <td>
-                      <span class="badge bg-<%= occurrence.resolved? ? 'success' : 'warning' %>">
-                        <%= occurrence.resolved? ? 'Resolvida' : 'Pendente' %>
-                      </span>
-                    </td>
-                  </tr>
-                <% end %>
-              </tbody>
-            </table>
-          </div>
-        <% else %>
-          <div class="text-center text-muted py-4">
-            <i class="fas fa-smile fa-3x mb-3"></i>
-            <p>Nenhuma ocorrência registrada!</p>
           </div>
         <% end %>
       </div>

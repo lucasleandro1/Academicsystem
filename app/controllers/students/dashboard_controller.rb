@@ -9,7 +9,6 @@ class Students::DashboardController < ApplicationController
     @recent_messages = @student.received_messages.unread.order(created_at: :desc).limit(5)
     @upcoming_activities = upcoming_activities
     @total_absences = @student.absences.count
-    @recent_occurrences = @student.student_occurrences.order(created_at: :desc).limit(3)
   end
 
   private

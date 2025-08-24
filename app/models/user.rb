@@ -14,17 +14,19 @@ class User < ApplicationRecord
   has_many :student_absences, class_name: "Absence", foreign_key: "user_id", dependent: :destroy
   has_many :student_submissions, class_name: "Submission", foreign_key: "user_id", dependent: :destroy
   has_many :student_documents, class_name: "Document", foreign_key: "user_id", dependent: :destroy
-  has_many :student_occurrences, class_name: "Occurrence", foreign_key: "user_id", dependent: :destroy
 
   # Associações como professor
   has_many :teacher_subjects, class_name: "Subject", foreign_key: "user_id", dependent: :destroy
   has_many :teacher_activities, class_name: "Activity", foreign_key: "user_id", dependent: :destroy
   has_many :teacher_documents, class_name: "Document", foreign_key: "user_id", dependent: :destroy
-  has_many :authored_occurrences, class_name: "Occurrence", as: :author, dependent: :destroy
 
   # Mensagens
   has_many :sent_messages, class_name: "Message", foreign_key: "sender_id", dependent: :destroy
   has_many :received_messages, class_name: "Message", foreign_key: "recipient_id", dependent: :destroy
+
+  # Notificações
+  has_many :notifications, dependent: :destroy
+  has_many :sent_notifications, class_name: "Notification", foreign_key: "sender_id", dependent: :destroy
 
   # Aliases para facilitar o uso
   alias_method :enrollments, :student_enrollments
