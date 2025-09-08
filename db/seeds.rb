@@ -20,7 +20,6 @@ school = School.find_or_create_by(name: 'Escola Exemplo') do |s|
   s.cnpj = '12.345.678/0001-90'
   s.address = 'Rua das Flores, 123'
   s.phone = '(11) 1234-5678'
-  s.logo = 'escola-logo.png'
 end
 
 puts "Escola criada: #{school.name}"
@@ -122,16 +121,11 @@ end
 
 puts "Disciplinas criadas: #{subject1.name}, #{subject2.name}"
 
-# Create Enrollments
-enrollment1 = Enrollment.find_or_create_by(student: student1, classroom: classroom1) do |e|
-  e.status = 'active'
-end
+# Assign students to classroom
+student1.update!(classroom: classroom1)
+student2.update!(classroom: classroom1)
 
-enrollment2 = Enrollment.find_or_create_by(student: student2, classroom: classroom1) do |e|
-  e.status = 'active'
-end
-
-puts "Matrículas criadas para #{enrollment1.student.full_name} e #{enrollment2.student.full_name}"
+puts "Alunos #{student1.name} e #{student2.name} adicionados à turma #{classroom1.name}"
 
 # Create Activities
 activity1 = Activity.find_or_create_by(title: 'Exercícios de Álgebra', subject: subject1) do |a|

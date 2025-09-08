@@ -56,13 +56,14 @@ class MessagesController < ApplicationController
     when "teacher"
       # Professores podem enviar para direção e alunos de suas turmas
       classroom_ids = current_user.teacher_subjects.pluck(:classroom_id)
-      student_ids = Enrollment.where(classroom_id: classroom_ids).pluck(:user_id)
+      student_ids = User.where(classroom_id: classroom_ids, user_type: "student").pluck(:id)
       direction_ids = current_user.school.directions.pluck(:id)
       User.where(id: student_ids + direction_ids)
     when "student"
       # Alunos podem enviar para professores de suas matérias e direção
-      classroom_ids = current_user.enrollments.pluck(:classroom_id)
-      teacher_ids = Subject.where(classroom_id: classroom_ids).pluck(:user_id)
+      return User.none unless current_user.classroom
+
+      teacher_ids = current_user.classroom.subjects.pluck(:user_id)
       direction_ids = current_user.school.directions.pluck(:id)
       User.where(id: teacher_ids + direction_ids)
     else

@@ -91,11 +91,6 @@ class Direction::DocumentsController < ApplicationController
 
   private
 
-  def ensure_direction!
-    unless current_user&.direction?
-      redirect_to root_path, alert: "Acesso não autorizado."
-    end
-  end
 
   def document_params
     params.require(:document).permit(:title, :description, :document_type, :file, :active)

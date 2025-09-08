@@ -99,8 +99,7 @@ class Teachers::ReportsController < ApplicationController
 
   def calculate_classroom_performance(students, subjects)
     subjects.map do |subject|
-      subject_students = students.joins(:enrollments)
-                               .where(enrollments: { classroom: subject.classroom })
+      subject_students = students.where(classroom: subject.classroom)
 
       grades = Grade.where(subject: subject, student: subject_students)
 

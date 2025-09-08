@@ -79,7 +79,7 @@
             <!-- Estatísticas da turma -->
             <div class="row text-center mb-3">
               <div class="col-4">
-                <h5 class="text-primary mb-0"><%= classroom.enrollments.where(status: 'active').count %></h5>
+                <h5 class="text-primary mb-0"><%= classroom.students.where(active: true).count %></h5>
                 <small class="text-muted">Alunos</small>
               </div>
               <div class="col-4">
@@ -170,7 +170,7 @@
             </div>
             <div class="col-md-3">
               <h4 class="text-success">
-                <%= @classrooms.joins(:enrollments).where(enrollments: { status: 'active' }).count %>
+                <%= @classrooms.joins(:students).where(users: { active: true }).count %>
               </h4>
               <small class="text-muted">Total de Alunos</small>
             </div>

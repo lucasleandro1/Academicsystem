@@ -93,7 +93,6 @@ Um sistema completo de gerenciamento acadêmico desenvolvido em Ruby on Rails 8.
 - **Activity**: Atividades/tarefas
 - **Grade**: Notas dos alunos
 - **Absence**: Faltas dos alunos
-- **Enrollment**: Matrículas
 - **Event**: Eventos escolares
 - **Occurrence**: Ocorrências disciplinares
 - **Message**: Sistema de mensagens
@@ -240,7 +239,6 @@ rails server
 - **schools**: Dados das escolas
 - **classrooms**: Turmas/salas de aula
 - **subjects**: Disciplinas
-- **enrollments**: Matrículas dos alunos
 - **activities**: Atividades criadas pelos professores
 - **submissions**: Respostas dos alunos às atividades
 - **grades**: Notas dos alunos
@@ -255,7 +253,7 @@ rails server
 - User pertence a School
 - Classroom pertence a School
 - Subject pertence a Classroom e Teacher
-- Enrollment conecta Student e Classroom
+- Student pertence diretamente a Classroom (sem enrollment)
 - Activity pertence a Subject e Teacher
 - Grade conecta Student e Subject
 - Message conecta Sender e Recipient (Users)

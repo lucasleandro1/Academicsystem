@@ -1,7 +1,6 @@
 class Classroom < ApplicationRecord
   belongs_to :school
-  has_many :enrollments, dependent: :destroy
-  has_many :students, through: :enrollments
+  has_many :students, -> { where(user_type: "student") }, class_name: "User", foreign_key: "classroom_id"
   has_many :subjects, dependent: :destroy
   has_many :class_schedules, dependent: :destroy
 
@@ -20,6 +19,6 @@ class Classroom < ApplicationRecord
   end
 
   def student_count
-    enrollments.where(status: "active").count
+    students.count
   end
 end

@@ -26,8 +26,8 @@
         <% end %>
       </li>
       <li>
-        <%= link_to "#", class: "dropdown-item", data: { bs_toggle: "modal", bs_target: "#enrollModal" } do %>
-          <i class="fas fa-user-plus"></i> Matricular Aluno
+        <%= link_to "#", class: "dropdown-item", data: { bs_toggle: "modal", bs_target: "#addStudentModal" } do %>
+          <i class="fas fa-user-plus"></i> Adicionar Aluno
         <% end %>
       </li>
       <li>
@@ -96,8 +96,8 @@
             <div class="col-md-6 mb-3">
               <strong>Capacidade:</strong><br>
               <span class="text-muted">
-                <%= @classroom.enrollments.count %>/<%= @classroom.capacity %> alunos
-                <% occupancy = (@classroom.enrollments.count.to_f / @classroom.capacity * 100).round(1) %>
+                <%= @classroom.students.count %>/<%= @classroom.capacity %> alunos
+                <% occupancy = (@classroom.students.count.to_f / @classroom.capacity * 100).round(1) %>
                 (<%= occupancy %>% ocupação)
               </span>
               <div class="progress mt-1" style="height: 6px;">
@@ -131,8 +131,8 @@
       <div class="col-12 mb-3">
         <div class="card text-center">
           <div class="card-body">
-            <h3 class="text-primary"><%= @classroom.enrollments.count %></h3>
-            <small class="text-muted">Alunos Matriculados</small>
+            <h3 class="text-primary"><%= @classroom.students.count %></h3>
+            <small class="text-muted">Alunos na Turma</small>
           </div>
         </div>
       </div>
@@ -225,44 +225,45 @@
 <!-- Lista de Alunos -->
 <div class="card mb-4">
   <div class="card-header d-flex justify-content-between align-items-center">
-    <h5><i class="fas fa-users"></i> Alunos Matriculados</h5>
-    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#enrollModal">
-      <i class="fas fa-user-plus"></i> Matricular Aluno
+    <h5><i class="fas fa-users"></i> Alunos da Turma</h5>
+    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addStudentModal">
+      <i class="fas fa-user-plus"></i> Adicionar Aluno
     </button>
   </div>
   <div class="card-body">
-    <% if @classroom.enrollments.any? %>
+    <% if @classroom.students.any? %>
       <div class="table-responsive">
         <table class="table table-hover">
           <thead>
             <tr>
               <th>Nome</th>
               <th>Email</th>
-              <th>Data de Matrícula</th>
+              <th>Data de Cadastro</th>
               <th>Status</th>
               <th class="text-center">Ações</th>
             </tr>
           </thead>
           <tbody>
-            <% @classroom.enrollments.joins(:user).each do |enrollment| %>
+            <% @classroom.students.each do |student| %>
               <tr>
                 <td>
-                  <strong><%= enrollment.user.name %></strong>
+                  <strong><%= student.name %></strong>
                 </td>
-                <td><%= enrollment.user.email %></td>
-                <td><%= enrollment.created_at.strftime("%d/%m/%Y") %></td>
+                <td><%= student.email %></td>
+                <td><%= student.created_at.strftime("%d/%m/%Y") %></td>
                 <td>
-                  <span class="badge bg-<%= enrollment.active? ? 'success' : 'secondary' %>">
-                    <%= enrollment.active? ? 'Ativo' : 'Inativo' %>
+                  <span class="badge bg-<%= student.active? ? 'success' : 'secondary' %>">
+                    <%= student.active? ? 'Ativo' : 'Inativo' %>
                   </span>
                 </td>
                 <td class="text-center">
                   <div class="btn-group btn-group-sm">
-                    <%= link_to "#", class: "btn btn-outline-primary btn-sm" do %>
+                    <%= link_to direction_student_path(student), class: "btn btn-outline-primary btn-sm" do %>
                       <i class="fas fa-eye"></i>
                     <% end %>
-                    <%= link_to "#", class: "btn btn-outline-danger btn-sm", 
-                               data: { confirm: "Tem certeza que deseja remover este aluno?" } do %>
+                    <%= button_to direction_classroom_remove_student_path(@classroom, student), 
+                               method: :patch, class: "btn btn-outline-danger btn-sm", 
+                               data: { confirm: "Tem certeza que deseja remover este aluno da turma?" } do %>
                       <i class="fas fa-user-times"></i>
                     <% end %>
                   </div>
@@ -275,9 +276,9 @@
     <% else %>
       <div class="text-center py-4">
         <i class="fas fa-users fa-3x text-muted mb-3"></i>
-        <h6 class="text-muted">Nenhum aluno matriculado</h6>
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#enrollModal">
-          <i class="fas fa-user-plus"></i> Matricular Primeiro Aluno
+        <h6 class="text-muted">Nenhum aluno na turma</h6>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addStudentModal">
+          <i class="fas fa-user-plus"></i> Adicionar Primeiro Aluno
         </button>
       </div>
     <% end %>
@@ -427,57 +428,33 @@
   </div>
 </div>
 
-<!-- Modal Matricular Aluno -->
-<div class="modal fade" id="enrollModal" tabindex="-1">
+<!-- Modal Adicionar Aluno -->
+<div class="modal fade" id="addStudentModal" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title"><i class="fas fa-user-plus"></i> Matricular Aluno</h5>
+        <h5 class="modal-title"><i class="fas fa-user-plus"></i> Adicionar Aluno à Turma</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
-        <%= form_with url: direction_enrollments_path, local: true, class: "enrollment-form" do |form| %>
-          <%= form.hidden_field :classroom_id, value: @classroom.id %>
+        <%= form_with url: direction_classroom_add_student_path(@classroom), local: true, method: :patch, class: "add-student-form" do |form| %>
           
           <div class="mb-3">
             <%= form.label :user_id, "Selecionar Aluno", class: "form-label" %>
             <%= form.select :user_id, 
                             options_from_collection_for_select(
-                              User.where(user_type: 'student', school_id: current_user.school_id)
-                                  .where.not(id: @classroom.enrollments.select(:user_id)), 
+                              User.where(user_type: 'student', school_id: current_user.school_id, classroom_id: nil), 
                               :id, :name),
                             { prompt: "Selecione um aluno..." }, 
                             { class: "form-select", required: true } %>
             <small class="form-text text-muted">
-              Apenas alunos sem matrícula nesta turma aparecem na lista
+              Apenas alunos que não estão em nenhuma turma aparecem na lista
             </small>
-          </div>
-          
-          <div class="mb-3">
-            <%= form.label :enrollment_date, "Data de Matrícula", class: "form-label" %>
-            <%= form.date_field :enrollment_date, value: Date.current, class: "form-control", required: true %>
-          </div>
-          
-          <div class="mb-3">
-            <%= form.label :status, "Status da Matrícula", class: "form-label" %>
-            <%= form.select :status, 
-                            options_for_select([
-                              ['Ativa', 'active'],
-                              ['Pendente', 'pending']
-                            ], 'active'),
-                            {}, { class: "form-select" } %>
-          </div>
-          
-          <div class="mb-3">
-            <div class="form-check">
-              <%= form.check_box :send_notification, checked: true, class: "form-check-input" %>
-              <%= form.label :send_notification, "Enviar notificação ao aluno", class: "form-check-label" %>
-            </div>
           </div>
           
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-            <%= form.submit "Matricular Aluno", class: "btn btn-primary" %>
+            <%= form.submit "Adicionar Aluno", class: "btn btn-primary" %>
           </div>
         <% end %>
       </div>

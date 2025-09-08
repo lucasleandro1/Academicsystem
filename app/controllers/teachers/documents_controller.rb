@@ -79,9 +79,7 @@ class Teachers::DocumentsController < ApplicationController
 
   def available_students
     classroom_ids = current_user.subjects.pluck(:classroom_id).uniq
-    User.joins(:enrollments)
-        .where(enrollments: { classroom_id: classroom_ids, status: "active" })
-        .where(profile: "student")
+    User.where(classroom_id: classroom_ids, user_type: "student")
         .distinct
   end
 

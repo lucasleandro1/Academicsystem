@@ -197,16 +197,7 @@
                 Turmas inativas não aparecem nas listagens principais
               </div>
             </div>
-
-            <div class="col-md-6 mb-3">
-              <div class="form-check form-switch">
-                <%= form.check_box :allow_enrollments, class: "form-check-input", checked: true %>
-                <%= form.label :allow_enrollments, "Permitir Matrículas", class: "form-check-label" %>
-              </div>
-              <div class="form-text">
-                Permitir que novos alunos se matriculem nesta turma
-              </div>
-            </div>
+            <!-- Configurações removidas: allow_enrollments não é mais necessário -->
 
             <div class="col-md-6 mb-3">
               <%= form.label :academic_year, "Ano Letivo", class: "form-label" %>

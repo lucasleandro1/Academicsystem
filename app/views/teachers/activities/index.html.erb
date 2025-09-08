@@ -129,7 +129,7 @@
             </div>
 
             <!-- Estatísticas de submissões -->
-            <% total_students = activity.subject.classroom.enrollments.where(status: 'active').count %>
+            <% total_students = activity.subject.classroom.students.where(active: true).count %>
             <% submitted_count = activity.submissions.count %>
             <% corrected_count = activity.submissions.where.not(grade: nil).count %>
             

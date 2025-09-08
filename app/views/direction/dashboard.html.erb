@@ -179,50 +179,6 @@
   </div>
 </div>
 
-<div class="row">
-  <!-- Matrículas Pendentes -->
-  <div class="col-md-6 mb-4">
-    <div class="card">
-      <div class="card-header d-flex justify-content-between">
-        <h5><i class="fas fa-clock"></i> Matrículas Pendentes</h5>
-        <%= link_to direction_enrollments_path(status: 'pending'), class: "btn btn-sm btn-outline-info" do %>
-          <i class="fas fa-eye"></i> Ver todas
-        <% end %>
-      </div>
-      <div class="card-body">
-        <% if @pending_enrollments.any? %>
-          <% @pending_enrollments.limit(3).each do |enrollment| %>
-            <div class="d-flex align-items-center justify-content-between mb-2">
-              <div class="d-flex align-items-center">
-                <div class="bg-info rounded-circle me-2 p-2">
-                  <i class="fas fa-user text-white"></i>
-                </div>
-                <div>
-                  <strong><%= enrollment.student.full_name %></strong>
-                  <br>
-                  <small class="text-muted"><%= enrollment.classroom.name %></small>
-                </div>
-              </div>
-              <div class="btn-group">
-                <%= link_to direction_enrollment_path(enrollment, action: 'approve'), 
-                           method: :patch, class: "btn btn-sm btn-success", title: "Aprovar" do %>
-                  <i class="fas fa-check"></i>
-                <% end %>
-                <%= link_to direction_enrollment_path(enrollment, action: 'reject'), 
-                           method: :patch, class: "btn btn-sm btn-danger", title: "Rejeitar" do %>
-                  <i class="fas fa-times"></i>
-                <% end %>
-              </div>
-            </div>
-          <% end %>
-        <% else %>
-          <p class="text-muted text-center">Nenhuma matrícula pendente</p>
-        <% end %>
-      </div>
-    </div>
-  </div>
-</div>
-
 <!-- Gráficos e Relatórios -->
 <div class="row">
   <div class="col-12">

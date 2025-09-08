@@ -4,18 +4,15 @@ class Notification < ApplicationRecord
   belongs_to :school, optional: true
 
   validates :title, :content, :notification_type, presence: true
-  validates :notification_type, inclusion: { in: %w[
-    system_announcement
-    school_event
-    grade_posted
-    activity_assigned
-    message_received
-    attendance_alert
-    enrollment_status
-    document_available
-    calendar_update
-    system_maintenance
-  ] }
+  enum :notification_type, {
+    grade_posted: "grade_posted",
+    activity_assigned: "activity_assigned",
+    message_received: "message_received",
+    attendance_alert: "attendance_alert",
+    document_available: "document_available",
+    calendar_update: "calendar_update",
+    system_maintenance: "system_maintenance"
+  }
 
   scope :unread, -> { where(read: false) }
   scope :read, -> { where(read: true) }
@@ -45,8 +42,6 @@ class Notification < ApplicationRecord
       "fas fa-envelope"
     when "attendance_alert"
       "fas fa-exclamation-triangle"
-    when "enrollment_status"
-      "fas fa-user-check"
     when "document_available"
       "fas fa-file-alt"
     when "calendar_update"
@@ -72,8 +67,6 @@ class Notification < ApplicationRecord
       "primary"
     when "attendance_alert"
       "danger"
-    when "enrollment_status"
-      "success"
     when "document_available"
       "info"
     when "calendar_update"

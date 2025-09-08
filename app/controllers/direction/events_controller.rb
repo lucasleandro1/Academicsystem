@@ -42,11 +42,6 @@ class Direction::EventsController < ApplicationController
 
   private
 
-  def ensure_direction!
-    unless current_user&.direction?
-      redirect_to root_path, alert: "Acesso não autorizado."
-    end
-  end
 
   def set_event
     @event = current_user.school.events.find(params[:id])

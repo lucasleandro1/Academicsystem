@@ -30,7 +30,7 @@ class Teachers::DashboardController < ApplicationController
 
   def total_students_count
     classroom_ids = @teacher.teacher_subjects.pluck(:classroom_id).uniq
-    Enrollment.where(classroom_id: classroom_ids, status: "active").count
+    User.where(classroom_id: classroom_ids, user_type: "student").count
   end
 
   def classes_today

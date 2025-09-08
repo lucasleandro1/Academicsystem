@@ -74,33 +74,6 @@ class NotificationService
     end
   end
 
-  def self.notify_enrollment_status_change(enrollment)
-    message = case enrollment.status
-    when "approved"
-      "Sua matrícula foi aprovada!"
-    when "rejected"
-      "Sua matrícula foi rejeitada."
-    when "pending"
-      "Sua matrícula está em análise."
-    else
-      "Status da sua matrícula foi atualizado."
-    end
-
-    Notification.create!(
-      user: enrollment.student,
-      sender: enrollment.classroom.school.directions.first || User.admins.first,
-      school: enrollment.classroom.school,
-      title: "Atualização de matrícula",
-      content: "#{message}\nTurma: #{enrollment.classroom.display_name}",
-      notification_type: "enrollment_status",
-      metadata: {
-        enrollment_id: enrollment.id,
-        classroom_id: enrollment.classroom.id,
-        status: enrollment.status
-      }
-    )
-  end
-
   def self.notify_document_available(document, recipients)
     recipients.find_each do |user|
       Notification.create!(

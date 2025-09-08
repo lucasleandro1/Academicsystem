@@ -66,7 +66,7 @@
   <div class="col-md-3">
     <div class="card text-center">
       <div class="card-body">
-        <h3 class="text-success"><%= @classrooms.joins(:enrollments).group(:id).count.count %></h3>
+        <h3 class="text-success"><%= @classrooms.joins(:students).group(:id).count.count %></h3>
         <small class="text-muted">Com Alunos</small>
       </div>
     </div>
@@ -74,7 +74,7 @@
   <div class="col-md-3">
     <div class="card text-center">
       <div class="card-body">
-        <h3 class="text-info"><%= @classrooms.joins(:enrollments).sum('enrollments.count') %></h3>
+        <h3 class="text-info"><%= @classrooms.sum { |c| c.students.count } %></h3>
         <small class="text-muted">Total de Alunos</small>
       </div>
     </div>
@@ -82,7 +82,7 @@
   <div class="col-md-3">
     <div class="card text-center">
       <div class="card-body">
-        <h3 class="text-warning"><%= (@classrooms.joins(:enrollments).sum('enrollments.count').to_f / @classrooms.count).round(1) if @classrooms.count > 0 %></h3>
+        <h3 class="text-warning"><%= (@classrooms.sum { |c| c.students.count }.to_f / @classrooms.count).round(1) if @classrooms.count > 0 %></h3>
         <small class="text-muted">Média por Turma</small>
       </div>
     </div>
@@ -160,7 +160,7 @@
             <!-- Estatísticas da turma -->
             <div class="row mb-3">
               <div class="col-4 text-center">
-                <h4 class="text-primary"><%= classroom.enrollments.count %></h4>
+                <h4 class="text-primary"><%= classroom.students.count %></h4>
                 <small class="text-muted">Alunos</small>
               </div>
               <div class="col-4 text-center">
@@ -200,12 +200,12 @@
               <div class="mb-2">
                 <small class="text-muted">Capacidade:</small>
                 <div class="progress" style="height: 6px;">
-                  <% occupancy = (classroom.enrollments.count.to_f / classroom.capacity * 100).round(1) %>
+                  <% occupancy = (classroom.students.count.to_f / classroom.capacity * 100).round(1) %>
                   <div class="progress-bar bg-<%= occupancy > 90 ? 'danger' : occupancy > 70 ? 'warning' : 'success' %>" 
                        style="width: <%= occupancy %>%"></div>
                 </div>
                 <small class="text-muted">
-                  <%= classroom.enrollments.count %>/<%= classroom.capacity %> alunos 
+                  <%= classroom.students.count %>/<%= classroom.capacity %> alunos 
                   (<%= occupancy %>%)
                 </small>
               </div>

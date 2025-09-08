@@ -5,11 +5,10 @@ class User < ApplicationRecord
          :recoverable, :rememberable, :validatable
 
   belongs_to :school, optional: true
+  belongs_to :classroom, optional: true
   enum :user_type, student: "student", teacher: "teacher", direction: "direction", admin: "admin"
 
   # Associações como estudante
-  has_many :student_enrollments, class_name: "Enrollment", foreign_key: "user_id", dependent: :destroy
-  has_many :enrolled_classrooms, through: :student_enrollments, source: :classroom
   has_many :student_grades, class_name: "Grade", foreign_key: "user_id", dependent: :destroy
   has_many :student_absences, class_name: "Absence", foreign_key: "user_id", dependent: :destroy
   has_many :student_submissions, class_name: "Submission", foreign_key: "user_id", dependent: :destroy
@@ -29,8 +28,6 @@ class User < ApplicationRecord
   has_many :sent_notifications, class_name: "Notification", foreign_key: "sender_id", dependent: :destroy
 
   # Aliases para facilitar o uso
-  alias_method :enrollments, :student_enrollments
-  alias_method :classrooms, :enrolled_classrooms
   alias_method :grades, :student_grades
   alias_method :absences, :student_absences
   alias_method :submissions, :student_submissions
@@ -41,12 +38,6 @@ class User < ApplicationRecord
   def teacher_classrooms
     return Classroom.none unless teacher?
     Classroom.joins(:subjects).where(subjects: { user_id: id }).distinct
-  end
-
-  # Métodos para filtrar associações por contexto
-  def my_enrollments
-    return student_enrollments if student?
-    Enrollment.none
   end
 
   def my_grades

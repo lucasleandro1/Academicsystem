@@ -52,6 +52,18 @@ class ApplicationController < ActionController::Base
 
   private
 
+  def ensure_direction!
+    unless current_user&.direction?
+      redirect_to root_path, alert: "Acesso não autorizado."
+      return
+    end
+
+    unless current_user.school
+      redirect_to root_path, alert: "Usuário não possui escola associada. Entre em contato com o administrador."
+      nil
+    end
+  end
+
   def configure_permitted_parameters
     devise_parameter_sanitizer.permit(:sign_up, keys: [ :first_name, :last_name, :user_type, :school_id ])
     devise_parameter_sanitizer.permit(:account_update, keys: [ :first_name, :last_name, :phone, :birth_date, :address ])

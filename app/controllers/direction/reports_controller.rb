@@ -7,10 +7,9 @@ class Direction::ReportsController < ApplicationController
 
     # Relatórios de alunos
     @students_report = {
-      total: User.joins(student_enrollments: :classroom).where(classrooms: { school_id: @school.id }, user_type: "student").distinct.count,
-      active: User.joins(student_enrollments: :classroom).where(classrooms: { school_id: @school.id }, enrollments: { status: "active" }, user_type: "student").distinct.count,
-      pending: Enrollment.joins(:classroom).where(classrooms: { school_id: @school.id }, status: "pending").count,
-      by_classroom: classroom_enrollment_stats
+      total: User.where(school_id: @school.id, user_type: "student").count,
+      active: User.where(school_id: @school.id, user_type: "student", active: true).count,
+      by_classroom: classroom_student_stats
     }
 
     # Relatórios de professores
@@ -95,17 +94,11 @@ class Direction::ReportsController < ApplicationController
 
   private
 
-  def ensure_direction!
-    unless current_user&.direction?
-      redirect_to root_path, alert: "Acesso não autorizado."
-    end
-  end
-
-  def classroom_enrollment_stats
+  def classroom_student_stats
     Classroom.where(school_id: current_user.school.id)
-             .left_joins(:enrollments)
+             .left_joins(:students)
              .group("classrooms.name")
-             .count("enrollments.id")
+             .count("users.id")
   end
 
   def teacher_subject_stats
@@ -123,8 +116,8 @@ class Direction::ReportsController < ApplicationController
 
     return 0 if total_schedules.zero?
 
-    total_absences = Absence.joins(student: :enrollments)
-                           .where(enrollments: { school_id: current_user.school.id })
+    total_absences = Absence.joins(:user)
+                           .where(users: { school_id: current_user.school.id })
                            .where("date >= ?", 30.days.ago)
                            .count
 
@@ -132,8 +125,8 @@ class Direction::ReportsController < ApplicationController
   end
 
   def calculate_school_average_grades
-    Grade.joins(student: :enrollments)
-         .where(enrollments: { school_id: current_user.school.id })
+    Grade.joins(:user)
+         .where(users: { school_id: current_user.school.id })
          .where("grades.created_at >= ?", 30.days.ago)
          .average(:value)&.round(2) || 0
   end
@@ -172,14 +165,14 @@ class Direction::ReportsController < ApplicationController
   end
 
   def grades_data_for_classroom(classroom, subject = nil)
-    query = Grade.joins(student: :enrollments)
-                 .where(enrollments: { classroom_id: classroom.id })
+    query = Grade.joins(:user)
+                 .where(users: { classroom_id: classroom.id })
 
     query = query.joins(:subject).where(subjects: { id: subject.id }) if subject
 
-    grades = query.includes(:student, :subject)
+    grades = query.includes(:user, :subject)
 
-    grades.group_by(&:student).map do |student, student_grades|
+    grades.group_by(&:user).map do |student, student_grades|
       {
         student_name: student.full_name,
         grades: student_grades.map { |g| { subject: g.subject.name, grade: g.value } },
@@ -203,12 +196,9 @@ class Direction::ReportsController < ApplicationController
   end
 
   def generate_student_bulletin(student)
-    enrollments = student.enrollments.includes(:classroom, :school)
-    current_enrollment = enrollments.find { |e| e.school_id == current_user.school.id }
+    return nil unless student.classroom && student.school_id == current_user.school.id
 
-    return nil unless current_enrollment
-
-    classroom = current_enrollment.classroom
+    classroom = student.classroom
     subjects = classroom.subjects.includes(:grades, :absences)
 
     bulletin_data = {
@@ -218,8 +208,8 @@ class Direction::ReportsController < ApplicationController
     }
 
     subjects.each do |subject|
-      student_grades = subject.grades.where(student: student)
-      student_absences = subject.absences.where(student: student).count
+      student_grades = subject.grades.where(user: student)
+      student_absences = subject.absences.where(user: student).count
 
       average_grade = student_grades.any? ? student_grades.average(:value).round(1) : 0
 
@@ -236,8 +226,8 @@ class Direction::ReportsController < ApplicationController
   end
 
   def calculate_grade_distribution
-    Grade.joins(student: :enrollments)
-         .where(enrollments: { school_id: current_user.school.id })
+    Grade.joins(:user)
+         .where(users: { school_id: current_user.school.id })
          .group("CASE
                    WHEN value >= 9 THEN '9-10'
                    WHEN value >= 7 THEN '7-8.9'
@@ -260,16 +250,16 @@ class Direction::ReportsController < ApplicationController
   end
 
   def calculate_month_attendance_rate(start_date, end_date)
-    total_enrollments = Enrollment.where(school_id: current_user.school.id, status: "active").count
-    return 0 if total_enrollments.zero?
+    total_students = User.where(school_id: current_user.school.id, user_type: "student", active: true).count
+    return 0 if total_students.zero?
 
-    total_absences = Absence.joins(student: :enrollments)
-                           .where(enrollments: { school_id: current_user.school.id })
+    total_absences = Absence.joins(:user)
+                           .where(users: { school_id: current_user.school.id })
                            .where(date: start_date..end_date)
                            .count
 
     days_in_period = (end_date.to_date - start_date.to_date).to_i + 1
-    expected_presences = total_enrollments * days_in_period
+    expected_presences = total_students * days_in_period
 
     return 95.0 if total_absences.zero?
     [ 100.0 - (total_absences.to_f / expected_presences * 100), 0 ].max.round(1)

@@ -3,9 +3,11 @@ class Students::ClassSchedulesController < ApplicationController
   before_action :ensure_student
 
   def index
-    @subjects = current_user.enrollments.includes(:subject).map(&:subject)
-    @schedules = ClassSchedule.joins(subject: :enrollments)
-                             .where(enrollments: { user_id: current_user.id })
+    return redirect_to students_dashboard_path, alert: "Você não está em nenhuma turma." unless current_user.classroom
+
+    @subjects = current_user.classroom.subjects
+    @schedules = ClassSchedule.joins(:subject)
+                             .where(subjects: { classroom_id: current_user.classroom.id })
                              .includes(:subject, :classroom)
 
     # Organizar horários por dia e horário

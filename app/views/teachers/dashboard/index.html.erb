@@ -56,7 +56,7 @@
               Total de Alunos
             </div>
             <div class="h5 mb-0 font-weight-bold text-gray-800">
-              <%= current_user.teacher_classrooms.joins(:enrollments).distinct.count('enrollments.user_id') %>
+              <%= current_user.teacher_classrooms.joins(:students).distinct.count('users.id') %>
             </div>
           </div>
           <div class="col-auto">
@@ -131,7 +131,7 @@
                 </tr>
               </thead>
               <tbody>
-                <% current_user.teacher_classrooms.includes(:enrollments, :class_schedules).limit(5).each do |classroom| %>
+                <% current_user.teacher_classrooms.includes(:students, :class_schedules).limit(5).each do |classroom| %>
                   <tr>
                     <td>
                       <div>
@@ -142,7 +142,7 @@
                     </td>
                     <td>
                       <span class="badge bg-info">
-                        <%= classroom.enrollments.count %> alunos
+                        <%= classroom.students.count %> alunos
                       </span>
                     </td>
                     <td>

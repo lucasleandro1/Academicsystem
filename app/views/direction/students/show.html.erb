@@ -155,13 +155,13 @@
           </h5>
         </div>
         <div class="card-body">
-          <% if @student.active_enrollment %>
+          <% if @student.classroom %>
             <div class="text-center mb-3">
               <h6 class="text-primary">Turma Atual</h6>
-              <h5 class="mb-1"><%= @student.active_enrollment.classroom.name %></h5>
+              <h5 class="mb-1"><%= @student.classroom.name %></h5>
               <p class="text-muted mb-0">
-                <%= @student.active_enrollment.classroom.level.humanize %> - 
-                <%= @student.active_enrollment.classroom.shift.humanize %>
+                <%= @student.classroom.level.humanize %> - 
+                <%= @student.classroom.shift.humanize %>
               </p>
             </div>
             
@@ -193,7 +193,7 @@
           <% else %>
             <div class="text-center text-muted">
               <i class="fas fa-info-circle fs-1 mb-3 d-block"></i>
-              <p>Este aluno não possui matrícula ativa.</p>
+              <p>Este aluno não está em nenhuma turma.</p>
             </div>
           <% end %>
         </div>
@@ -208,11 +208,6 @@
         </div>
         <div class="card-body">
           <div class="d-grid gap-2">
-            <%= link_to direction_enrollments_path(student_id: @student.id), 
-                class: "btn btn-outline-primary" do %>
-              <i class="fas fa-file-alt me-2"></i>Ver Matrículas
-            <% end %>
-            
             <%= link_to direction_occurrences_path(student_id: @student.id), 
                 class: "btn btn-outline-warning" do %>
               <i class="fas fa-exclamation-triangle me-2"></i>Ocorrências

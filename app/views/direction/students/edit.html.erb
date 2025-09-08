@@ -114,25 +114,22 @@
     <!-- Matrículas -->
     <div class="card mt-3">
       <div class="card-header">
-        <h6><i class="fas fa-graduation-cap"></i> Matrículas</h6>
+        <h6><i class="fas fa-graduation-cap"></i> Turma Atual</h6>
       </div>
       <div class="card-body">
-        <% enrollments = @user.enrollments.where(school: current_user.school) %>
-        <% if enrollments.any? %>
-          <% enrollments.each do |enrollment| %>
-            <div class="mb-2">
-              <strong><%= enrollment.classroom.name %></strong>
-              <br>
-              <span class="badge bg-<%= enrollment.status == 'active' ? 'success' : 'warning' %>">
-                <%= enrollment.status.humanize %>
-              </span>
-              <small class="text-muted">
-                desde <%= enrollment.enrollment_date.strftime("%d/%m/%Y") %>
-              </small>
-            </div>
-          <% end %>
+        <% if @user.classroom %>
+          <div class="mb-2">
+            <strong><%= @user.classroom.name %></strong>
+            <br>
+            <span class="badge bg-success">
+              <%= @user.classroom.shift.humanize %>
+            </span>
+            <small class="text-muted">
+              <%= @user.classroom.level.humanize %>
+            </small>
+          </div>
         <% else %>
-          <p class="text-muted">Nenhuma matrícula ativa</p>
+          <p class="text-muted">Aluno não está em nenhuma turma</p>
         <% end %>
       </div>
     </div>
@@ -145,9 +142,6 @@
       <div class="card-body">
         <%= link_to direction_student_path(@user), class: "btn btn-outline-primary btn-sm w-100 mb-2" do %>
           <i class="fas fa-eye"></i> Ver Detalhes
-        <% end %>
-        <%= link_to direction_enrollments_path(student_id: @user.id), class: "btn btn-outline-info btn-sm w-100 mb-2" do %>
-          <i class="fas fa-graduation-cap"></i> Gerenciar Matrículas
         <% end %>
       </div>
     </div>

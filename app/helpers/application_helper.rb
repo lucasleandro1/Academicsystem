@@ -1,6 +1,6 @@
 module ApplicationHelper
-  def calculate_average(enrollment)
-    grades = enrollment.grades
+  def calculate_average(student, subject = nil)
+    grades = subject ? student.grades.where(subject: subject) : student.grades
     return nil if grades.empty?
 
     total = grades.sum(:value)

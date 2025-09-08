@@ -202,7 +202,7 @@
                 <small class="text-muted">Turmas</small>
               </div>
               <div class="col-6 text-center">
-                <h4 class="text-success"><%= subject.classrooms.joins(:enrollments).distinct.count('enrollments.id') %></h4>
+                <h4 class="text-success"><%= subject.classroom.students.count %></h4>
                 <small class="text-muted">Alunos</small>
               </div>
             </div>

@@ -113,11 +113,6 @@ class Direction::ClassSchedulesController < ApplicationController
 
   private
 
-  def ensure_direction!
-    unless current_user&.direction?
-      redirect_to root_path, alert: "Acesso não autorizado."
-    end
-  end
 
   def class_schedule_params
     params.require(:class_schedule).permit(:classroom_id, :subject_id, :day_of_week, :start_time, :end_time)

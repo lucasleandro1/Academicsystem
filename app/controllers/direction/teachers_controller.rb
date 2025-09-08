@@ -62,12 +62,6 @@ class Direction::TeachersController < ApplicationController
 
   private
 
-  def ensure_direction!
-    unless current_user&.direction?
-      redirect_to root_path, alert: "Acesso não autorizado."
-    end
-  end
-
   def set_teacher
     @user = User.where(school_id: current_user.school.id, user_type: "teacher", id: params[:id]).first
 

@@ -119,16 +119,6 @@
     </li>
     
     <li class="nav-item">
-      <%= link_to direction_enrollments_path, class: "nav-link #{'active' if controller_name == 'enrollments' && controller.class.module_parent.name.downcase == 'direction'}" do %>
-        <i class="fas fa-clipboard-check"></i> Matrículas
-        <% pending_count = Enrollment.joins(:classroom).where(classrooms: { school: current_user.school }, status: 'pending').count %>
-        <% if pending_count > 0 %>
-          <span class="badge bg-danger ms-auto"><%= pending_count %></span>
-        <% end %>
-      <% end %>
-    </li>
-    
-    <li class="nav-item">
       <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
         <span>Acadêmico</span>
       </h6>

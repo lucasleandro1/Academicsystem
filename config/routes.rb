@@ -67,15 +67,12 @@ Rails.application.routes.draw do
     resources :teachers
     resources :students
     resources :classrooms do
-      resources :enrollments, except: [ :new, :create, :edit, :update ]
-    end
-    resources :subjects
-    resources :enrollments do
       member do
-        patch :approve
-        patch :reject
+        patch :add_student
+        patch :remove_student
       end
     end
+    resources :subjects
     resources :teacher_assignments, only: [ :index ] do
       collection do
         patch :assign_teacher

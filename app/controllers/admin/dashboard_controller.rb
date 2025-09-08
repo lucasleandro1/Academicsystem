@@ -18,8 +18,8 @@ class Admin::DashboardController < ApplicationController
     # Taxa de presença média geral
     @general_attendance_rate = calculate_general_attendance_rate
 
-    # Matrículas ativas no município
-    @active_enrollments = Enrollment.where(status: "active").count
+    # Estudantes ativos no município
+    @active_enrollments = User.where(user_type: "student", active: true).count
 
     # Últimos comunicados enviados
     @recent_events = Event.order(created_at: :desc).limit(5)
@@ -34,13 +34,13 @@ class Admin::DashboardController < ApplicationController
   private
 
   def calculate_general_attendance_rate
-    total_enrollments = Enrollment.where(status: "active").count
-    return 0 if total_enrollments.zero?
+    total_students = User.where(user_type: "student").count
+    return 0 if total_students.zero?
 
     total_absences = Absence.where("date >= ?", 30.days.ago).count
     return 95.0 if total_absences.zero?
 
-    attendance_rate = [ 100.0 - (total_absences.to_f / total_enrollments * 10), 0 ].max
+    attendance_rate = [ 100.0 - (total_absences.to_f / total_students * 10), 0 ].max
     attendance_rate.round(1)
   end
 

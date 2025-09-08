@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_08_19_175937) do
+ActiveRecord::Schema[8.0].define(version: 2025_09_08_141623) do
   create_table "absences", force: :cascade do |t|
     t.integer "subject_id", null: false
     t.date "date"
@@ -111,16 +111,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_19_175937) do
     t.string "file_name"
     t.index ["school_id"], name: "index_documents_on_school_id"
     t.index ["user_id"], name: "index_documents_on_user_id"
-  end
-
-  create_table "enrollments", force: :cascade do |t|
-    t.integer "classroom_id", null: false
-    t.string "status"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.integer "user_id", null: false
-    t.index ["classroom_id"], name: "index_enrollments_on_classroom_id"
-    t.index ["user_id"], name: "index_enrollments_on_user_id"
   end
 
   create_table "events", force: :cascade do |t|
@@ -276,6 +266,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_19_175937) do
     t.string "first_name"
     t.string "last_name"
     t.string "phone"
+    t.integer "classroom_id"
+    t.index ["classroom_id"], name: "index_users_on_classroom_id"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
     t.index ["school_id"], name: "index_users_on_school_id"
@@ -295,8 +287,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_19_175937) do
   add_foreign_key "classrooms", "schools"
   add_foreign_key "documents", "schools"
   add_foreign_key "documents", "users"
-  add_foreign_key "enrollments", "classrooms"
-  add_foreign_key "enrollments", "users"
   add_foreign_key "events", "schools"
   add_foreign_key "grades", "subjects"
   add_foreign_key "grades", "users"
@@ -315,4 +305,5 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_19_175937) do
   add_foreign_key "submissions", "activities"
   add_foreign_key "submissions", "schools"
   add_foreign_key "submissions", "users"
+  add_foreign_key "users", "classrooms"
 end

@@ -73,52 +73,39 @@
         <h5><i class="fas fa-id-card"></i> Dados de Matrícula</h5>
       </div>
       <div class="card-body">
-        <% enrollment = current_user.enrollments.where(status: 'active').first %>
-        <% if enrollment&.classroom %>
-          <table class="table table-borderless">
-            <tr>
-              <th width="150">Número da Matrícula:</th>
-              <td><strong><%= current_user.registration_number %></strong></td>
-            </tr>
-            <tr>
-              <th>Escola:</th>
-              <td><%= current_user.school.name %></td>
-            </tr>
-            <tr>
-              <th>Turma:</th>
-              <td><%= enrollment.classroom.name %></td>
-            </tr>
-            <tr>
-              <th>Nível:</th>
-              <td><%= enrollment.classroom.level.humanize %></td>
-            </tr>
-            <tr>
-              <th>Turno:</th>
-              <td><%= enrollment.classroom.shift.humanize %></td>
-            </tr>
-            <tr>
-              <th>Ano Letivo:</th>
-              <td><%= enrollment.classroom.academic_year %></td>
-            </tr>
-            <tr>
-              <th>Data de Matrícula:</th>
-              <td><%= enrollment.created_at.strftime("%d/%m/%Y") %></td>
-            </tr>
-            <tr>
-              <th>Status:</th>
-              <td>
-                <span class="badge bg-<%= enrollment.status == 'active' ? 'success' : 'warning' %>">
-                  <%= enrollment.status.humanize %>
-                </span>
-              </td>
-            </tr>
+                <% if current_user.classroom %>
+          <table class="table table-bordered">
+            <tbody>
+              <tr>
+                <th width="200">Turma</th>
+                <td><%= current_user.classroom.name %></td>
+              </tr>
+              <tr>
+                <th>Nível</th>
+                <td><%= current_user.classroom.level.humanize %></td>
+              </tr>
+              <tr>
+                <th>Turno</th>
+                <td><%= current_user.classroom.shift.humanize %></td>
+              </tr>
+              <tr>
+                <th>Ano Letivo</th>
+                <td><%= current_user.classroom.academic_year %></td>
+              </tr>
+              <tr>
+                <th>Data de Matrícula</th>
+                <td><%= current_user.created_at.strftime("%d/%m/%Y") %></td>
+              </tr>
+              <tr>
+                <th>Status</th>
+                <td>
+                  <span class="badge bg-<%= current_user.active? ? 'success' : 'warning' %>">
+                    <%= current_user.active? ? 'Ativo' : 'Inativo' %>
+                  </span>
+                </td>
+              </tr>
+            </tbody>
           </table>
-        <% else %>
-          <div class="text-center py-3">
-            <i class="fas fa-exclamation-triangle fa-2x text-warning mb-2"></i>
-            <p class="text-muted">Você não possui uma matrícula ativa no momento.</p>
-          </div>
-        <% end %>
       </div>
     </div>
 

@@ -6,8 +6,7 @@ class Direction::DashboardController < ApplicationController
     @school = current_user.school
 
     # Estatísticas básicas
-    @total_students = User.joins(student_enrollments: :classroom)
-                         .where(classrooms: { school_id: @school.id }, user_type: "student")
+    @total_students = User.where(school_id: @school.id, user_type: "student")
                          .distinct.count
     @total_teachers = User.where(school_id: @school.id, user_type: "teacher", active: true).count
     @total_classrooms = Classroom.where(school_id: @school.id).count
@@ -18,13 +17,6 @@ class Direction::DashboardController < ApplicationController
                            .where("start_date >= ? AND start_date <= ?", Date.current, 7.days.from_now)
                            .order(:start_date)
                            .limit(5)
-
-    # Matrículas pendentes
-    @pending_enrollments = Enrollment.joins(:classroom)
-                                    .where(classrooms: { school_id: @school.id }, status: "pending")
-                                    .includes(:student, :classroom)
-                                    .order(:created_at)
-                                    .limit(5)
 
     # Avisos e notificações importantes
     @important_notifications = get_important_notifications
@@ -45,18 +37,6 @@ class Direction::DashboardController < ApplicationController
 
   def get_important_notifications
     notifications = []
-
-    # Verificar matrículas pendentes
-    pending_count = @pending_enrollments.count
-    if pending_count > 0
-      notifications << {
-        type: "warning",
-        icon: "fas fa-exclamation-triangle",
-        title: "Matrículas Pendentes",
-        message: "#{pending_count} matrícula(s) aguardando aprovação",
-        link: direction_enrollments_path
-      }
-    end
 
     # Verificar eventos próximos
     events_today = Event.where(school_id: @school.id, start_date: Date.current).count
@@ -118,35 +98,28 @@ class Direction::DashboardController < ApplicationController
 
   private
 
-  def ensure_direction!
-    unless current_user&.direction?
-      redirect_to root_path, alert: "Acesso não autorizado."
-    end
-  end
-
   def calculate_attendance_rate
     # Como ClassSchedule pode não ter campo date, vamos usar uma abordagem diferente
-    total_enrollments = Enrollment.joins(:classroom)
-                                 .where(classrooms: { school_id: @school.id }, status: "active")
-                                 .count
+    total_students = User.where(school_id: @school.id, user_type: "student")
+                        .count
 
-    return 0 if total_enrollments.zero?
+    return 0 if total_students.zero?
 
-    total_absences = Absence.joins(student: { student_enrollments: :classroom })
-                           .where(classrooms: { school_id: @school.id })
+    total_absences = Absence.joins(:student)
+                           .where(users: { school_id: @school.id })
                            .where("absences.date >= ?", 30.days.ago)
                            .count
 
     # Calculamos uma estimativa simples de presença
     return 95.0 if total_absences.zero?
 
-    attendance_rate = [ 100.0 - (total_absences.to_f / total_enrollments * 10), 0 ].max
+    attendance_rate = [ 100.0 - (total_absences.to_f / total_students * 10), 0 ].max
     attendance_rate.round(1)
   end
 
   def calculate_average_grade
-    grades = Grade.joins(student: { student_enrollments: :classroom })
-                  .where(classrooms: { school_id: @school.id })
+    grades = Grade.joins(:student)
+                  .where(users: { school_id: @school.id })
                   .where("grades.created_at >= ?", 30.days.ago)
 
     return "0.0" if grades.empty?

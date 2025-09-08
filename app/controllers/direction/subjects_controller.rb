@@ -53,12 +53,6 @@ class Direction::SubjectsController < ApplicationController
 
   private
 
-  def ensure_direction!
-    unless current_user&.direction?
-      redirect_to root_path, alert: "Acesso não autorizado."
-    end
-  end
-
   def set_subject
     @subject = current_user.school.subjects.find(params[:id])
   end

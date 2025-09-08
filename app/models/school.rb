@@ -8,7 +8,6 @@ class School < ApplicationRecord
   has_many :subjects, dependent: :destroy
   has_many :grades, dependent: :destroy
   has_many :absences, dependent: :destroy
-  has_many :enrollments, through: :classrooms, dependent: :destroy
   has_many :submissions, dependent: :destroy
   has_many :class_schedules, dependent: :destroy
   has_many :messages, dependent: :destroy

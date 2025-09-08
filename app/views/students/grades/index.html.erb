@@ -8,18 +8,17 @@
 </div>
 
 <!-- Resumo Geral -->
-<% enrollment = current_user.enrollments.where(status: 'active').first %>
-<% if enrollment&.classroom %>
+<% if current_user.classroom %>
   <div class="alert alert-info mb-4">
     <div class="row align-items-center">
       <div class="col-md-8">
         <h6 class="mb-1">
           <i class="fas fa-graduation-cap"></i> 
-          Turma: <strong><%= enrollment.classroom.name %></strong>
+          Turma: <strong><%= current_user.classroom.name %></strong>
         </h6>
         <small>
-          <%= enrollment.classroom.level.humanize %> - 
-          <%= enrollment.classroom.shift.humanize %> - 
+          <%= current_user.classroom.level.humanize %> - 
+          <%= current_user.classroom.shift.humanize %> - 
           Matrícula: <%= current_user.registration_number %>
         </small>
       </div>
@@ -42,41 +41,52 @@
             </tr>
           </thead>
           <tbody>
-            <% @enrollments.each do |enrollment| %>
-              <tr>
-                <td><%= enrollment.subject.name %></td>
-                <td><%= enrollment.subject.user.full_name %></td>
-                <% @grade_types.each do |grade_type| %>
-                  <% grade = enrollment.grades.find_by(grade_type: grade_type) %>
+            <% if current_user.classroom&.subjects&.any? %>
+              <% current_user.classroom.subjects.each do |subject| %>
+                <tr>
+                  <td><%= subject.name %></td>
+                  <td><%= subject.user.full_name %></td>
+                  <% @grade_types.each do |grade_type| %>
+                    <% grade = current_user.grades.find_by(subject: subject, grade_type: grade_type) %>
+                    <td>
+                      <% if grade %>
+                        <span class="badge bg-<%= grade.value >= 7 ? 'success' : grade.value >= 5 ? 'warning' : 'danger' %>">
+                          <%= grade.value %>
+                        </span>
+                      <% else %>
+                        <span class="text-muted">-</span>
+                      <% end %>
+                    </td>
+                  <% end %>
+                  <% subject_grades = current_user.grades.where(subject: subject) %>
+                  <% average = subject_grades.any? ? subject_grades.average(:value) : nil %>
                   <td>
-                    <% if grade %>
-                      <span class="badge bg-<%= grade.value >= 7 ? 'success' : grade.value >= 5 ? 'warning' : 'danger' %>">
-                        <%= grade.value %>
-                      </span>
+                    <% if average %>
+                      <strong class="text-<%= average >= 7 ? 'success' : average >= 5 ? 'warning' : 'danger' %>">
+                        <%= number_with_precision(average, precision: 1) %>
+                      </strong>
                     <% else %>
                       <span class="text-muted">-</span>
                     <% end %>
                   </td>
-                <% end %>
-                <% average = calculate_average(enrollment) %>
-                <td>
-                  <% if average %>
-                    <strong class="text-<%= average >= 7 ? 'success' : average >= 5 ? 'warning' : 'danger' %>">
-                      <%= number_with_precision(average, precision: 1) %>
-                    </strong>
-                  <% else %>
-                    <span class="text-muted">-</span>
-                  <% end %>
+                  <td>
+                    <% if average %>
+                      <span class="badge bg-<%= average >= 7 ? 'success' : average >= 5 ? 'warning' : 'danger' %>">
+                        <%= average >= 7 ? 'Aprovado' : average >= 5 ? 'Recuperação' : 'Reprovado' %>
+                      </span>
+                    <% else %>
+                      <span class="badge bg-secondary">Em andamento</span>
+                    <% end %>
+                  </td>
+                </tr>
+              <% end %>
+            <% else %>
+              <tr>
+                <td colspan="<%= @grade_types.size + 4 %>" class="text-center text-muted">
+                  Você não está matriculado em nenhuma turma ou sua turma não possui disciplinas.
                 </td>
-                <td>
-                  <% if average %>
-                    <span class="badge bg-<%= average >= 7 ? 'success' : average >= 5 ? 'warning' : 'danger' %>">
-                      <%= average >= 7 ? 'Aprovado' : average >= 5 ? 'Recuperação' : 'Reprovado' %>
-                    </span>
-                  <% else %>
-                    <span class="badge bg-secondary">Em andamento</span>
-                  <% end %>
-                </td>
+              </tr>
+            <% end %>
               </tr>
             <% end %>
           </tbody>
