@@ -11,7 +11,8 @@ class Notification < ApplicationRecord
     attendance_alert: "attendance_alert",
     document_available: "document_available",
     calendar_update: "calendar_update",
-    system_maintenance: "system_maintenance"
+    system_maintenance: "system_maintenance",
+    system_announcement: "system_announcement"
   }
 
   scope :unread, -> { where(read: false) }

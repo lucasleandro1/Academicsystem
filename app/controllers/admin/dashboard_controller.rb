@@ -19,7 +19,7 @@ class Admin::DashboardController < ApplicationController
     @general_attendance_rate = calculate_general_attendance_rate
 
     # Estudantes ativos no município
-    @active_enrollments = User.where(user_type: "student", active: true).count
+    @active_students = User.where(user_type: "student", active: true).count
 
     # Últimos comunicados enviados
     @recent_events = Event.order(created_at: :desc).limit(5)

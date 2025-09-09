@@ -6,11 +6,12 @@ class School < ApplicationRecord
   has_many :documents, dependent: :destroy
   has_many :attachments, dependent: :destroy
   has_many :subjects, dependent: :destroy
-  has_many :grades, dependent: :destroy
-  has_many :absences, dependent: :destroy
+  has_many :grades, through: :subjects
+  has_many :absences, through: :subjects
   has_many :submissions, dependent: :destroy
   has_many :class_schedules, dependent: :destroy
   has_many :messages, dependent: :destroy
+  has_many :notifications, dependent: :destroy
 
   has_many :students, -> { where(user_type: "student") }, class_name: "User"
   has_many :teachers, -> { where(user_type: "teacher") }, class_name: "User"
