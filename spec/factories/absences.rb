@@ -5,7 +5,7 @@ FactoryBot.define do
     date { Date.current }
     justified { false }
     subject
-    
+
     before(:create) do |absence|
       # Criar um estudante e uma turma se não existirem
       classroom = absence.subject.classroom

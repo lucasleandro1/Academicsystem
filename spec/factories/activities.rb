@@ -7,7 +7,7 @@ FactoryBot.define do
     due_date { 1.week.from_now }
     subject
     school
-    
+
     before(:create) do |activity|
       # Garantir que o teacher da activity seja o mesmo teacher da subject
       activity.teacher = activity.subject.teacher

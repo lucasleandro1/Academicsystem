@@ -6,7 +6,7 @@ FactoryBot.define do
     submission_date { Time.current }
     activity
     school
-    
+
     before(:create) do |submission|
       # Garantir que o student está na mesma turma da disciplina da atividade
       classroom = submission.activity.subject.classroom

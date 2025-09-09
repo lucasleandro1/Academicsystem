@@ -6,7 +6,7 @@ FactoryBot.define do
     bimester { 1 }
     grade_type { :prova }
     subject
-    
+
     before(:create) do |grade|
       # Criar um estudante na mesma turma da disciplina
       classroom = grade.subject.classroom

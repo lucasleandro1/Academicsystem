@@ -6,7 +6,7 @@ FactoryBot.define do
     document_type { "comunicado" }
     is_municipal { false }
     school
-    association :user, factory: [:user, :direction]
+    association :user, factory: [ :user, :direction ]
 
     trait :municipal do
       is_municipal { true }
