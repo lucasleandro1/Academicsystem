@@ -110,7 +110,7 @@
                 </td>
                 <% (1..6).each do |day| %>
                   <% class_schedule = @week_schedule.find { |cs| 
-                       cs.day_of_week == day && 
+                       cs.weekday == day && 
                        cs.start_time.strftime('%H:%M') == time_slot 
                      } %>
                   <td class="schedule-cell">
@@ -268,7 +268,7 @@ const scheduleData = [
       subject: '<%= j schedule.subject.name %>',
       teacher: '<%= j (schedule.subject.teacher&.name || "Professor") %>',
       classroom: '<%= j (schedule.classroom&.name || "Sala TBD") %>',
-      day_of_week: <%= schedule.day_of_week %>,
+      weekday: <%= schedule.weekday %>,
       start_time: '<%= schedule.start_time.strftime("%H:%M") %>',
       end_time: '<%= schedule.end_time&.strftime("%H:%M") || "" %>',
       subject_id: <%= schedule.subject.id %>
@@ -350,7 +350,7 @@ function updateSelectedDay() {
 
 function renderDayView() {
   const dayOfWeek = selectedDay.getDay() || 7; // Converter domingo (0) para 7
-  const daySchedule = scheduleData.filter(item => item.day_of_week === dayOfWeek);
+  const daySchedule = scheduleData.filter(item => item.weekday === dayOfWeek);
   
   const container = document.getElementById('daily-schedule');
   

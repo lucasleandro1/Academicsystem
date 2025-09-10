@@ -2,8 +2,16 @@ Rails.application.routes.draw do
   devise_for :users
   root "application#dashboard"
 
-  # Mensagens (disponível para todos os usuários logados)
   resources :messages, except: [ :edit, :update ]
+  resources :notifications, only: [ :index, :show, :destroy ] do
+    member do
+      patch :mark_as_read
+    end
+    collection do
+      patch :mark_all_as_read
+      delete :clear_all
+    end
+  end
 
   namespace :admin do
     resources :schools
@@ -13,6 +21,15 @@ Rails.application.routes.draw do
     resources :documents do
       member do
         get :download
+      end
+    end
+    resources :messages, only: [ :index, :new, :create, :show ] do
+      collection do
+        post :broadcast_to_all_schools
+        post :broadcast_to_all_directors
+        post :broadcast_to_all_teachers
+        post :broadcast_to_all_students
+        post :broadcast_to_school
       end
     end
     resources :reports, only: [ :index ] do
@@ -39,6 +56,7 @@ Rails.application.routes.draw do
         patch :reset_user_access
         post :backup_system
         get :system_info
+        get :security_settings
       end
     end
     root to: "dashboard#index"
@@ -49,24 +67,40 @@ Rails.application.routes.draw do
     resources :teachers
     resources :students
     resources :classrooms do
-      resources :enrollments, except: [ :new, :create, :edit, :update ]
+      member do
+        patch :add_student
+        patch :remove_student
+      end
     end
     resources :subjects
-    resources :enrollments do
-      member do
-        patch :approve
-        patch :reject
+    resources :teacher_assignments, only: [ :index ] do
+      collection do
+        patch :assign_teacher
+        patch :remove_assignment
+        patch :bulk_assign
       end
     end
     resources :events
-    resources :occurrences
     resources :reports, only: [ :index, :show ] do
       collection do
         get :generate_pdf
+        get :attendance_report
+        get :grades_report
+        get :student_bulletin
+        get :performance_stats
+        get :disciplinary_report
       end
     end
     resources :documents
     resources :class_schedules
+    resources :messages, only: [ :index, :new, :create, :show ] do
+      collection do
+        post :broadcast_to_all
+        post :broadcast_to_teachers
+        post :broadcast_to_students
+        post :broadcast_to_classroom
+      end
+    end
     root to: "dashboard#index"
   end
 
@@ -77,10 +111,31 @@ Rails.application.routes.draw do
     end
     resources :grades
     resources :absences
-    resources :occurrences
-    resources :subjects, only: [ :index, :show ]
+    resources :subjects, only: [ :index, :show ] do
+      resources :class_schedules, only: [ :index, :show ]
+    end
     resources :class_schedules, only: [ :index, :show ]
     resources :submissions, only: [ :index, :show, :edit, :update ]
+    resources :documents do
+      member do
+        get :download
+      end
+    end
+    resources :messages, only: [ :index, :new, :create, :show ] do
+      collection do
+        post :send_to_student
+        post :send_to_classroom
+        post :send_to_direction
+      end
+    end
+    resources :reports, only: [ :index ] do
+      collection do
+        get :student_performance
+        get :classroom_attendance
+        get :grade_summary
+        get :export_pdf
+      end
+    end
     root to: "dashboard#index"
   end
 
@@ -95,7 +150,6 @@ Rails.application.routes.draw do
     resources :class_schedules, only: [ :index ]
     resources :documents, only: [ :index, :show ]
     resources :events, only: [ :index, :show ]
-    resources :occurrences, only: [ :index, :show ]
     root to: "dashboard#index"
   end
 end

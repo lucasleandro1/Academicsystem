@@ -102,10 +102,9 @@
         <h5>Minhas Notas</h5>
       </div>
       <div class="card-body">
-        <% enrollment = current_user.enrollments.find_by(subject: @subject) %>
-        <% if enrollment %>
+        <% if current_user.classroom && current_user.classroom.subjects.include?(@subject) %>
           <% Grade.grade_types.each_key do |grade_type| %>
-            <% grade = enrollment.grades.find_by(grade_type: grade_type) %>
+            <% grade = @subject.grades.where(user: current_user, grade_type: grade_type).first %>
             <div class="d-flex justify-content-between align-items-center mb-2">
               <span><%= grade_type.humanize %>:</span>
               <% if grade %>
@@ -120,7 +119,8 @@
           
           <hr>
           
-          <% average = calculate_average(enrollment) %>
+          <% user_grades = @subject.grades.where(user: current_user) %>
+          <% average = user_grades.any? ? user_grades.average(:value) : nil %>
           <div class="d-flex justify-content-between align-items-center">
             <strong>Média:</strong>
             <% if average %>
@@ -152,7 +152,7 @@
         <div class="mb-3">
           <div class="d-flex justify-content-between">
             <span>Alunos Matriculados:</span>
-            <span><%= @subject.enrollments.count %></span>
+            <span><%= @subject.classroom&.students&.count || 0 %></span>
           </div>
         </div>
       </div>

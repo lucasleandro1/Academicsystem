@@ -1,0 +1,218 @@
+<% content_for :title, "Nova Mensagem - Administrador" %>
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <div>
+    <h1 class="h2">
+      <i class="fas fa-envelope text-primary me-2"></i>
+      <% if params[:broadcast_type].present? %>
+        Novo Comunicado Municipal
+      <% else %>
+        Nova Mensagem
+      <% end %>
+    </h1>
+    <p class="text-muted mb-0">
+      <% case params[:broadcast_type] %>
+      <% when 'all_directors' %>
+        Enviando para todos os diretores das escolas municipais
+      <% when 'all_teachers' %>
+        Enviando para todos os professores das escolas municipais
+      <% when 'all_students' %>
+        Enviando para todos os alunos das escolas municipais
+      <% when 'all_schools' %>
+        Enviando para todos os usuários de todas as escolas
+      <% else %>
+        Envie uma mensagem individual ou selecione destinatários específicos
+      <% end %>
+    </p>
+  </div>
+  <div class="btn-toolbar">
+    <%= link_to admin_messages_path, class: "btn btn-sm btn-outline-secondary" do %>
+      <i class="fas fa-arrow-left"></i> Voltar
+    <% end %>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-8">
+    <div class="card shadow">
+      <div class="card-header">
+        <h6 class="m-0 font-weight-bold text-primary">
+          <% if params[:broadcast_type].present? %>
+            <i class="fas fa-broadcast-tower"></i> Formulário de Comunicado
+          <% else %>
+            <i class="fas fa-envelope"></i> Formulário de Mensagem
+          <% end %>
+        </h6>
+      </div>
+      <div class="card-body">
+        <%= form_with model: [:admin, @message], local: true, html: { class: "needs-validation", novalidate: true } do |form| %>
+          <% if @message.errors.any? %>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+              <h6><i class="fas fa-exclamation-triangle"></i> Erros encontrados:</h6>
+              <ul class="mb-0">
+                <% @message.errors.full_messages.each do |message| %>
+                  <li><%= message %></li>
+                <% end %>
+              </ul>
+              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+          <% end %>
+
+          <!-- Hidden field for broadcast type -->
+          <% if params[:broadcast_type].present? %>
+            <%= hidden_field_tag :broadcast_type, params[:broadcast_type] %>
+          <% end %>
+
+          <!-- Subject -->
+          <div class="mb-3">
+            <%= form.label :subject, "Assunto", class: "form-label required" %>
+            <%= form.text_field :subject, class: "form-control", placeholder: "Digite o assunto da mensagem", required: true %>
+            <div class="invalid-feedback">
+              Por favor, informe o assunto da mensagem.
+            </div>
+          </div>
+
+          <!-- Recipient (only for individual messages) -->
+          <% unless params[:broadcast_type].present? %>
+            <div class="mb-3">
+              <%= form.label :recipient_id, "Destinatário", class: "form-label required" %>
+              <%= form.collection_select :recipient_id, User.where.not(id: current_user.id).order(:first_name, :last_name), :id, :full_name, 
+                      { prompt: "Selecione um destinatário" }, 
+                      { class: "form-select", required: true } %>
+              <div class="invalid-feedback">
+                Por favor, selecione um destinatário.
+              </div>
+            </div>
+
+            <!-- School selection (optional for individual messages) -->
+            <div class="mb-3">
+              <%= form.label :school_id, "Escola (opcional)", class: "form-label" %>
+              <%= form.collection_select :school_id, School.order(:name), :id, :name, 
+                      { prompt: "Selecione uma escola (opcional)" }, 
+                      { class: "form-select" } %>
+              <div class="form-text">
+                A escola será automaticamente definida baseada no destinatário se não selecionada.
+              </div>
+            </div>
+          <% end %>
+
+          <!-- Message Body -->
+          <div class="mb-3">
+            <%= form.label :body, "Mensagem", class: "form-label required" %>
+            <%= form.text_area :body, class: "form-control", rows: 8, placeholder: "Digite sua mensagem aqui...", required: true %>
+            <div class="invalid-feedback">
+              Por favor, digite o conteúdo da mensagem.
+            </div>
+            <div class="form-text">
+              <i class="fas fa-info-circle"></i> Seja claro e objetivo em sua comunicação.
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="d-flex justify-content-between">
+            <%= link_to admin_messages_path, class: "btn btn-outline-secondary" do %>
+              <i class="fas fa-times"></i> Cancelar
+            <% end %>
+            
+            <%= form.submit class: "btn btn-primary" do %>
+              <% if params[:broadcast_type].present? %>
+                <i class="fas fa-broadcast-tower"></i> Enviar Comunicado
+              <% else %>
+                <i class="fas fa-paper-plane"></i> Enviar Mensagem
+              <% end %>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card shadow">
+      <div class="card-header">
+        <h6 class="m-0 font-weight-bold text-info">
+          <i class="fas fa-info-circle"></i> Informações
+        </h6>
+      </div>
+      <div class="card-body">
+        <% if params[:broadcast_type].present? %>
+          <div class="alert alert-info">
+            <h6><i class="fas fa-broadcast-tower"></i> Comunicado Municipal</h6>
+            <p class="mb-0">
+              Esta mensagem será enviada para:
+              <strong>
+                <%= case params[:broadcast_type]
+                    when 'all_directors'
+                      "#{User.directions.active.count} diretores"
+                    when 'all_teachers'
+                      "#{User.teachers.active.count} professores"
+                    when 'all_students'
+                      "#{User.students.active.count} alunos"
+                    when 'all_schools'
+                      "todos os usuários das #{School.count} escolas"
+                    end %>
+              </strong>
+            </p>
+          </div>
+        <% end %>
+
+        <h6><i class="fas fa-lightbulb"></i> Dicas</h6>
+        <ul class="list-unstyled">
+          <li class="mb-2">
+            <i class="fas fa-check text-success"></i>
+            Use assuntos claros e descritivos
+          </li>
+          <li class="mb-2">
+            <i class="fas fa-check text-success"></i>
+            Seja objetivo no conteúdo
+          </li>
+          <li class="mb-2">
+            <i class="fas fa-check text-success"></i>
+            Revise antes de enviar
+          </li>
+          <% if params[:broadcast_type].present? %>
+            <li class="mb-2">
+              <i class="fas fa-exclamation-triangle text-warning"></i>
+              Comunicados são enviados para múltiplos destinatários
+            </li>
+          <% end %>
+        </ul>
+
+        <hr>
+
+        <h6><i class="fas fa-users"></i> Estatísticas</h6>
+        <div class="row text-center">
+          <div class="col-6">
+            <div class="border-end">
+              <div class="h5 mb-0 text-primary"><%= School.count %></div>
+              <small class="text-muted">Escolas</small>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="h5 mb-0 text-success"><%= User.active.count %></div>
+            <small class="text-muted">Usuários</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Bootstrap form validation
+(function() {
+  'use strict';
+  window.addEventListener('load', function() {
+    var forms = document.getElementsByClassName('needs-validation');
+    var validation = Array.prototype.filter.call(forms, function(form) {
+      form.addEventListener('submit', function(event) {
+        if (form.checkValidity() === false) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+      }, false);
+    });
+  }, false);
+})();
+</script>

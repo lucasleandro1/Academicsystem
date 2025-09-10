@@ -15,25 +15,19 @@
 </div>
 
 <!-- Informações da Matrícula -->
-<% enrollment = current_user.enrollments.where(status: 'active').first %>
-<% if enrollment&.classroom %>
-  <div class="alert alert-info mb-4">
-    <div class="row align-items-center">
-      <div class="col-md-8">
-        <h6 class="mb-1">
-          <i class="fas fa-id-card"></i> 
-          Matrícula: <strong><%= current_user.registration_number %></strong>
-        </h6>
-        <small>
-          Turma: <strong><%= enrollment.classroom.name %></strong> - 
-          <%= enrollment.classroom.shift.humanize %> - 
-          Ano letivo <%= enrollment.classroom.academic_year %>
-        </small>
-      </div>
-      <div class="col-md-4 text-end">
-        <%= link_to students_profile_path, class: "btn btn-sm btn-outline-primary" do %>
-          <i class="fas fa-user"></i> Ver Perfil Completo
-        <% end %>
+<% if current_user.classroom %>
+  <div class="row">
+    <div class="col-md-12">
+      <div class="alert alert-info">
+        <h5>
+          <i class="fas fa-graduation-cap me-2"></i>
+          Suas Informações Acadêmicas
+        </h5>
+        <p class="mb-0">
+          Turma: <strong><%= current_user.classroom.name %></strong> - 
+          <%= current_user.classroom.shift.humanize %> - 
+          Ano letivo <%= current_user.classroom.academic_year %>
+        </p>
       </div>
     </div>
   </div>
@@ -141,7 +135,7 @@
         <% end %>
       </div>
       <div class="card-body">
-        <% if enrollment&.classroom && @today_schedule.any? %>
+        <% if current_user.classroom && @today_schedule.any? %>
           <% @today_schedule.each do |schedule| %>
             <div class="d-flex align-items-center mb-3 p-2 bg-light rounded">
               <div class="me-3 text-center">
@@ -324,12 +318,6 @@
               <h4 class="text-info"><%= @submitted_activities %></h4>
               <small class="text-muted">Atividades Entregues</small>
             </div>
-          </div>
-          <div class="col-md-3">
-            <h4 class="text-<%= @total_occurrences > 0 ? 'warning' : 'success' %>">
-              <%= @total_occurrences %>
-            </h4>
-            <small class="text-muted">Ocorrências</small>
           </div>
         </div>
       </div>

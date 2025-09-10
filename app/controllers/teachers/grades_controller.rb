@@ -4,8 +4,8 @@ class Teachers::GradesController < ApplicationController
   before_action :set_grade, only: [ :show, :edit, :update, :destroy ]
 
   def index
-    @subjects = current_user.subjects.includes(:classroom)
-    @selected_subject = params[:subject_id] ? current_user.subjects.find(params[:subject_id]) : @subjects.first
+    @subjects = current_user.teacher_subjects.includes(:classroom)
+    @selected_subject = params[:subject_id] ? current_user.teacher_subjects.find(params[:subject_id]) : @subjects.first
     @grades = @selected_subject&.grades&.includes(:student) || Grade.none
   end
 
@@ -14,13 +14,13 @@ class Teachers::GradesController < ApplicationController
 
   def new
     @grade = Grade.new
-    @subjects = current_user.subjects
-    @subject = params[:subject_id] ? current_user.subjects.find(params[:subject_id]) : nil
+    @subjects = current_user.teacher_subjects
+    @subject = params[:subject_id] ? current_user.teacher_subjects.find(params[:subject_id]) : nil
     @students = @subject&.students || []
   end
 
   def edit
-    @subjects = current_user.subjects
+    @subjects = current_user.teacher_subjects
     @students = @grade.subject.students
   end
 
@@ -30,7 +30,7 @@ class Teachers::GradesController < ApplicationController
     if @grade.save
       redirect_to teachers_grades_path(subject_id: @grade.subject_id), notice: "Nota registrada com sucesso."
     else
-      @subjects = current_user.subjects
+      @subjects = current_user.teacher_subjects
       @subject = Subject.find(grade_params[:subject_id]) if grade_params[:subject_id]
       @students = @subject&.students || []
       render :new
@@ -41,7 +41,7 @@ class Teachers::GradesController < ApplicationController
     if @grade.update(grade_params)
       redirect_to teachers_grades_path(subject_id: @grade.subject_id), notice: "Nota atualizada com sucesso."
     else
-      @subjects = current_user.subjects
+      @subjects = current_user.teacher_subjects
       @students = @grade.subject.students
       render :edit
     end

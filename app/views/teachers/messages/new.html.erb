@@ -1,0 +1,253 @@
+<% content_for :title, "Nova Mensagem" %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1><i class="fas fa-plus"></i> Nova Mensagem</h1>
+  <%= link_to teachers_messages_path, class: "btn btn-outline-secondary" do %>
+    <i class="fas fa-arrow-left"></i> Voltar
+  <% end %>
+</div>
+
+<div class="row">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-body">
+        <%= form_with model: [:teachers, @message], local: true do |form| %>
+          <% if @message.errors.any? %>
+            <div class="alert alert-danger">
+              <h6>Erro ao enviar mensagem:</h6>
+              <ul class="mb-0">
+                <% @message.errors.full_messages.each do |message| %>
+                  <li><%= message %></li>
+                <% end %>
+              </ul>
+            </div>
+          <% end %>
+
+          <div class="mb-3">
+            <%= form.label :recipient_id, "Destinatário", class: "form-label" %>
+            <%= form.select :recipient_id, 
+                options_from_collection_for_select(@students, :id, :full_name), 
+                { prompt: "Selecione um aluno" }, 
+                { class: "form-select" } %>
+          </div>
+
+          <div class="mb-3">
+            <%= form.label :subject, "Assunto", class: "form-label" %>
+            <%= form.text_field :subject, class: "form-control", placeholder: "Assunto da mensagem" %>
+          </div>
+
+          <div class="mb-3">
+            <%= form.label :content, "Mensagem", class: "form-label" %>
+            <%= form.text_area :content, class: "form-control", rows: 6, placeholder: "Digite sua mensagem..." %>
+          </div>
+
+          <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+            <%= link_to teachers_messages_path, class: "btn btn-outline-secondary" do %>
+              <i class="fas fa-times"></i> Cancelar
+            <% end %>
+            <%= form.submit "Enviar Mensagem", class: "btn btn-primary" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <!-- Envio em Lote -->
+    <div class="card mb-3">
+      <div class="card-header">
+        <h6><i class="fas fa-users"></i> Envio em Lote</h6>
+      </div>
+      <div class="card-body">
+        <p class="small">Envie mensagens para grupos específicos:</p>
+        
+        <!-- Enviar para Turma -->
+        <div class="mb-3">
+          <label class="form-label">Enviar para Turma:</label>
+          <select class="form-select" id="classroom-select">
+            <option value="">Selecione uma turma</option>
+            <% @classrooms.each do |classroom| %>
+              <option value="<%= classroom.id %>"><%= classroom.name %></option>
+            <% end %>
+          </select>
+          <div class="mt-2">
+            <button type="button" class="btn btn-sm btn-outline-primary w-100" id="send-to-classroom">
+              <i class="fas fa-users"></i> Enviar para Turma
+            </button>
+          </div>
+        </div>
+
+        <!-- Enviar para Direção -->
+        <div class="mb-3">
+          <button type="button" class="btn btn-sm btn-outline-info w-100" id="send-to-direction">
+            <i class="fas fa-user-tie"></i> Enviar para Direção
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modelos de Mensagem -->
+    <div class="card">
+      <div class="card-header">
+        <h6><i class="fas fa-file-alt"></i> Modelos Rápidos</h6>
+      </div>
+      <div class="card-body">
+        <div class="d-grid gap-2">
+          <button type="button" class="btn btn-sm btn-outline-secondary template-btn" 
+                  data-subject="Convocação para Conversa" 
+                  data-content="Prezado(a) aluno(a) e responsáveis,
+
+Gostaria de solicitar uma conversa para discutirmos o desempenho acadêmico e comportamento em sala de aula.
+
+Por favor, entrem em contato para agendarmos um horário.
+
+Atenciosamente,
+Prof. <%= current_user.full_name %>">
+            Convocação
+          </button>
+          
+          <button type="button" class="btn btn-sm btn-outline-secondary template-btn"
+                  data-subject="Parabenização pelo Desempenho"
+                  data-content="Prezado(a) aluno(a),
+
+Gostaria de parabenizá-lo(a) pelo excelente desempenho demonstrado nas últimas atividades. Continue assim!
+
+Seu esforço e dedicação são notáveis e servem de exemplo para os demais colegas.
+
+Parabéns!
+Prof. <%= current_user.full_name %>">
+            Parabenização
+          </button>
+          
+          <button type="button" class="btn btn-sm btn-outline-secondary template-btn"
+                  data-subject="Lembrete de Atividade"
+                  data-content="Prezado(a) aluno(a),
+
+Este é um lembrete sobre a atividade pendente de entrega. 
+
+Não esqueça do prazo estabelecido. Em caso de dúvidas, não hesite em me procurar.
+
+Atenciosamente,
+Prof. <%= current_user.full_name %>">
+            Lembrete
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal para Envio em Lote -->
+<div class="modal fade" id="bulkMessageModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Enviar Mensagem em Lote</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="bulk-message-form">
+          <div class="mb-3">
+            <label class="form-label">Assunto:</label>
+            <input type="text" class="form-control" id="bulk-subject" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Mensagem:</label>
+            <textarea class="form-control" id="bulk-content" rows="4" required></textarea>
+          </div>
+          <div id="bulk-recipients"></div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" id="send-bulk-message">Enviar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Modelos rápidos
+  document.querySelectorAll('.template-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      document.getElementById('message_subject').value = this.dataset.subject;
+      document.getElementById('message_content').value = this.dataset.content;
+    });
+  });
+
+  // Envio para turma
+  document.getElementById('send-to-classroom').addEventListener('click', function() {
+    const classroomId = document.getElementById('classroom-select').value;
+    if (!classroomId) {
+      alert('Selecione uma turma primeiro');
+      return;
+    }
+    
+    document.getElementById('bulk-recipients').innerHTML = 
+      '<p><strong>Destinatários:</strong> Todos os alunos da turma selecionada</p>';
+    
+    document.getElementById('bulkMessageModal').dataset.type = 'classroom';
+    document.getElementById('bulkMessageModal').dataset.id = classroomId;
+    
+    new bootstrap.Modal(document.getElementById('bulkMessageModal')).show();
+  });
+
+  // Envio para direção
+  document.getElementById('send-to-direction').addEventListener('click', function() {
+    document.getElementById('bulk-recipients').innerHTML = 
+      '<p><strong>Destinatários:</strong> Todos os membros da direção</p>';
+    
+    document.getElementById('bulkMessageModal').dataset.type = 'direction';
+    
+    new bootstrap.Modal(document.getElementById('bulkMessageModal')).show();
+  });
+
+  // Enviar mensagem em lote
+  document.getElementById('send-bulk-message').addEventListener('click', function() {
+    const modal = document.getElementById('bulkMessageModal');
+    const type = modal.dataset.type;
+    const id = modal.dataset.id;
+    const subject = document.getElementById('bulk-subject').value;
+    const content = document.getElementById('bulk-content').value;
+
+    if (!subject || !content) {
+      alert('Preencha todos os campos');
+      return;
+    }
+
+    let url = '';
+    let data = { subject: subject, content: content };
+
+    if (type === 'classroom') {
+      url = '<%= send_to_classroom_teachers_messages_path %>';
+      data.classroom_id = id;
+    } else if (type === 'direction') {
+      url = '<%= send_to_direction_teachers_messages_path %>';
+    }
+
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+      },
+      body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.status === 'success') {
+        alert(data.message);
+        bootstrap.Modal.getInstance(modal).hide();
+        window.location.href = '<%= teachers_messages_path %>';
+      } else {
+        alert('Erro ao enviar mensagem: ' + data.message);
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('Erro ao enviar mensagem');
+    });
+  });
+});
+</script>

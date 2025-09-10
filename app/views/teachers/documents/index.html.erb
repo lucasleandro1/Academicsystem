@@ -1,0 +1,220 @@
+<% content_for :title, "Documentos" %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1><i class="fas fa-folder-open"></i> Documentos</h1>
+  <%= link_to new_teachers_document_path, class: "btn btn-primary" do %>
+    <i class="fas fa-plus"></i> Novo Documento
+  <% end %>
+</div>
+
+<!-- Estatísticas -->
+<div class="row mb-4">
+  <div class="col-md-3">
+    <div class="card text-center">
+      <div class="card-body">
+        <h4 class="text-primary"><%= @my_documents.count %></h4>
+        <small class="text-muted">Meus Documentos</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center">
+      <div class="card-body">
+        <h4 class="text-success"><%= @documents.count %></h4>
+        <small class="text-muted">Documentos das Disciplinas</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center">
+      <div class="card-body">
+        <h4 class="text-info"><%= @my_documents.where(document_type: 'material').count %></h4>
+        <small class="text-muted">Materiais Didáticos</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center">
+      <div class="card-body">
+        <h4 class="text-warning"><%= @my_documents.where(document_type: 'assignment').count %></h4>
+        <small class="text-muted">Atividades</small>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tabs -->
+<ul class="nav nav-tabs" id="documentsTab" role="tablist">
+  <li class="nav-item" role="presentation">
+    <button class="nav-link active" id="my-docs-tab" data-bs-toggle="tab" data-bs-target="#my-docs" type="button" role="tab">
+      <i class="fas fa-user"></i> Meus Documentos
+    </button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="subject-docs-tab" data-bs-toggle="tab" data-bs-target="#subject-docs" type="button" role="tab">
+      <i class="fas fa-book"></i> Documentos das Disciplinas
+    </button>
+  </li>
+</ul>
+
+<div class="tab-content" id="documentsTabContent">
+  <!-- Meus Documentos -->
+  <div class="tab-pane fade show active" id="my-docs" role="tabpanel">
+    <div class="card">
+      <div class="card-body">
+        <% if @my_documents.any? %>
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Título</th>
+                  <th>Tipo</th>
+                  <th>Disciplina</th>
+                  <th>Criado em</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% @my_documents.each do |document| %>
+                  <tr>
+                    <td>
+                      <strong><%= document.title %></strong>
+                      <% if document.description.present? %>
+                        <br>
+                        <small class="text-muted"><%= truncate(document.description, length: 50) %></small>
+                      <% end %>
+                    </td>
+                    <td>
+                      <% case document.document_type %>
+                      <% when 'material' %>
+                        <span class="badge bg-info">Material Didático</span>
+                      <% when 'assignment' %>
+                        <span class="badge bg-warning">Atividade</span>
+                      <% when 'evaluation' %>
+                        <span class="badge bg-danger">Avaliação</span>
+                      <% else %>
+                        <span class="badge bg-secondary">Outro</span>
+                      <% end %>
+                    </td>
+                    <td>
+                      <% if document.subject %>
+                        <%= document.subject.name %>
+                        <br>
+                        <small class="text-muted"><%= document.subject.classroom.name %></small>
+                      <% else %>
+                        <span class="text-muted">Geral</span>
+                      <% end %>
+                    </td>
+                    <td>
+                      <%= document.created_at.strftime("%d/%m/%Y") %>
+                      <br>
+                      <small class="text-muted"><%= document.created_at.strftime("%H:%M") %></small>
+                    </td>
+                    <td>
+                      <div class="btn-group btn-group-sm">
+                        <%= link_to teachers_document_path(document), class: "btn btn-outline-primary", title: "Ver" do %>
+                          <i class="fas fa-eye"></i>
+                        <% end %>
+                        <%= link_to edit_teachers_document_path(document), class: "btn btn-outline-secondary", title: "Editar" do %>
+                          <i class="fas fa-edit"></i>
+                        <% end %>
+                        <% if document.attachment.present? %>
+                          <%= link_to download_teachers_document_path(document), class: "btn btn-outline-success", title: "Download" do %>
+                            <i class="fas fa-download"></i>
+                          <% end %>
+                        <% end %>
+                        <%= link_to teachers_document_path(document), method: :delete, 
+                                    class: "btn btn-outline-danger", title: "Remover",
+                                    confirm: "Tem certeza que deseja remover este documento?" do %>
+                          <i class="fas fa-trash"></i>
+                        <% end %>
+                      </div>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        <% else %>
+          <div class="text-center py-4">
+            <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
+            <h6 class="text-muted">Nenhum documento criado</h6>
+            <p class="text-muted">Comece criando seu primeiro documento.</p>
+            <%= link_to new_teachers_document_path, class: "btn btn-primary" do %>
+              <i class="fas fa-plus"></i> Criar Documento
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Documentos das Disciplinas -->
+  <div class="tab-pane fade" id="subject-docs" role="tabpanel">
+    <div class="card">
+      <div class="card-body">
+        <% if @documents.any? %>
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Título</th>
+                  <th>Disciplina</th>
+                  <th>Criado por</th>
+                  <th>Data</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% @documents.each do |document| %>
+                  <tr>
+                    <td>
+                      <strong><%= document.title %></strong>
+                      <% if document.description.present? %>
+                        <br>
+                        <small class="text-muted"><%= truncate(document.description, length: 50) %></small>
+                      <% end %>
+                    </td>
+                    <td>
+                      <%= document.subject.name %>
+                      <br>
+                      <small class="text-muted"><%= document.subject.classroom.name %></small>
+                    </td>
+                    <td>
+                      <%= document.user.full_name %>
+                      <br>
+                      <small class="text-muted"><%= document.user.profile.humanize %></small>
+                    </td>
+                    <td>
+                      <%= document.created_at.strftime("%d/%m/%Y") %>
+                      <br>
+                      <small class="text-muted"><%= document.created_at.strftime("%H:%M") %></small>
+                    </td>
+                    <td>
+                      <div class="btn-group btn-group-sm">
+                        <%= link_to teachers_document_path(document), class: "btn btn-outline-primary", title: "Ver" do %>
+                          <i class="fas fa-eye"></i>
+                        <% end %>
+                        <% if document.attachment.present? %>
+                          <%= link_to download_teachers_document_path(document), class: "btn btn-outline-success", title: "Download" do %>
+                            <i class="fas fa-download"></i>
+                          <% end %>
+                        <% end %>
+                      </div>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        <% else %>
+          <div class="text-center py-4">
+            <i class="fas fa-book fa-3x text-muted mb-3"></i>
+            <h6 class="text-muted">Nenhum documento encontrado</h6>
+            <p class="text-muted">Não há documentos nas disciplinas que você leciona.</p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

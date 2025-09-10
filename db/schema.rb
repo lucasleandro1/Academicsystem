@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_08_19_175937) do
+ActiveRecord::Schema[8.0].define(version: 2025_09_10_150944) do
   create_table "absences", force: :cascade do |t|
     t.integer "subject_id", null: false
     t.date "date"
@@ -113,16 +113,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_19_175937) do
     t.index ["user_id"], name: "index_documents_on_user_id"
   end
 
-  create_table "enrollments", force: :cascade do |t|
-    t.integer "classroom_id", null: false
-    t.string "status"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.integer "user_id", null: false
-    t.index ["classroom_id"], name: "index_enrollments_on_classroom_id"
-    t.index ["user_id"], name: "index_enrollments_on_user_id"
-  end
-
   create_table "events", force: :cascade do |t|
     t.string "title"
     t.text "description"
@@ -182,6 +172,26 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_19_175937) do
     t.index ["user_id"], name: "index_municipal_events_on_user_id"
   end
 
+  create_table "notifications", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.integer "sender_id", null: false
+    t.integer "school_id"
+    t.string "title", null: false
+    t.text "content", null: false
+    t.string "notification_type", null: false
+    t.boolean "read", default: false
+    t.datetime "read_at"
+    t.json "metadata"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_at"], name: "index_notifications_on_created_at"
+    t.index ["school_id", "notification_type"], name: "index_notifications_on_school_id_and_notification_type"
+    t.index ["school_id"], name: "index_notifications_on_school_id"
+    t.index ["sender_id"], name: "index_notifications_on_sender_id"
+    t.index ["user_id", "read"], name: "index_notifications_on_user_id_and_read"
+    t.index ["user_id"], name: "index_notifications_on_user_id"
+  end
+
   create_table "occurrences", force: :cascade do |t|
     t.text "description"
     t.string "occurrence_type"
@@ -216,6 +226,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_19_175937) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "user_id", null: false
+    t.string "code"
+    t.string "area"
+    t.text "description"
+    t.boolean "active", default: true
+    t.boolean "allows_makeup_exams", default: true
     t.index ["classroom_id"], name: "index_subjects_on_classroom_id"
     t.index ["school_id"], name: "index_subjects_on_school_id"
     t.index ["user_id"], name: "index_subjects_on_user_id"
@@ -256,6 +271,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_19_175937) do
     t.string "first_name"
     t.string "last_name"
     t.string "phone"
+    t.integer "classroom_id"
+    t.index ["classroom_id"], name: "index_users_on_classroom_id"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
     t.index ["school_id"], name: "index_users_on_school_id"
@@ -275,8 +292,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_19_175937) do
   add_foreign_key "classrooms", "schools"
   add_foreign_key "documents", "schools"
   add_foreign_key "documents", "users"
-  add_foreign_key "enrollments", "classrooms"
-  add_foreign_key "enrollments", "users"
   add_foreign_key "events", "schools"
   add_foreign_key "grades", "subjects"
   add_foreign_key "grades", "users"
@@ -284,6 +299,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_19_175937) do
   add_foreign_key "messages", "users", column: "recipient_id"
   add_foreign_key "messages", "users", column: "sender_id"
   add_foreign_key "municipal_events", "users"
+  add_foreign_key "notifications", "schools"
+  add_foreign_key "notifications", "users"
+  add_foreign_key "notifications", "users", column: "sender_id"
   add_foreign_key "occurrences", "schools"
   add_foreign_key "occurrences", "users"
   add_foreign_key "subjects", "classrooms"
@@ -292,4 +310,5 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_19_175937) do
   add_foreign_key "submissions", "activities"
   add_foreign_key "submissions", "schools"
   add_foreign_key "submissions", "users"
+  add_foreign_key "users", "classrooms"
 end

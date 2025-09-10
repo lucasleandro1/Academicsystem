@@ -63,4 +63,5 @@ group :test do
   gem "selenium-webdriver"
   gem "rspec-rails", "6.0.3"
   gem "simplecov", "0.22.0", require: false
+  gem "shoulda-matchers", "~> 5.0"
 end

@@ -1,0 +1,203 @@
+<% content_for :title, "Estatísticas de Desempenho" %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1><i class="fas fa-chart-pie"></i> Estatísticas de Desempenho</h1>
+  <%= link_to direction_reports_path, class: "btn btn-outline-secondary" do %>
+    <i class="fas fa-arrow-left"></i> Voltar
+  <% end %>
+</div>
+
+<div class="row">
+  <!-- Distribuição de Notas -->
+  <div class="col-md-6 mb-4">
+    <div class="card">
+      <div class="card-header">
+        <h5><i class="fas fa-chart-pie"></i> Distribuição de Notas</h5>
+      </div>
+      <div class="card-body">
+        <% if @performance_data[:grade_distribution].any? %>
+          <% @performance_data[:grade_distribution].each do |range, count| %>
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span><%= range %></span>
+              <span class="badge bg-primary"><%= count %> alunos</span>
+            </div>
+            <div class="progress mb-3" style="height: 20px;">
+              <% total_grades = @performance_data[:grade_distribution].values.sum %>
+              <% percentage = total_grades > 0 ? (count.to_f / total_grades * 100).round(1) : 0 %>
+              <div class="progress-bar" style="width: <%= percentage %>%">
+                <%= percentage %>%
+              </div>
+            </div>
+          <% end %>
+        <% else %>
+          <p class="text-muted">Nenhuma nota registrada.</p>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tendências de Frequência -->
+  <div class="col-md-6 mb-4">
+    <div class="card">
+      <div class="card-header">
+        <h5><i class="fas fa-chart-line"></i> Tendências de Frequência</h5>
+      </div>
+      <div class="card-body">
+        <% if @performance_data[:attendance_trends].any? %>
+          <% @performance_data[:attendance_trends].each do |trend| %>
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span><%= trend[:month] %></span>
+              <span class="badge bg-<%= trend[:attendance_rate] >= 75 ? 'success' : 'danger' %>">
+                <%= trend[:attendance_rate] %>%
+              </span>
+            </div>
+          <% end %>
+        <% else %>
+          <p class="text-muted">Dados insuficientes para tendências.</p>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <!-- Desempenho por Disciplina -->
+  <div class="col-md-6 mb-4">
+    <div class="card">
+      <div class="card-header">
+        <h5><i class="fas fa-book"></i> Desempenho por Disciplina</h5>
+      </div>
+      <div class="card-body">
+        <% if @performance_data[:subject_performance].any? %>
+          <div class="table-responsive">
+            <table class="table table-sm">
+              <thead>
+                <tr>
+                  <th>Disciplina</th>
+                  <th>Média</th>
+                  <th>Desempenho</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% @performance_data[:subject_performance].sort_by { |name, avg| -avg }.each do |subject_name, average| %>
+                  <tr>
+                    <td><%= subject_name %></td>
+                    <td>
+                      <span class="badge bg-<%= average >= 7 ? 'success' : average >= 5 ? 'warning' : 'danger' %>">
+                        <%= average %>
+                      </span>
+                    </td>
+                    <td>
+                      <% if average >= 8 %>
+                        <span class="text-success">Excelente</span>
+                      <% elsif average >= 7 %>
+                        <span class="text-success">Bom</span>
+                      <% elsif average >= 5 %>
+                        <span class="text-warning">Regular</span>
+                      <% else %>
+                        <span class="text-danger">Insuficiente</span>
+                      <% end %>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        <% else %>
+          <p class="text-muted">Nenhuma disciplina com notas registradas.</p>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Comparação entre Turmas -->
+  <div class="col-md-6 mb-4">
+    <div class="card">
+      <div class="card-header">
+        <h5><i class="fas fa-users"></i> Comparação entre Turmas</h5>
+      </div>
+      <div class="card-body">
+        <% if @performance_data[:classroom_comparison].any? %>
+          <div class="table-responsive">
+            <table class="table table-sm">
+              <thead>
+                <tr>
+                  <th>Turma</th>
+                  <th>Alunos</th>
+                  <th>Média</th>
+                  <th>Posição</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% @performance_data[:classroom_comparison].sort_by { |data| -data[:average_grade] }.each_with_index do |classroom_data, index| %>
+                  <tr>
+                    <td><%= classroom_data[:name] %></td>
+                    <td><%= classroom_data[:students_count] %></td>
+                    <td>
+                      <span class="badge bg-<%= classroom_data[:average_grade] >= 7 ? 'success' : classroom_data[:average_grade] >= 5 ? 'warning' : 'danger' %>">
+                        <%= classroom_data[:average_grade] %>
+                      </span>
+                    </td>
+                    <td>
+                      <% case index %>
+                      <% when 0 %>
+                        <i class="fas fa-trophy text-warning"></i> 1º
+                      <% when 1 %>
+                        <i class="fas fa-medal text-secondary"></i> 2º
+                      <% when 2 %>
+                        <i class="fas fa-award text-warning"></i> 3º
+                      <% else %>
+                        <%= index + 1 %>º
+                      <% end %>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        <% else %>
+          <p class="text-muted">Nenhuma turma com dados suficientes.</p>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Resumo Geral -->
+<div class="card">
+  <div class="card-header">
+    <h5><i class="fas fa-chart-area"></i> Resumo Geral da Escola</h5>
+  </div>
+  <div class="card-body">
+    <div class="row text-center">
+      <div class="col-md-3">
+        <h4 class="text-primary">
+          <% best_classroom = @performance_data[:classroom_comparison].max_by { |c| c[:average_grade] } %>
+          <%= best_classroom&.dig(:name) || "N/A" %>
+        </h4>
+        <small class="text-muted">Melhor Turma</small>
+      </div>
+      <div class="col-md-3">
+        <h4 class="text-success">
+          <% best_subject = @performance_data[:subject_performance].max_by { |name, avg| avg } %>
+          <%= best_subject&.first || "N/A" %>
+        </h4>
+        <small class="text-muted">Melhor Disciplina</small>
+      </div>
+      <div class="col-md-3">
+        <h4 class="text-info">
+          <% latest_trend = @performance_data[:attendance_trends].last %>
+          <%= latest_trend&.dig(:attendance_rate) || "N/A" %>%
+        </h4>
+        <small class="text-muted">Frequência Atual</small>
+      </div>
+      <div class="col-md-3">
+        <h4 class="text-warning">
+          <% total_students = @performance_data[:classroom_comparison].sum { |c| c[:students_count] } %>
+          <%= total_students %>
+        </h4>
+        <small class="text-muted">Total de Alunos</small>
+      </div>
+    </div>
+  </div>
+</div>

@@ -17,7 +17,6 @@ class Calendar < ApplicationRecord
     "school_start",      # Início das Aulas
     "school_end",        # Fim das Aulas
     "exam_period",       # Período de Provas
-    "enrollment",        # Matrícula
     "meeting",           # Reunião
     "pedagogical_day",   # Dia Pedagógico
     "teacher_training",  # Formação de Professores
@@ -46,7 +45,6 @@ class Calendar < ApplicationRecord
     when "school_start" then "Início das Aulas"
     when "school_end" then "Fim das Aulas"
     when "exam_period" then "Período de Provas"
-    when "enrollment" then "Matrícula"
     when "meeting" then "Reunião"
     when "pedagogical_day" then "Dia Pedagógico"
     when "teacher_training" then "Formação de Professores"

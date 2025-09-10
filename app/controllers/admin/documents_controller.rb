@@ -46,7 +46,15 @@ class Admin::DocumentsController < ApplicationController
       FileUtils.mkdir_p(upload_dir) unless Dir.exist?(upload_dir)
 
       # Salvar arquivo com nome único
-      file_extension = File.extname(uploaded_file.original_filename)
+      original_filename = uploaded_file.original_filename.to_s
+      file_extension = File.extname(original_filename).downcase
+      # Validar extensão do arquivo
+      allowed_extensions = %w[.pdf .doc .docx .txt .jpg .jpeg .png .gif]
+      unless allowed_extensions.include?(file_extension)
+        @document.errors.add(:file, "Tipo de arquivo não permitido")
+        render :new and return
+      end
+
       unique_filename = "#{SecureRandom.uuid}#{file_extension}"
       file_path = upload_dir.join(unique_filename)
 
@@ -103,7 +111,9 @@ class Admin::DocumentsController < ApplicationController
 
   def download
     if File.exist?(@document.file_path)
-      send_file @document.file_path, filename: @document.file_name, type: "application/octet-stream"
+      # Sanitizar nome do arquivo para evitar path traversal
+      safe_filename = File.basename(@document.file_name)
+      send_file @document.file_path, filename: safe_filename, type: "application/octet-stream"
     else
       redirect_to admin_documents_path, alert: "Arquivo não encontrado."
     end

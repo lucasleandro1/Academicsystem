@@ -1,0 +1,130 @@
+<% content_for :title, "Relatório de Frequência" %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1><i class="fas fa-chart-line"></i> Relatório de Frequência</h1>
+  <%= link_to direction_reports_path, class: "btn btn-outline-secondary" do %>
+    <i class="fas fa-arrow-left"></i> Voltar
+  <% end %>
+</div>
+
+<!-- Filtros -->
+<div class="card mb-4">
+  <div class="card-body">
+    <%= form_with url: attendance_report_direction_reports_path, method: :get, local: true, class: "row g-3" do |form| %>
+      <div class="col-md-3">
+        <%= form.label :classroom_id, "Turma", class: "form-label" %>
+        <%= form.select :classroom_id, 
+                       options_from_collection_for_select(@classrooms, :id, :name, params[:classroom_id]), 
+                       { prompt: "Todas as turmas" }, 
+                       { class: "form-select" } %>
+      </div>
+      <div class="col-md-3">
+        <%= form.label :date_from, "Data Inicial", class: "form-label" %>
+        <%= form.date_field :date_from, value: @date_from, class: "form-control" %>
+      </div>
+      <div class="col-md-3">
+        <%= form.label :date_to, "Data Final", class: "form-label" %>
+        <%= form.date_field :date_to, value: @date_to, class: "form-control" %>
+      </div>
+      <div class="col-md-3 d-flex align-items-end">
+        <%= form.submit "Filtrar", class: "btn btn-primary" %>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<!-- Resultados -->
+<% if @attendance_data.present? %>
+  <% if @selected_classroom %>
+    <!-- Dados para turma específica -->
+    <div class="card">
+      <div class="card-header">
+        <h5>Frequência da Turma: <%= @selected_classroom.name %></h5>
+        <small class="text-muted">Período: <%= @date_from.strftime("%d/%m/%Y") %> a <%= @date_to.strftime("%d/%m/%Y") %></small>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>Aluno</th>
+                <th>Faltas</th>
+                <th>Taxa de Frequência</th>
+                <th>Total de Dias</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @attendance_data.each do |student_name, data| %>
+                <tr>
+                  <td><%= student_name %></td>
+                  <td><%= data[:absences] %></td>
+                  <td>
+                    <span class="badge bg-<%= data[:attendance_rate] >= 75 ? 'success' : 'danger' %>">
+                      <%= data[:attendance_rate] %>%
+                    </span>
+                  </td>
+                  <td><%= data[:total_days] %></td>
+                  <td>
+                    <% if data[:attendance_rate] >= 75 %>
+                      <span class="text-success">Adequada</span>
+                    <% else %>
+                      <span class="text-danger">Baixa</span>
+                    <% end %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  <% else %>
+    <!-- Dados para toda a escola -->
+    <div class="row">
+      <% @attendance_data.each do |classroom_data| %>
+        <div class="col-md-6 mb-4">
+          <div class="card">
+            <div class="card-header">
+              <h6><%= classroom_data[:classroom_name] %></h6>
+              <small class="text-muted">
+                <%= classroom_data[:students_count] %> alunos | 
+                Frequência média: <span class="badge bg-<%= classroom_data[:average_attendance] >= 75 ? 'success' : 'danger' %>">
+                  <%= classroom_data[:average_attendance] %>%
+                </span>
+              </small>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="table table-sm">
+                  <thead>
+                    <tr>
+                      <th>Aluno</th>
+                      <th>Freq.</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% classroom_data[:students_data].each do |student_name, data| %>
+                      <tr>
+                        <td><%= student_name %></td>
+                        <td>
+                          <span class="badge bg-<%= data[:attendance_rate] >= 75 ? 'success' : 'danger' %>">
+                            <%= data[:attendance_rate] %>%
+                          </span>
+                        </td>
+                      </tr>
+                    <% end %>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+<% else %>
+  <div class="alert alert-info">
+    <i class="fas fa-info-circle"></i> Selecione os filtros para visualizar o relatório de frequência.
+  </div>
+<% end %>

@@ -1,0 +1,155 @@
+<% content_for :title, "Grade de Horários" %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1><i class="fas fa-calendar-alt"></i> Grade de Horários</h1>
+  <div class="text-muted">
+    <small>Ano letivo: <%= Date.current.year %></small>
+  </div>
+</div>
+
+<!-- Resumo das Disciplinas -->
+<div class="row mb-4">
+  <div class="col-md-3">
+    <div class="card text-center">
+      <div class="card-body">
+        <h4 class="text-primary"><%= @subjects.count %></h4>
+        <small class="text-muted">Disciplinas</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center">
+      <div class="card-body">
+        <h4 class="text-success"><%= @schedules_by_subject.values.map(&:values).flatten.count %></h4>
+        <small class="text-muted">Total de Aulas</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center">
+      <div class="card-body">
+        <h4 class="text-info"><%= @subjects.map(&:classroom).uniq.count %></h4>
+        <small class="text-muted">Turmas</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center">
+      <div class="card-body">
+        <h4 class="text-warning"><%= @schedules_by_subject.values.map(&:values).flatten.sum(&:duration) rescue 0 %></h4>
+        <small class="text-muted">Horas/Semana</small>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Grade por Disciplina -->
+<% @schedules_by_subject.each do |subject, schedules_by_day| %>
+  <div class="card mb-4">
+    <div class="card-header">
+      <h5><i class="fas fa-book"></i> <%= subject.name %></h5>
+      <small class="text-muted">
+        Turma: <%= subject.classroom.name %> | 
+        Carga Horária: <%= subject.workload %>h
+      </small>
+    </div>
+    <div class="card-body">
+      <% if schedules_by_day.any? %>
+        <div class="table-responsive">
+          <table class="table table-bordered">
+            <thead class="table-light">
+              <tr>
+                <th>Dia da Semana</th>
+                <th>Horário</th>
+                <th>Duração</th>
+                <th>Sala</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% schedules_by_day.each do |weekday, schedules| %>
+                <% schedules.each_with_index do |schedule, index| %>
+                  <tr>
+                    <% if index == 0 %>
+                      <td rowspan="<%= schedules.count %>">
+                        <strong><%= Date::DAYNAMES[weekday] %></strong>
+                      </td>
+                    <% end %>
+                    <td>
+                      <%= schedule.start_time.strftime("%H:%M") %> - 
+                      <%= schedule.end_time.strftime("%H:%M") %>
+                    </td>
+                    <td>
+                      <%= schedule.duration %>min
+                    </td>
+                    <td>
+                      <%= schedule.classroom_location || "A definir" %>
+                    </td>
+                    <td>
+                      <%= link_to teachers_subject_class_schedule_path(subject, schedule), 
+                                  class: "btn btn-sm btn-outline-primary" do %>
+                        <i class="fas fa-eye"></i> Ver
+                      <% end %>
+                    </td>
+                  </tr>
+                <% end %>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% else %>
+        <div class="text-center py-4">
+          <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+          <h6 class="text-muted">Nenhum horário definido</h6>
+          <p class="text-muted">Entre em contato com a direção para definir os horários.</p>
+        </div>
+      <% end %>
+    </div>
+  </div>
+<% end %>
+
+<% if @subjects.empty? %>
+  <div class="card">
+    <div class="card-body text-center py-5">
+      <i class="fas fa-calendar-alt fa-3x text-muted mb-3"></i>
+      <h5 class="text-muted">Nenhuma disciplina atribuída</h5>
+      <p class="text-muted">Você ainda não foi atribuído a nenhuma disciplina com horários definidos.</p>
+      <%= link_to teachers_subjects_path, class: "btn btn-primary" do %>
+        <i class="fas fa-book"></i> Ver Minhas Disciplinas
+      <% end %>
+    </div>
+  </div>
+<% end %>
+
+<!-- Resumo Semanal -->
+<% if @schedules_by_subject.any? %>
+  <div class="card mt-4">
+    <div class="card-header">
+      <h5><i class="fas fa-clock"></i> Resumo Semanal</h5>
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <% (0..6).each do |weekday| %>
+          <div class="col">
+            <h6><%= Date::DAYNAMES[weekday] %></h6>
+            <% day_schedules = [] %>
+            <% @schedules_by_subject.each do |subject, schedules_by_day| %>
+              <% if schedules_by_day[weekday] %>
+                <% day_schedules.concat(schedules_by_day[weekday]) %>
+              <% end %>
+            <% end %>
+            <% day_schedules.sort_by(&:start_time).each do |schedule| %>
+              <div class="small bg-light p-1 mb-1 rounded">
+                <%= schedule.start_time.strftime("%H:%M") %><br>
+                <strong><%= schedule.subject.name %></strong>
+              </div>
+            <% end %>
+            <% if day_schedules.empty? %>
+              <small class="text-muted">Sem aulas</small>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+<% end %>

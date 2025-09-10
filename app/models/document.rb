@@ -1,6 +1,6 @@
 class Document < ApplicationRecord
   belongs_to :school
-  belongs_to :user, optional: true
+  belongs_to :user
 
   validates :title, presence: true
   validates :document_type, presence: true
@@ -28,6 +28,10 @@ class Document < ApplicationRecord
 
   def file_exists?
     file_path.present? && File.exist?(file_path) if file_path.present?
+  end
+
+  def uploader
+    user
   end
 
   def file_size

@@ -49,8 +49,9 @@ class Students::SubmissionsController < ApplicationController
   end
 
   def set_activity
-    classroom_ids = current_user.enrollments.pluck(:classroom_id)
-    subject_ids = Subject.where(classroom_id: classroom_ids).pluck(:id)
+    return redirect_to students_activities_path, alert: "Você não está em nenhuma turma." unless current_user.classroom
+
+    subject_ids = current_user.classroom.subjects.pluck(:id)
     @activity = Activity.where(subject_id: subject_ids).find(params[:activity_id])
   end
 

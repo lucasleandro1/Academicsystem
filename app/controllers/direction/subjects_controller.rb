@@ -5,6 +5,13 @@ class Direction::SubjectsController < ApplicationController
 
   def index
     @subjects = current_user.school.subjects.includes(:classroom, :teacher)
+
+    # Aplicar filtros
+    @subjects = @subjects.where("name LIKE ?", "%#{params[:search]}%") if params[:search].present?
+    @subjects = @subjects.where(area: params[:area]) if params[:area].present?
+    @subjects = @subjects.where(active: params[:active] == "true") if params[:active].present?
+
+    @subjects = @subjects.order(:name)
   end
 
   def show
@@ -53,17 +60,11 @@ class Direction::SubjectsController < ApplicationController
 
   private
 
-  def ensure_direction!
-    unless current_user&.direction?
-      redirect_to root_path, alert: "Acesso não autorizado."
-    end
-  end
-
   def set_subject
     @subject = current_user.school.subjects.find(params[:id])
   end
 
   def subject_params
-    params.require(:subject).permit(:name, :classroom_id, :user_id, :workload)
+    params.require(:subject).permit(:name, :code, :area, :description, :classroom_id, :user_id, :workload, :active, :allows_makeup_exams)
   end
 end

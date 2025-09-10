@@ -1,0 +1,98 @@
+<% content_for :title, "Nova Mensagem" %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1><i class="fas fa-edit"></i> Nova Mensagem</h1>
+  <%= link_to direction_messages_path, class: "btn btn-outline-secondary" do %>
+    <i class="fas fa-arrow-left"></i> Voltar
+  <% end %>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header">
+        <h5>Enviar Mensagem Individual</h5>
+      </div>
+      <div class="card-body">
+        <%= form_with model: @message, url: direction_messages_path, local: true do |form| %>
+          <% if @message.errors.any? %>
+            <div class="alert alert-danger">
+              <h6>Erros encontrados:</h6>
+              <ul class="mb-0">
+                <% @message.errors.full_messages.each do |message| %>
+                  <li><%= message %></li>
+                <% end %>
+              </ul>
+            </div>
+          <% end %>
+
+          <div class="mb-3">
+            <%= form.label :recipient_id, "Destinatário", class: "form-label" %>
+            <%= form.select :recipient_id, 
+                           grouped_options_for_select([
+                             ["Professores", options_from_collection_for_select(@teachers, :id, :full_name)],
+                             ["Alunos", options_from_collection_for_select(@students, :id, :full_name)]
+                           ], params[:reply_to]), 
+                           { prompt: "Selecione o destinatário" }, 
+                           { class: "form-select" } %>
+          </div>
+
+          <div class="mb-3">
+            <%= form.label :subject, "Assunto", class: "form-label" %>
+            <%= form.text_field :subject, class: "form-control" %>
+          </div>
+
+          <div class="mb-3">
+            <%= form.label :body, "Mensagem", class: "form-label" %>
+            <%= form.text_area :body, rows: 10, class: "form-control" %>
+          </div>
+
+          <div class="d-flex justify-content-between">
+            <%= link_to "Cancelar", direction_messages_path, class: "btn btn-secondary" %>
+            <%= form.submit "Enviar Mensagem", class: "btn btn-primary" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Comunicados em Massa -->
+    <div class="card mt-4">
+      <div class="card-header">
+        <h5>Envio em Massa</h5>
+        <small class="text-muted">Para enviar comunicados para grupos específicos</small>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <button type="button" class="btn btn-outline-primary w-100" data-bs-toggle="modal" data-bs-target="#broadcastAllModal">
+              <i class="fas fa-users"></i><br>
+              <strong>Para Todos</strong><br>
+              <small>Professores e Alunos</small>
+            </button>
+          </div>
+          <div class="col-md-6 mb-3">
+            <button type="button" class="btn btn-outline-success w-100" data-bs-toggle="modal" data-bs-target="#broadcastTeachersModal">
+              <i class="fas fa-chalkboard-teacher"></i><br>
+              <strong>Para Professores</strong><br>
+              <small>Apenas corpo docente</small>
+            </button>
+          </div>
+          <div class="col-md-6 mb-3">
+            <button type="button" class="btn btn-outline-info w-100" data-bs-toggle="modal" data-bs-target="#broadcastStudentsModal">
+              <i class="fas fa-user-graduate"></i><br>
+              <strong>Para Alunos</strong><br>
+              <small>Apenas estudantes</small>
+            </button>
+          </div>
+          <div class="col-md-6 mb-3">
+            <button type="button" class="btn btn-outline-warning w-100" data-bs-toggle="modal" data-bs-target="#broadcastClassroomModal">
+              <i class="fas fa-users-class"></i><br>
+              <strong>Para Turma</strong><br>
+              <small>Turma específica</small>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

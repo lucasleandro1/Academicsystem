@@ -22,7 +22,7 @@ class Direction::DocumentsController < ApplicationController
       @documents = @documents.joins(:user).where(users: { user_type: params[:user_type] })
     end
 
-    @documents = @documents.page(params[:page]).per(20)
+    @documents = @documents.limit(50) # Limitar a 50 resultados por enquanto
     @document_types = Document.distinct.pluck(:document_type).compact
   end
 
@@ -91,11 +91,6 @@ class Direction::DocumentsController < ApplicationController
 
   private
 
-  def ensure_direction!
-    unless current_user&.direction?
-      redirect_to root_path, alert: "Acesso não autorizado."
-    end
-  end
 
   def document_params
     params.require(:document).permit(:title, :description, :document_type, :file, :active)

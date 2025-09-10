@@ -1,0 +1,152 @@
+<% content_for :title, "Boletim do Aluno" %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1><i class="fas fa-user-graduate"></i> Boletim do Aluno</h1>
+  <%= link_to direction_reports_path, class: "btn btn-outline-secondary" do %>
+    <i class="fas fa-arrow-left"></i> Voltar
+  <% end %>
+</div>
+
+<!-- Seleção do Aluno -->
+<div class="card mb-4">
+  <div class="card-body">
+    <%= form_with url: student_bulletin_direction_reports_path, method: :get, local: true, class: "row g-3" do |form| %>
+      <div class="col-md-8">
+        <%= form.label :student_id, "Selecione o Aluno", class: "form-label" %>
+        <%= form.select :student_id, 
+                       options_from_collection_for_select(@students, :id, :full_name, params[:student_id]), 
+                       { prompt: "Selecione um aluno" }, 
+                       { class: "form-select" } %>
+      </div>
+      <div class="col-md-4 d-flex align-items-end">
+        <%= form.submit "Gerar Boletim", class: "btn btn-primary" %>
+        <% if @student %>
+          <%= link_to student_bulletin_direction_reports_path(student_id: @student.id, format: :pdf), 
+                     class: "btn btn-outline-primary ms-2", target: "_blank" do %>
+            <i class="fas fa-file-pdf"></i> PDF
+          <% end %>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<!-- Boletim -->
+<% if @bulletin_data %>
+  <div class="card">
+    <div class="card-header text-center">
+      <h4><%= current_user.school.name %></h4>
+      <h5>Boletim Escolar</h5>
+    </div>
+    <div class="card-body">
+      <!-- Informações do Aluno -->
+      <div class="row mb-4">
+        <div class="col-md-6">
+          <h6>Dados do Aluno</h6>
+          <p><strong>Nome:</strong> <%= @bulletin_data[:student].full_name %></p>
+          <p><strong>E-mail:</strong> <%= @bulletin_data[:student].email %></p>
+        </div>
+        <div class="col-md-6">
+          <h6>Dados da Turma</h6>
+          <p><strong>Turma:</strong> <%= @bulletin_data[:classroom].name %></p>
+          <p><strong>Ano Letivo:</strong> <%= @bulletin_data[:classroom].academic_year || Date.current.year %></p>
+        </div>
+      </div>
+
+      <!-- Notas por Disciplina -->
+      <div class="table-responsive">
+        <table class="table table-bordered">
+          <thead class="table-dark">
+            <tr>
+              <th>Disciplina</th>
+              <th>Professor</th>
+              <th>Notas</th>
+              <th>Média</th>
+              <th>Faltas</th>
+              <th>Situação</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% total_average = 0 %>
+            <% total_subjects = @bulletin_data[:subjects_data].size %>
+            <% @bulletin_data[:subjects_data].each do |subject_data| %>
+              <% total_average += subject_data[:average] %>
+              <tr>
+                <td><%= subject_data[:subject_name] %></td>
+                <td><%= subject_data[:teacher] || "Não atribuído" %></td>
+                <td>
+                  <% if subject_data[:grades].any? %>
+                    <%= subject_data[:grades].join(", ") %>
+                  <% else %>
+                    <span class="text-muted">Sem notas</span>
+                  <% end %>
+                </td>
+                <td>
+                  <span class="badge bg-<%= subject_data[:average] >= 7 ? 'success' : subject_data[:average] >= 5 ? 'warning' : 'danger' %>">
+                    <%= subject_data[:average] %>
+                  </span>
+                </td>
+                <td>
+                  <span class="<%= subject_data[:absences] > 5 ? 'text-danger' : 'text-success' %>">
+                    <%= subject_data[:absences] %>
+                  </span>
+                </td>
+                <td>
+                  <% if subject_data[:average] >= 7 %>
+                    <span class="text-success fw-bold">Aprovado</span>
+                  <% elsif subject_data[:average] >= 5 %>
+                    <span class="text-warning fw-bold">Recuperação</span>
+                  <% else %>
+                    <span class="text-danger fw-bold">Reprovado</span>
+                  <% end %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+          <tfoot class="table-secondary">
+            <tr>
+              <th colspan="3">Média Geral</th>
+              <th>
+                <% final_average = total_subjects > 0 ? (total_average / total_subjects).round(1) : 0 %>
+                <span class="badge bg-<%= final_average >= 7 ? 'success' : final_average >= 5 ? 'warning' : 'danger' %> fs-6">
+                  <%= final_average %>
+                </span>
+              </th>
+              <th colspan="2">
+                <% if final_average >= 7 %>
+                  <span class="text-success fw-bold">APROVADO</span>
+                <% elsif final_average >= 5 %>
+                  <span class="text-warning fw-bold">EM RECUPERAÇÃO</span>
+                <% else %>
+                  <span class="text-danger fw-bold">REPROVADO</span>
+                <% end %>
+              </th>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <!-- Observações -->
+      <div class="mt-4">
+        <h6>Legenda:</h6>
+        <ul class="list-unstyled">
+          <li><span class="badge bg-success">7.0 - 10.0</span> Aprovado</li>
+          <li><span class="badge bg-warning">5.0 - 6.9</span> Recuperação</li>
+          <li><span class="badge bg-danger">0.0 - 4.9</span> Reprovado</li>
+        </ul>
+      </div>
+
+      <!-- Rodapé -->
+      <div class="text-center mt-4 pt-3 border-top">
+        <small class="text-muted">
+          Documento gerado em <%= Date.current.strftime("%d/%m/%Y") %> | 
+          <%= current_user.school.name %>
+        </small>
+      </div>
+    </div>
+  </div>
+<% else %>
+  <div class="alert alert-info">
+    <i class="fas fa-info-circle"></i> Selecione um aluno para visualizar o boletim.
+  </div>
+<% end %>

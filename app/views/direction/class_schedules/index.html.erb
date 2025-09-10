@@ -18,8 +18,8 @@
                         { class: "form-select" } %>
       </div>
       <div class="col-md-4">
-        <%= form.select :day_of_week, 
-                        options_for_select([['Todos os dias', '']] + @days_of_week, params[:day_of_week]),
+        <%= form.select :weekday, 
+                        options_for_select([['Todos os dias', '']] + @days_of_week, params[:weekday]),
                         {}, { class: "form-select" } %>
       </div>
       <div class="col-md-4">
@@ -56,7 +56,7 @@
                 <td class="fw-bold"><%= time_slot %></td>
                 <% @days_of_week.each do |day_name, day_number| %>
                   <td class="text-center">
-                    <% schedule = @class_schedules.find { |cs| cs.day_of_week == day_number && "#{cs.start_time.strftime('%H:%M')} - #{cs.end_time.strftime('%H:%M')}" == time_slot } %>
+                    <% schedule = @class_schedules.find { |cs| cs.weekday == day_number && "#{cs.start_time.strftime('%H:%M')} - #{cs.end_time.strftime('%H:%M')}" == time_slot } %>
                     <% if schedule %>
                       <div class="badge bg-primary">
                         <%= schedule.subject.name %>
@@ -104,7 +104,7 @@
                     <%= schedule.subject.teacher.full_name %>
                   </td>
                   <td>
-                    <%= @days_of_week.find { |name, num| num == schedule.day_of_week }&.first %>
+                    <%= @days_of_week.find { |name, num| num == schedule.weekday }&.first %>
                   </td>
                   <td>
                     <strong><%= schedule.start_time.strftime("%H:%M") %></strong>
@@ -133,7 +133,7 @@
           <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
           <h5 class="text-muted">Nenhum horário encontrado</h5>
           <p class="text-muted">
-            <% if params[:classroom_id].present? || params[:day_of_week].present? %>
+            <% if params[:classroom_id].present? || params[:weekday].present? %>
               Tente ajustar os filtros de busca.
             <% else %>
               Configure os primeiros horários para as turmas.
@@ -169,7 +169,7 @@
   <div class="col-md-3">
     <div class="card text-center">
       <div class="card-body">
-        <h4 class="text-success"><%= @class_schedules.select { |cs| cs.day_of_week.between?(1, 5) }.count %></h4>
+        <h4 class="text-success"><%= @class_schedules.select { |cs| cs.weekday.between?(1, 5) }.count %></h4>
         <small class="text-muted">Horários Semana</small>
       </div>
     </div>
@@ -177,7 +177,7 @@
   <div class="col-md-3">
     <div class="card text-center">
       <div class="card-body">
-        <h4 class="text-warning"><%= @class_schedules.select { |cs| cs.day_of_week == 6 }.count %></h4>
+        <h4 class="text-warning"><%= @class_schedules.select { |cs| cs.weekday == 6 }.count %></h4>
         <small class="text-muted">Horários Sábado</small>
       </div>
     </div>

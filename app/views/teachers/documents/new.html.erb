@@ -1,0 +1,125 @@
+<% content_for :title, "Novo Documento" %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1><i class="fas fa-plus"></i> Novo Documento</h1>
+  <%= link_to teachers_documents_path, class: "btn btn-outline-secondary" do %>
+    <i class="fas fa-arrow-left"></i> Voltar
+  <% end %>
+</div>
+
+<div class="row">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-body">
+        <%= form_with model: [:teachers, @document], local: true, multipart: true do |form| %>
+          <% if @document.errors.any? %>
+            <div class="alert alert-danger">
+              <h6>Erro ao salvar documento:</h6>
+              <ul class="mb-0">
+                <% @document.errors.full_messages.each do |message| %>
+                  <li><%= message %></li>
+                <% end %>
+              </ul>
+            </div>
+          <% end %>
+
+          <div class="mb-3">
+            <%= form.label :title, class: "form-label" %>
+            <%= form.text_field :title, class: "form-control", placeholder: "Ex: Material de Apoio - Capítulo 1" %>
+          </div>
+
+          <div class="mb-3">
+            <%= form.label :description, class: "form-label" %>
+            <%= form.text_area :description, class: "form-control", rows: 3, placeholder: "Descrição do documento..." %>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <%= form.label :document_type, "Tipo de Documento", class: "form-label" %>
+                <%= form.select :document_type, 
+                    options_for_select([
+                      ['Material Didático', 'material'],
+                      ['Atividade', 'assignment'],
+                      ['Avaliação', 'evaluation'],
+                      ['Outro', 'other']
+                    ]), 
+                    { prompt: "Selecione o tipo" }, 
+                    { class: "form-select" } %>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <%= form.label :subject_id, "Disciplina", class: "form-label" %>
+                <%= form.select :subject_id, 
+                    options_from_collection_for_select(@subjects, :id, :name), 
+                    { prompt: "Selecione a disciplina" }, 
+                    { class: "form-select" } %>
+                <small class="form-text text-muted">Deixe em branco para documento geral</small>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <%= form.label :user_id, "Compartilhar com Aluno Específico", class: "form-label" %>
+            <%= form.select :user_id, 
+                options_from_collection_for_select(@students, :id, :full_name), 
+                { prompt: "Todos os alunos da disciplina" }, 
+                { class: "form-select" } %>
+            <small class="form-text text-muted">Deixe em branco para disponibilizar para todos os alunos</small>
+          </div>
+
+          <div class="mb-3">
+            <%= form.label :attachment, "Arquivo", class: "form-label" %>
+            <%= form.file_field :attachment, class: "form-control", accept: ".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.png,.jpg,.jpeg" %>
+            <small class="form-text text-muted">
+              Formatos aceitos: PDF, DOC, DOCX, PPT, PPTX, XLS, XLSX, TXT, PNG, JPG, JPEG (máx. 10MB)
+            </small>
+          </div>
+
+          <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+            <%= link_to teachers_documents_path, class: "btn btn-outline-secondary" do %>
+              <i class="fas fa-times"></i> Cancelar
+            <% end %>
+            <%= form.submit "Criar Documento", class: "btn btn-primary" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-header">
+        <h6><i class="fas fa-info-circle"></i> Dicas</h6>
+      </div>
+      <div class="card-body">
+        <h6>Tipos de Documento:</h6>
+        <ul class="small">
+          <li><strong>Material Didático:</strong> Apostilas, slides, textos de apoio</li>
+          <li><strong>Atividade:</strong> Exercícios, trabalhos, projetos</li>
+          <li><strong>Avaliação:</strong> Provas, testes, avaliações</li>
+          <li><strong>Outro:</strong> Comunicados, orientações gerais</li>
+        </ul>
+
+        <hr>
+
+        <h6>Visibilidade:</h6>
+        <ul class="small">
+          <li>Se não selecionar aluno específico, o documento ficará disponível para todos os alunos da disciplina</li>
+          <li>Documentos gerais (sem disciplina) ficam visíveis para todos seus alunos</li>
+        </ul>
+
+        <hr>
+
+        <h6>Formatos Recomendados:</h6>
+        <ul class="small">
+          <li><strong>PDF:</strong> Para materiais finalizados</li>
+          <li><strong>DOC/DOCX:</strong> Para textos editáveis</li>
+          <li><strong>PPT/PPTX:</strong> Para apresentações</li>
+          <li><strong>Imagens:</strong> Para esquemas e diagramas</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,6 +1,11 @@
 <% content_for :title, @calendar.title %>
 
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+<div                                    when 'holiday' then 'danger'
+                                    when 'vacation' then 'success'
+                                    when 'exam_period' then 'warning'
+                                    when 'meeting' then 'primary'
+                                    else 'secondary'
+                                    end %>">"d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
   <div>
     <h1 class="h2">
       <i class="fas fa-calendar-day text-primary me-2"></i>

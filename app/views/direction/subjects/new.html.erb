@@ -157,8 +157,8 @@
               <%= form.label :user_id, "Professor Responsável", class: "form-label" %>
               <%= form.select :user_id, 
                               options_from_collection_for_select(
-                                User.where(user_type: 'teacher'), 
-                                :id, :name
+                                current_user.school.teachers.active, 
+                                :id, :full_name
                               ),
                               { prompt: "Selecione um professor..." }, 
                               { class: "form-select" } %>

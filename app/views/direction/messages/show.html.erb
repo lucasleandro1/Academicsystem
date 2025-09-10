@@ -1,0 +1,49 @@
+<% content_for :title, @message.subject %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1><i class="fas fa-envelope-open"></i> <%= @message.subject %></h1>
+  <%= link_to direction_messages_path, class: "btn btn-outline-secondary" do %>
+    <i class="fas fa-arrow-left"></i> Voltar
+  <% end %>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <strong>
+              <% if @message.sender == current_user %>
+                Para: <%= @message.recipient.full_name %>
+              <% else %>
+                De: <%= @message.sender.full_name %>
+              <% end %>
+            </strong>
+            <br>
+            <small class="text-muted">
+              <%= @message.created_at.strftime("%d/%m/%Y às %H:%M") %>
+            </small>
+          </div>
+          <% if @message.recipient == current_user && !@message.read? %>
+            <span class="badge bg-primary">Nova</span>
+          <% elsif @message.sender == current_user %>
+            <span class="badge bg-<%= @message.read? ? 'success' : 'secondary' %>">
+              <%= @message.read? ? 'Lida' : 'Não lida' %>
+            </span>
+          <% end %>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="message-content">
+          <%= simple_format(@message.body) %>
+        </div>
+      </div>
+      <% if @message.recipient == current_user %>
+        <div class="card-footer">
+          <%= link_to "Responder", new_direction_message_path(reply_to: @message.sender_id), class: "btn btn-primary" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

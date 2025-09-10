@@ -2,6 +2,15 @@
 <% content_for :title, "Dashboard - Estudante" %>
 
 <!-- Welcome Header -->
+<% if current_user.classroom %>
+  <% upcoming_activities = Activity.joins(subject: :classroom)
+                                  .where(classrooms: { id: current_user.classroom_id })
+                                  .where('due_date >= ?', Date.current)
+                                  .order(:due_date)
+                                  .limit(5) %>
+<% else %>
+  <% upcoming_activities = [] %>
+<% end %>
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
   <div>
     <h1 class="h2">
@@ -36,7 +45,7 @@
               Minhas Turmas
             </div>
             <div class="h5 mb-0 font-weight-bold text-gray-800">
-              <%= current_user.enrollments.joins(:classroom).distinct.count('classrooms.id') %>
+              <%= current_user.classroom ? 1 : 0 %>
             </div>
           </div>
           <div class="col-auto">
@@ -77,10 +86,7 @@
               Atividades Pendentes
             </div>
             <div class="h5 mb-0 font-weight-bold text-gray-800">
-              <% pending_activities = Activity.joins(:subject => {:classroom => :enrollments})
-                                          .where(enrollments: {student: current_user})
-                                          .where('due_date >= ?', Date.current)
-                                          .distinct %>
+              <% pending_activities = @upcoming_activities %>
               <%= pending_activities.count %>
             </div>
           </div>
@@ -195,12 +201,16 @@
         </h6>
       </div>
       <div class="card-body">
-        <% class_schedules = ClassSchedule.joins(:classroom => :enrollments)
-                                        .where(enrollments: {student: current_user})
-                                        .order(:day_of_week, :start_time)
-                                        .includes(:subject, :classroom) %>
+                <% if current_user.classroom %>
+          <% class_schedules = ClassSchedule.where(classroom: current_user.classroom)
+                                          .where(weekday: Date.current.wday)
+                                          .includes(:subject)
+                                          .order(:start_time) %>
+        <% else %>
+          <% class_schedules = [] %>
+        <% end %>
         <% if class_schedules.any? %>
-          <% class_schedules.group_by(&:day_of_week).each do |day, schedules| %>
+          <% class_schedules.group_by(&:weekday).each do |day, schedules| %>
             <div class="mb-3">
               <h6 class="text-primary"><%= Date::DAYNAMES[day] %></h6>
               <% schedules.each do |schedule| %>
@@ -244,12 +254,7 @@
         </h6>
       </div>
       <div class="card-body">
-        <% upcoming_activities = Activity.joins(:subject => {:classroom => :enrollments})
-                                       .where(enrollments: {student: current_user})
-                                       .where('due_date >= ?', Date.current)
-                                       .order(:due_date)
-                                       .limit(5)
-                                       .includes(:subject) %>
+        <% upcoming_activities = @upcoming_activities %>
         <% if upcoming_activities.any? %>
           <% upcoming_activities.each do |activity| %>
             <div class="d-flex align-items-center mb-3 p-2 border rounded">

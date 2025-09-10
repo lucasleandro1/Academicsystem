@@ -3,7 +3,7 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
   <h1><i class="fas fa-tasks"></i> Minhas Atividades</h1>
   <div class="text-muted">
-    <small>Turma: <%= current_user.enrollments.where(status: 'active').first&.classroom&.name || "Não matriculado" %></small>
+    <small>Turma: <%= current_user.classroom&.name || "Não matriculado" %></small>
   </div>
 </div>
 

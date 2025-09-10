@@ -21,11 +21,6 @@ class Direction::SchoolsController < ApplicationController
 
   private
 
-  def ensure_direction!
-    unless current_user&.direction?
-      redirect_to root_path, alert: "Acesso não autorizado."
-    end
-  end
 
   def school_params
     params.require(:school).permit(:name, :cnpj, :address, :phone, :description, :logo)

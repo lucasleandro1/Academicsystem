@@ -56,28 +56,11 @@
                   </td>
                 </tr>
               <% end %>
-              <% if @school.website.present? %>
-                <tr>
-                  <th>Website:</th>
-                  <td>
-                    <i class="fas fa-globe text-muted"></i> 
-                    <%= link_to @school.website, @school.website, target: "_blank", class: "text-decoration-none" %>
-                  </td>
-                </tr>
-              <% end %>
-              <tr>
-                <th>Status:</th>
-                <td>
-                  <span class="badge bg-<%= @school.active? ? 'success' : 'danger' %>">
-                    <%= @school.active? ? 'Ativa' : 'Inativa' %>
-                  </span>
-                </td>
-              </tr>
             </table>
           </div>
         </div>
         
-        <% if @school.description.present? %>
+        <% if @school.respond_to?(:description) && @school.description.present? %>
           <hr>
           <h6>Sobre a Escola:</h6>
           <p class="text-muted"><%= @school.description %></p>
