@@ -57,9 +57,11 @@ class Teachers::DocumentsController < ApplicationController
   end
 
   def download
+    # Sanitizar nome do arquivo para evitar path traversal
+    safe_filename = File.basename(@document.attachment.filename.to_s)
     send_file @document.attachment.path,
               disposition: "attachment",
-              filename: @document.attachment.filename.to_s
+              filename: safe_filename
   end
 
   private

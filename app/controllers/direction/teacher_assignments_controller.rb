@@ -63,5 +63,4 @@ class Direction::TeacherAssignmentsController < ApplicationController
   end
 
   private
-
 end

@@ -140,10 +140,12 @@ class Admin::SettingsController < ApplicationController
       true
     when "postgresql"
       # Implementar backup PostgreSQL
-      system("pg_dump #{database_name} > #{backup_path}/#{backup_filename}.sql")
+      database_name = ActiveRecord::Base.connection_db_config.database
+      system("pg_dump", database_name, out: "#{backup_path}/#{backup_filename}.sql")
     when "mysql2"
       # Implementar backup MySQL
-      system("mysqldump #{database_name} > #{backup_path}/#{backup_filename}.sql")
+      database_name = ActiveRecord::Base.connection_db_config.database
+      system("mysqldump", database_name, out: "#{backup_path}/#{backup_filename}.sql")
     else
       false
     end
@@ -156,7 +158,7 @@ class Admin::SettingsController < ApplicationController
     storage_path = Rails.root.join("storage")
     backup_storage = backup_path.join("#{backup_filename}_storage.tar.gz")
 
-    system("tar -czf #{backup_storage} -C #{Rails.root} storage") if Dir.exist?(storage_path)
+    system("tar", "-czf", backup_storage.to_s, "-C", Rails.root.to_s, "storage") if Dir.exist?(storage_path)
   end
 
   def calculate_disk_usage

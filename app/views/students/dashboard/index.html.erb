@@ -1,18 +1,16 @@
 <%# Page Title %>
 <% content_for :title, "Dashboard - Estudante" %>
 
-<!-- Welco              <% pending_activities = Activity.joins(subject: :classroom)
-                                          .where(classrooms: { id: current_user.classroom_id })
-            <% if current_user.classroom %>
-          <% upcoming_activities = Activity.joins(subject: :classroom)
-                                          .where(classrooms: { id: current_user.classroom_id })
-                                          .where('due_date >= ?', Date.current)
-                                          .order(:due_date)
-                                          .limit(5) %>
-        <% else %>
-          <% upcoming_activities = [] %>
-        <% end %>                                 .where('due_date >= ?', Date.current)
-                                          .limit(5) if current_user.classroom %>eader -->
+<!-- Welcome Header -->
+<% if current_user.classroom %>
+  <% upcoming_activities = Activity.joins(subject: :classroom)
+                                  .where(classrooms: { id: current_user.classroom_id })
+                                  .where('due_date >= ?', Date.current)
+                                  .order(:due_date)
+                                  .limit(5) %>
+<% else %>
+  <% upcoming_activities = [] %>
+<% end %>
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
   <div>
     <h1 class="h2">

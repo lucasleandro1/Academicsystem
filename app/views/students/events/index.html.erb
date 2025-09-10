@@ -103,16 +103,14 @@
                 <%= event.title %>
               </h6>
               <% if event.event_type.present? %>
-                <span class="badge bg-<%= 
-                  case event.event_type
+                <span class="badge bg-<%= case event.event_type
                   when 'academic' then 'primary'
                   when 'cultural' then 'success'
                   when 'sports' then 'warning'
                   when 'meeting' then 'info'
                   when 'holiday' then 'danger'
                   else 'secondary'
-                  end
-                %>">
+                  end %>">
                   <%= event.event_type.humanize %>
                 </span>
               <% end %>

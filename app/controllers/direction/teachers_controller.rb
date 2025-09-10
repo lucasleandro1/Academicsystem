@@ -15,9 +15,9 @@ class Direction::TeachersController < ApplicationController
 
     if params[:status].present?
       case params[:status]
-      when 'active'
+      when "active"
         @teachers = @teachers.where(active: true)
-      when 'inactive'
+      when "inactive"
         @teachers = @teachers.where(active: false)
       end
     end

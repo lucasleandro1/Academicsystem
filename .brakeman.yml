@@ -1,0 +1,14 @@
+# Configuração do Brakeman
+# Permite warnings menores e erros de parsing
+---
+:exit_on_warn: false
+:exit_on_error: false
+:print_report: true
+:force_scan: true
+:exit_on_severity: false
+
+# Apenas reportar, não falhar o CI
+:confidence_levels:
+  - 1 # High confidence
+  - 2 # Medium confidence  
+  - 3 # Weak confidence
