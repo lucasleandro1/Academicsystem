@@ -37,25 +37,16 @@
             </div>
 
             <div class="col-md-4 mb-3">
-              <%= form.label :grade, "Série/Ano *", class: "form-label" %>
-              <%= form.select :grade, 
+              <%= form.label :level, "Nível de Ensino *", class: "form-label" %>
+              <%= form.select :level, 
                               options_for_select([
-                                ['1ª Série', '1'],
-                                ['2ª Série', '2'], 
-                                ['3ª Série', '3'],
-                                ['4ª Série', '4'],
-                                ['5ª Série', '5'],
-                                ['6ª Série', '6'],
-                                ['7ª Série', '7'],
-                                ['8ª Série', '8'],
-                                ['9ª Série', '9'],
-                                ['1º Ano', '10'],
-                                ['2º Ano', '11'],
-                                ['3º Ano', '12']
-                              ], @classroom.grade),
+                                ['Fundamental I', 'elementary_1'],
+                                ['Fundamental II', 'elementary_2'], 
+                                ['Ensino Médio', 'high_school']
+                              ], @classroom.level),
                               {}, { class: "form-select", required: true } %>
               <div class="invalid-feedback">
-                Por favor, selecione a série/ano.
+                Por favor, selecione o nível de ensino.
               </div>
             </div>
 
@@ -74,8 +65,14 @@
             </div>
 
             <div class="col-md-4 mb-3">
-              <%= form.label :capacity, "Capacidade Máxima", class: "form-label" %>
-              <%= form.number_field :capacity, class: "form-control", min: 1, max: 50 %>
+              <%= form.label :academic_year, "Ano Letivo *", class: "form-label" %>
+              <%= form.number_field :academic_year, class: "form-control", 
+                                   min: Date.current.year - 1, 
+                                   max: Date.current.year + 1, 
+                                   required: true %>
+              <div class="invalid-feedback">
+                Por favor, informe o ano letivo.
+              </div>
             </div>
 
             <div class="col-12 mb-3">

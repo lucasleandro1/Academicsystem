@@ -36,7 +36,7 @@ class Direction::TeacherAssignmentsController < ApplicationController
   end
 
   def bulk_assign
-    assignments = params[:assignments] || {}
+    assignments = params[:assignments]&.to_h || {}
     success_count = 0
     error_count = 0
 

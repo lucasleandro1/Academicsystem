@@ -16,22 +16,13 @@
                            value: params[:search], class: "form-control" %>
       </div>
       <div class="col-md-3">
-        <%= form.select :grade, 
+        <%= form.select :level, 
                         options_for_select([
-                          ['Todas as séries', ''],
-                          ['1ª Série', '1'],
-                          ['2ª Série', '2'], 
-                          ['3ª Série', '3'],
-                          ['4ª Série', '4'],
-                          ['5ª Série', '5'],
-                          ['6ª Série', '6'],
-                          ['7ª Série', '7'],
-                          ['8ª Série', '8'],
-                          ['9ª Série', '9'],
-                          ['1º Ano', '10'],
-                          ['2º Ano', '11'],
-                          ['3º Ano', '12']
-                        ], params[:grade]),
+                          ['Todos os níveis', ''],
+                          ['Fundamental I', 'elementary_1'],
+                          ['Fundamental II', 'elementary_2'],
+                          ['Ensino Médio', 'high_school']
+                        ], params[:level]),
                         {}, { class: "form-select" } %>
       </div>
       <div class="col-md-2">
@@ -233,7 +224,7 @@
           <i class="fas fa-door-open fa-3x text-muted mb-3"></i>
           <h5 class="text-muted">Nenhuma turma encontrada</h5>
           <p class="text-muted">
-            <% if params.any? %>
+            <% if params.except(:action, :controller).present? %>
               Não há turmas que correspondam aos filtros selecionados.
             <% else %>
               Nenhuma turma foi criada ainda.

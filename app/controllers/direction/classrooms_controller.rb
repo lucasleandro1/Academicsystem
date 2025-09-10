@@ -5,6 +5,21 @@ class Direction::ClassroomsController < ApplicationController
 
   def index
     @classrooms = current_user.school.classrooms.includes(:students, :subjects)
+    
+    # Filtros
+    if params[:search].present?
+      @classrooms = @classrooms.where("name ILIKE ?", "%#{params[:search]}%")
+    end
+    
+    if params[:level].present?
+      @classrooms = @classrooms.where(level: params[:level])
+    end
+    
+    if params[:shift].present?
+      @classrooms = @classrooms.where(shift: params[:shift])
+    end
+    
+    @classrooms = @classrooms.order(:name)
   end
 
   def show

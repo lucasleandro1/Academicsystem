@@ -55,7 +55,7 @@
   <div class="col-md-3">
     <div class="card text-center">
       <div class="card-body">
-        <h3 class="text-info"><%= Subject.where(user_id: @teachers.pluck(:id)).select(:user_id).distinct.count %></h3>
+        <h3 class="text-info"><%= @teachers.joins(:teacher_subjects).distinct.count %></h3>
         <small class="text-muted">Com Disciplinas</small>
       </div>
     </div>
@@ -205,7 +205,7 @@
         <i class="fas fa-chalkboard-teacher fa-3x text-muted mb-3"></i>
         <h5 class="text-muted">Nenhum professor encontrado</h5>
         <p class="text-muted">
-          <% if params.except(:action, :controller).any? %>
+          <% if params.except(:action, :controller).present? %>
             Não há professores que correspondam aos filtros selecionados.
           <% else %>
             Nenhum professor foi cadastrado ainda.

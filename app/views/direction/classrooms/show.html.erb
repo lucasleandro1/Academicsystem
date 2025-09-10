@@ -1,10 +1,17 @@
 <% content_for :title, @classroom.name %>
 
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-it          <div class="col-md-6 mb-3">
+            <strong>Alunos:</strong><br>
+            <div>
+              <span class="badge bg-info">
+                <%= @classroom.students.count %> alunos
+              </span>
+            </div>
+          </div>4">
   <div>
     <h1><i class="fas fa-door-open"></i> <%= @classroom.name %></h1>
     <small class="text-muted">
-      <%= @classroom.grade %> - <%= 
+      <%= @classroom.level.humanize %> - <%= 
         case @classroom.shift
         when 'morning' then 'Matutino'
         when 'afternoon' then 'Vespertino'  
@@ -67,8 +74,8 @@
           <% end %>
           
           <div class="col-md-6 mb-3">
-            <strong>Série/Ano:</strong><br>
-            <span class="text-muted"><%= @classroom.grade %></span>
+            <strong>Nível:</strong><br>
+            <span class="text-muted"><%= @classroom.level.humanize %></span>
           </div>
           
           <div class="col-md-6 mb-3">
@@ -444,7 +451,7 @@
             <%= form.select :user_id, 
                             options_from_collection_for_select(
                               User.where(user_type: 'student', school_id: current_user.school_id, classroom_id: nil), 
-                              :id, :name),
+                              :id, :full_name),
                             { prompt: "Selecione um aluno..." }, 
                             { class: "form-select", required: true } %>
             <small class="form-text text-muted">

@@ -13,8 +13,17 @@ class Direction::TeachersController < ApplicationController
                                  "%#{params[:search]}%", "%#{params[:search]}%", "%#{params[:search]}%", "%#{params[:search]}%")
     end
 
-    if params[:active].present?
-      @teachers = @teachers.where(active: params[:active] == "true")
+    if params[:status].present?
+      case params[:status]
+      when 'active'
+        @teachers = @teachers.where(active: true)
+      when 'inactive'
+        @teachers = @teachers.where(active: false)
+      end
+    end
+
+    if params[:subject_id].present?
+      @teachers = @teachers.joins(:teacher_subjects).where(subjects: { id: params[:subject_id] }).distinct
     end
 
     if params[:specialization].present?
@@ -48,15 +57,15 @@ class Direction::TeachersController < ApplicationController
   end
 
   def update
-    if @user.update(user_params)
-      redirect_to direction_teacher_path(@user), notice: "Professor atualizado com sucesso."
+    if @teacher.update(user_params)
+      redirect_to direction_teacher_path(@teacher), notice: "Professor atualizado com sucesso."
     else
       render :edit
     end
   end
 
   def destroy
-    @user.destroy
+    @teacher.destroy
     redirect_to direction_teachers_path, notice: "Professor removido com sucesso."
   end
 
