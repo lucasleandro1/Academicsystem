@@ -4,27 +4,25 @@ class ClassSchedule < ApplicationRecord
   belongs_to :school
 
   validates :weekday, :start_time, :end_time, presence: true
-  validates :weekday, inclusion: { in: %w[sunday monday tuesday wednesday thursday friday saturday] }
+  validates :weekday, inclusion: { in: 1..6 }
   validate :end_time_after_start_time
   validate :subject_belongs_to_classroom
   validate :no_time_conflict
-
-  enum :weekday, {
-    sunday: 0,
-    monday: 1,
-    tuesday: 2,
-    wednesday: 3,
-    thursday: 4,
-    friday: 5,
-    saturday: 6
-  }
 
   scope :by_weekday, ->(day) { where(weekday: day) }
   scope :by_time, -> { order(:start_time) }
   scope :for_classroom, ->(classroom) { where(classroom: classroom) }
 
   def weekday_name
-    Date::DAYNAMES[weekday]
+    case weekday
+    when 1 then "Segunda-feira"
+    when 2 then "Terça-feira"
+    when 3 then "Quarta-feira"
+    when 4 then "Quinta-feira"
+    when 5 then "Sexta-feira"
+    when 6 then "Sábado"
+    else "Dia não definido"
+    end
   end
 
   def time_range

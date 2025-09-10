@@ -205,14 +205,14 @@
       <div class="card-body">
                 <% if current_user.classroom %>
           <% class_schedules = ClassSchedule.where(classroom: current_user.classroom)
-                                          .where(day_of_week: Date.current.wday)
+                                          .where(weekday: Date.current.wday)
                                           .includes(:subject)
                                           .order(:start_time) %>
         <% else %>
           <% class_schedules = [] %>
         <% end %>
         <% if class_schedules.any? %>
-          <% class_schedules.group_by(&:day_of_week).each do |day, schedules| %>
+          <% class_schedules.group_by(&:weekday).each do |day, schedules| %>
             <div class="mb-3">
               <h6 class="text-primary"><%= Date::DAYNAMES[day] %></h6>
               <% schedules.each do |schedule| %>

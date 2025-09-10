@@ -146,10 +146,10 @@
                       </span>
                     </td>
                     <td>
-                      <% next_schedule = classroom.class_schedules.order(:day_of_week, :start_time).first %>
+                      <% next_schedule = classroom.class_schedules.order(:weekday, :start_time).first %>
                       <% if next_schedule %>
                         <small>
-                          <%= Date::DAYNAMES[next_schedule.day_of_week] %>
+                          <%= Date::DAYNAMES[next_schedule.weekday] %>
                           <br>
                           <%= next_schedule.start_time.strftime("%H:%M") %> - <%= next_schedule.end_time.strftime("%H:%M") %>
                         </small>

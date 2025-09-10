@@ -66,39 +66,23 @@
               </div>
 
               <!-- Dia da Semana -->
-              <div class="col-md-6 mb-3">
-                <%= form.label :day_of_week, "Dia da Semana", class: "form-label" %>
-                <%= form.select :day_of_week,
+                            <div class="col-md-6">
+                <%= form.label :weekday, "Dia da Semana", class: "form-label" %>
+                <%= form.select :weekday,
                     options_for_select([
-                      ['Segunda-feira', 1],
-                      ['Terça-feira', 2],
-                      ['Quarta-feira', 3],
-                      ['Quinta-feira', 4],
-                      ['Sexta-feira', 5],
-                      ['Sábado', 6]
-                    ], @class_schedule.day_of_week),
-                    { prompt: "Selecione o dia" },
-                    { class: "form-select #{'is-invalid' if @class_schedule.errors[:day_of_week].any?}",
-                      required: true } %>
+                      ["Segunda-feira", 1],
+                      ["Terça-feira", 2],
+                      ["Quarta-feira", 3],
+                      ["Quinta-feira", 4],
+                      ["Sexta-feira", 5],
+                      ["Sábado", 6]
+                    ], @class_schedule.weekday),
+                    { prompt: "Selecione um dia" },
+                    { class: "form-select #{'is-invalid' if @class_schedule.errors[:weekday].any?}",
+                      required: true,
+                      id: "weekday_select" } %>
                 <div class="invalid-feedback">
-                  <%= @class_schedule.errors[:day_of_week].first if @class_schedule.errors[:day_of_week].any? %>
-                </div>
-              </div>
-
-              <!-- Turno -->
-              <div class="col-md-6 mb-3">
-                <%= form.label :shift, "Turno", class: "form-label" %>
-                <%= form.select :shift,
-                    options_for_select([
-                      ['Matutino', 'morning'],
-                      ['Vespertino', 'afternoon'],
-                      ['Noturno', 'evening']
-                    ], @class_schedule.shift),
-                    { prompt: "Selecione o turno" },
-                    { class: "form-select #{'is-invalid' if @class_schedule.errors[:shift].any?}",
-                      required: true } %>
-                <div class="invalid-feedback">
-                  <%= @class_schedule.errors[:shift].first if @class_schedule.errors[:shift].any? %>
+                  <%= @class_schedule.errors[:weekday].first if @class_schedule.errors[:weekday].any? %>
                 </div>
               </div>
 
@@ -187,7 +171,7 @@
               </p>
               <small class="text-muted">
                 <%= 
-                  case @class_schedule.day_of_week
+                  case @class_schedule.weekday
                   when 1 then 'Segunda-feira'
                   when 2 then 'Terça-feira'
                   when 3 then 'Quarta-feira'
@@ -226,7 +210,7 @@
                     <%= schedule.start_time.strftime("%H:%M") %> - <%= schedule.end_time.strftime("%H:%M") %>
                     <span class="text-muted">
                       (<%= 
-                        case schedule.day_of_week
+                        case schedule.weekday
                         when 1 then 'Seg'
                         when 2 then 'Ter'
                         when 3 then 'Qua'

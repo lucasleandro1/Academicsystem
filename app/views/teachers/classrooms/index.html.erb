@@ -95,7 +95,7 @@
             </div>
 
             <!-- Próxima aula -->
-            <% next_class = classroom.class_schedules.joins(:subject).where(subjects: { teacher: current_user }).where('day_of_week = ? AND start_time > ?', Date.current.wday, Time.current.strftime("%H:%M")).first %>
+            <% next_class = classroom.class_schedules.joins(:subject).where(subjects: { teacher: current_user }).where('weekday = ? AND start_time > ?', Date.current.wday, Time.current.strftime("%H:%M")).first %>
             <% if next_class %>
               <div class="alert alert-info mb-3">
                 <small><strong>Próxima aula:</strong></small>

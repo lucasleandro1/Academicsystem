@@ -1,6 +1,7 @@
 class Subject < ApplicationRecord
   belongs_to :classroom
   belongs_to :teacher, class_name: "User", foreign_key: "user_id"
+  belongs_to :user, class_name: "User", foreign_key: "user_id"
   belongs_to :school
 
   has_many :activities, dependent: :destroy
@@ -12,10 +13,17 @@ class Subject < ApplicationRecord
   validates :name, :workload, presence: true
   validates :name, uniqueness: { scope: [ :classroom_id, :school_id ] }
   validates :workload, numericality: { greater_than: 0 }
+  validates :code, uniqueness: { scope: :school_id }, allow_blank: true
+  validates :area, inclusion: {
+    in: %w[languages mathematics natural_sciences human_sciences religious_education physical_education arts technology],
+    allow_blank: true
+  }
   validate :teacher_must_be_teacher
 
   scope :by_teacher, ->(teacher) { where(user_id: teacher.id) }
   scope :by_classroom, ->(classroom) { where(classroom: classroom) }
+  scope :active, -> { where(active: true) }
+  scope :by_area, ->(area) { where(area: area) }
 
   def students
     classroom.students.active
@@ -43,6 +51,10 @@ class Subject < ApplicationRecord
 
     total_submissions = submissions.count
     (total_submissions.to_f / total_possible_submissions * 100).round(2)
+  end
+
+  def active?
+    active
   end
 
   private

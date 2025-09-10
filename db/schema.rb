@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_09_08_141623) do
+ActiveRecord::Schema[8.0].define(version: 2025_09_10_150944) do
   create_table "absences", force: :cascade do |t|
     t.integer "subject_id", null: false
     t.date "date"
@@ -226,6 +226,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_08_141623) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "user_id", null: false
+    t.string "code"
+    t.string "area"
+    t.text "description"
+    t.boolean "active", default: true
+    t.boolean "allows_makeup_exams", default: true
     t.index ["classroom_id"], name: "index_subjects_on_classroom_id"
     t.index ["school_id"], name: "index_subjects_on_school_id"
     t.index ["user_id"], name: "index_subjects_on_user_id"

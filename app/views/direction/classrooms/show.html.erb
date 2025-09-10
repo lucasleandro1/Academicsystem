@@ -66,12 +66,10 @@
             <span class="text-muted"><%= @classroom.name %></span>
           </div>
           
-          <% if @classroom.code.present? %>
-            <div class="col-md-6 mb-3">
-              <strong>Código:</strong><br>
-              <span class="text-muted"><%= @classroom.code %></span>
-            </div>
-          <% end %>
+          <div class="col-md-6 mb-3">
+            <strong>Ano Letivo:</strong><br>
+            <span class="text-muted"><%= @classroom.academic_year %></span>
+          </div>
           
           <div class="col-md-6 mb-3">
             <strong>Nível:</strong><br>
@@ -120,13 +118,6 @@
               <%= @classroom.active? ? 'Ativa' : 'Inativa' %>
             </span>
           </div>
-          
-          <% if @classroom.description.present? %>
-            <div class="col-12 mb-3">
-              <strong>Descrição:</strong><br>
-              <span class="text-muted"><%= @classroom.description %></span>
-            </div>
-          <% end %>
         </div>
       </div>
     </div>
@@ -156,7 +147,7 @@
       <div class="col-12 mb-3">
         <div class="card text-center">
           <div class="card-body">
-            <h3 class="text-info"><%= @classroom.subjects.joins(:user).distinct.count %></h3>
+            <h3 class="text-info"><%= @classroom.subjects.joins(:teacher).distinct.count %></h3>
             <small class="text-muted">Professores</small>
           </div>
         </div>

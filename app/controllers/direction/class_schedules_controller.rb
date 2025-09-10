@@ -11,16 +11,16 @@ class Direction::ClassSchedulesController < ApplicationController
       @selected_classroom = Classroom.find(params[:classroom_id])
       @class_schedules = @selected_classroom.class_schedules
                                            .includes(:subject, :classroom)
-                                           .order(:day_of_week, :start_time)
+                                           .order(:weekday, :start_time)
     else
       @class_schedules = ClassSchedule.joins(:classroom)
                                      .where(classrooms: { school: @school })
                                      .includes(:subject, :classroom)
-                                     .order(:day_of_week, :start_time)
+                                     .order(:weekday, :start_time)
     end
 
-    if params[:day_of_week].present?
-      @class_schedules = @class_schedules.where(day_of_week: params[:day_of_week])
+    if params[:weekday].present?
+      @class_schedules = @class_schedules.where(weekday: params[:weekday])
     end
 
     @days_of_week = [
@@ -44,7 +44,7 @@ class Direction::ClassSchedulesController < ApplicationController
 
     @class_schedules = @classroom.class_schedules
                                 .includes(:subject)
-                                .order(:day_of_week, :start_time)
+                                .order(:weekday, :start_time)
 
     @schedule_grid = build_schedule_grid(@class_schedules)
   end
@@ -52,17 +52,18 @@ class Direction::ClassSchedulesController < ApplicationController
   def new
     @class_schedule = ClassSchedule.new
     @classrooms = Classroom.where(school: current_user.school)
-    @subjects = Subject.joins(:classrooms).where(classrooms: { school: current_user.school }).distinct
+    @subjects = Subject.joins(:classroom).where(classrooms: { school: current_user.school }).distinct
   end
 
   def create
     @class_schedule = ClassSchedule.new(class_schedule_params)
+    @class_schedule.school = current_user.school
 
     if @class_schedule.save
       redirect_to direction_class_schedules_path, notice: "Horário criado com sucesso."
     else
       @classrooms = Classroom.where(school: current_user.school)
-      @subjects = Subject.joins(:classrooms).where(classrooms: { school: current_user.school }).distinct
+      @subjects = Subject.joins(:classroom).where(classrooms: { school: current_user.school }).distinct
       render :new
     end
   end
@@ -77,7 +78,7 @@ class Direction::ClassSchedulesController < ApplicationController
     end
 
     @classrooms = Classroom.where(school: current_user.school)
-    @subjects = Subject.joins(:classrooms).where(classrooms: { school: current_user.school }).distinct
+    @subjects = Subject.joins(:classroom).where(classrooms: { school: current_user.school }).distinct
   end
 
   def update
@@ -93,7 +94,7 @@ class Direction::ClassSchedulesController < ApplicationController
       redirect_to direction_class_schedules_path, notice: "Horário atualizado com sucesso."
     else
       @classrooms = Classroom.where(school: current_user.school)
-      @subjects = Subject.joins(:classrooms).where(classrooms: { school: current_user.school }).distinct
+      @subjects = Subject.joins(:classroom).where(classrooms: { school: current_user.school }).distinct
       render :edit
     end
   end
@@ -115,14 +116,14 @@ class Direction::ClassSchedulesController < ApplicationController
 
 
   def class_schedule_params
-    params.require(:class_schedule).permit(:classroom_id, :subject_id, :day_of_week, :start_time, :end_time)
+    params.require(:class_schedule).permit(:classroom_id, :subject_id, :weekday, :start_time, :end_time)
   end
 
   def build_schedule_grid(schedules)
     grid = {}
 
     (1..6).each do |day|
-      grid[day] = schedules.select { |s| s.day_of_week == day }
+      grid[day] = schedules.select { |s| s.weekday == day }
                           .sort_by(&:start_time)
     end
 

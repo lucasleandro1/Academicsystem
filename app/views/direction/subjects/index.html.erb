@@ -69,7 +69,7 @@
   <div class="col-md-3">
     <div class="card text-center">
       <div class="card-body">
-        <h3 class="text-info"><%= @subjects.joins(:user).distinct.count('users.id') %></h3>
+        <h3 class="text-info"><%= @subjects.joins(:teacher).distinct.count('users.id') %></h3>
         <small class="text-muted">Com Professores</small>
       </div>
     </div>
@@ -77,8 +77,8 @@
   <div class="col-md-3">
     <div class="card text-center">
       <div class="card-body">
-        <h3 class="text-warning"><%= @subjects.joins(:classrooms).distinct.count('classrooms.id') %></h3>
-        <small class="text-muted">Em Turmas</small>
+        <h3 class="text-warning"><%= @subjects.joins(:classroom).distinct.count('classrooms.id') %></h3>
+        <small class="text-muted">Turmas Distintas</small>
       </div>
     </div>
   </div>
@@ -156,15 +156,15 @@
             </div>
 
             <!-- Professor responsável -->
-            <% if subject.user %>
+            <% if subject.teacher %>
               <div class="mb-3">
                 <small class="text-muted">Professor:</small>
                 <br>
                 <div class="d-flex align-items-center">
                   <i class="fas fa-user-tie text-success me-2"></i>
-                  <strong><%= subject.user.name %></strong>
+                  <strong><%= subject.teacher.full_name %></strong>
                 </div>
-                <small class="text-muted"><%= subject.user.email %></small>
+                <small class="text-muted"><%= subject.teacher.email %></small>
               </div>
             <% else %>
               <div class="mb-3">
@@ -198,8 +198,8 @@
             <!-- Estatísticas -->
             <div class="row mb-3">
               <div class="col-6 text-center">
-                <h4 class="text-primary"><%= subject.classrooms.count %></h4>
-                <small class="text-muted">Turmas</small>
+                <h4 class="text-primary">1</h4>
+                <small class="text-muted">Turma</small>
               </div>
               <div class="col-6 text-center">
                 <h4 class="text-success"><%= subject.classroom.students.count %></h4>
@@ -207,19 +207,12 @@
               </div>
             </div>
 
-            <!-- Turmas atribuídas -->
-            <% if subject.classrooms.any? %>
-              <div class="mb-2">
-                <small class="text-muted">Turmas:</small>
-                <br>
-                <% subject.classrooms.limit(3).each do |classroom| %>
-                  <span class="badge bg-light text-dark me-1"><%= classroom.name %></span>
-                <% end %>
-                <% if subject.classrooms.count > 3 %>
-                  <small class="text-muted">+<%= subject.classrooms.count - 3 %> mais</small>
-                <% end %>
-              </div>
-            <% end %>
+            <!-- Turma atribuída -->
+            <div class="mb-2">
+              <small class="text-muted">Turma:</small>
+              <br>
+              <span class="badge bg-light text-dark"><%= subject.classroom.name %></span>
+            </div>
 
             <!-- Status -->
             <div class="mt-3">
@@ -259,8 +252,8 @@
                   <%= form.label :teacher_id, "Selecionar Professor", class: "form-label" %>
                   <%= form.select :teacher_id, 
                                   options_from_collection_for_select(
-                                    User.where(user_type: 'teacher'), 
-                                    :id, :name, subject.user_id
+                                    current_user.school.teachers.active, 
+                                    :id, :full_name, subject.teacher&.id
                                   ),
                                   { prompt: "Selecione um professor..." }, 
                                   { class: "form-select" } %>
@@ -298,7 +291,7 @@
           <i class="fas fa-book fa-3x text-muted mb-3"></i>
           <h5 class="text-muted">Nenhuma disciplina encontrada</h5>
           <p class="text-muted">
-            <% if params.any? %>
+            <% if params[:search].present? || params[:area].present? || params[:active].present? %>
               Não há disciplinas que correspondam aos filtros selecionados.
             <% else %>
               Nenhuma disciplina foi criada ainda.
