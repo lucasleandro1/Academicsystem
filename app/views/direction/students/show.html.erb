@@ -208,11 +208,6 @@
         </div>
         <div class="card-body">
           <div class="d-grid gap-2">
-            <%= link_to direction_occurrences_path(student_id: @student.id), 
-                class: "btn btn-outline-warning" do %>
-              <i class="fas fa-exclamation-triangle me-2"></i>Ocorrências
-            <% end %>
-            
             <%= link_to direction_reports_path(student_id: @student.id), 
                 class: "btn btn-outline-info" do %>
               <i class="fas fa-chart-line me-2"></i>Relatórios
@@ -237,11 +232,6 @@
             <li class="nav-item">
               <a class="nav-link" data-bs-toggle="tab" href="#absences-tab" role="tab">
                 <i class="fas fa-calendar-times me-2"></i>Faltas
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" data-bs-toggle="tab" href="#occurrences-tab" role="tab">
-                <i class="fas fa-exclamation-circle me-2"></i>Ocorrências
               </a>
             </li>
           </ul>
@@ -318,49 +308,6 @@
                 <div class="text-center text-muted py-4">
                   <i class="fas fa-calendar-check fs-1 mb-3 d-block"></i>
                   <p>Nenhuma falta registrada.</p>
-                </div>
-              <% end %>
-            </div>
-
-            <!-- Occurrences Tab -->
-            <div class="tab-pane" id="occurrences-tab">
-              <% if @student.occurrences.any? %>
-                <div class="table-responsive">
-                  <table class="table table-hover">
-                    <thead class="table-light">
-                      <tr>
-                        <th>Data</th>
-                        <th>Tipo</th>
-                        <th>Descrição</th>
-                        <th>Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <% @student.occurrences.recent.limit(10).each do |occurrence| %>
-                        <tr>
-                          <td><%= occurrence.date.strftime("%d/%m/%Y") %></td>
-                          <td>
-                            <span class="badge bg-<%= occurrence.occurrence_type == 'positive' ? 'success' : 'warning' %>">
-                              <%= occurrence.occurrence_type&.humanize || "Disciplinar" %>
-                            </span>
-                          </td>
-                          <td><%= truncate(occurrence.description, length: 100) %></td>
-                          <td>
-                            <% if occurrence.resolved? %>
-                              <span class="badge bg-success">Resolvida</span>
-                            <% else %>
-                              <span class="badge bg-warning">Pendente</span>
-                            <% end %>
-                          </td>
-                        </tr>
-                      <% end %>
-                    </tbody>
-                  </table>
-                </div>
-              <% else %>
-                <div class="text-center text-muted py-4">
-                  <i class="fas fa-check-circle fs-1 mb-3 d-block"></i>
-                  <p>Nenhuma ocorrência registrada.</p>
                 </div>
               <% end %>
             </div>

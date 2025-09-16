@@ -19,12 +19,12 @@ class Teachers::DocumentsController < ApplicationController
 
   def new
     @document = current_user.authored_documents.build
-    @subjects = current_user.subjects
+    @subjects = current_user.teacher_subjects
     @students = available_students
   end
 
   def edit
-    @subjects = current_user.subjects
+    @subjects = current_user.teacher_subjects
     @students = available_students
   end
 
@@ -35,7 +35,7 @@ class Teachers::DocumentsController < ApplicationController
     if @document.save
       redirect_to teachers_document_path(@document), notice: "Documento criado com sucesso."
     else
-      @subjects = current_user.subjects
+      @subjects = current_user.teacher_subjects
       @students = available_students
       render :new
     end
@@ -45,7 +45,7 @@ class Teachers::DocumentsController < ApplicationController
     if @document.update(document_params)
       redirect_to teachers_document_path(@document), notice: "Documento atualizado com sucesso."
     else
-      @subjects = current_user.subjects
+      @subjects = current_user.teacher_subjects
       @students = available_students
       render :edit
     end
@@ -80,7 +80,7 @@ class Teachers::DocumentsController < ApplicationController
   end
 
   def available_students
-    classroom_ids = current_user.subjects.pluck(:classroom_id).uniq
+    classroom_ids = current_user.teacher_subjects.pluck(:classroom_id).uniq
     User.where(classroom_id: classroom_ids, user_type: "student")
         .distinct
   end

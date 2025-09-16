@@ -121,8 +121,8 @@
                   <%= event.title %>
                 </h6>
                 <p class="card-text small">
-                  <strong>Data:</strong> <%= event.start_date.strftime("%d/%m/%Y") %><br>
-                  <strong>Horário:</strong> <%= event.start_time&.strftime("%H:%M") || 'Não definido' %>
+                  <strong>Data:</strong> <%= event.formatted_start_date %><br>
+                  <strong>Horário:</strong> <%= event.formatted_start_time %>
                 </p>
                 <%= link_to direction_event_path(event), class: "btn btn-sm btn-outline-warning" do %>
                   Ver Detalhes
@@ -243,34 +243,24 @@
               <div class="col-6">
                 <small class="text-muted">Data:</small>
                 <br>
-                <strong><%= event.start_date.strftime("%d/%m/%Y") %></strong>
+                <strong><%= event.formatted_start_date %></strong>
                 <% if event.end_date && event.end_date != event.start_date %>
-                  <small class="text-muted">até <%= event.end_date.strftime("%d/%m/%Y") %></small>
+                  <small class="text-muted">até <%= event.formatted_end_date %></small>
                 <% end %>
               </div>
               <div class="col-6">
                 <small class="text-muted">Horário:</small>
                 <br>
                 <% if event.start_time %>
-                  <strong><%= event.start_time.strftime("%H:%M") %></strong>
+                  <strong><%= event.formatted_start_time %></strong>
                   <% if event.end_time %>
-                    <small class="text-muted">às <%= event.end_time.strftime("%H:%M") %></small>
+                    <small class="text-muted">às <%= event.formatted_end_time %></small>
                   <% end %>
                 <% else %>
                   <span class="text-muted">Não definido</span>
                 <% end %>
               </div>
             </div>
-
-            <!-- Local -->
-            <% if event.location.present? %>
-              <div class="mb-3">
-                <small class="text-muted">Local:</small>
-                <br>
-                <i class="fas fa-map-marker-alt text-info"></i>
-                <span><%= event.location %></span>
-              </div>
-            <% end %>
 
             <!-- Descrição -->
             <% if event.description.present? %>
@@ -279,61 +269,13 @@
                 <p class="small"><%= truncate(event.description, length: 120) %></p>
               </div>
             <% end %>
-
-            <!-- Participantes -->
-            <% if event.target_audience.present? %>
-              <div class="mb-3">
-                <small class="text-muted">Público-alvo:</small>
-                <br>
-                <% event.target_audience.each do |audience| %>
-                  <span class="badge bg-light text-dark me-1">
-                    <%= 
-                      case audience
-                      when 'students' then 'Alunos'
-                      when 'teachers' then 'Professores'
-                      when 'parents' then 'Pais'
-                      when 'staff' then 'Funcionários'
-                      when 'community' then 'Comunidade'
-                      else audience.humanize
-                      end
-                    %>
-                  </span>
-                <% end %>
-              </div>
-            <% end %>
-
-            <!-- Organização -->
-            <% if event.organizer.present? %>
-              <div class="mb-2">
-                <small class="text-muted">Organizado por:</small>
-                <br>
-                <span class="small"><%= event.organizer %></span>
-              </div>
-            <% end %>
-
-            <!-- Capacidade -->
-            <% if event.capacity.present? %>
-              <div class="mb-2">
-                <small class="text-muted">Capacidade:</small>
-                <br>
-                <div class="progress" style="height: 6px;">
-                  <% occupancy = event.attendees_count ? (event.attendees_count.to_f / event.capacity * 100).round(1) : 0 %>
-                  <div class="progress-bar bg-<%= occupancy > 90 ? 'danger' : occupancy > 70 ? 'warning' : 'success' %>" 
-                       style="width: <%= occupancy %>%"></div>
-                </div>
-                <small class="text-muted">
-                  <%= event.attendees_count || 0 %>/<%= event.capacity %> pessoas 
-                  (<%= occupancy %>%)
-                </small>
-              </div>
-            <% end %>
           </div>
 
           <div class="card-footer">
             <div class="d-flex justify-content-between align-items-center">
               <small class="text-muted">
                 <i class="fas fa-calendar-plus"></i>
-                Criado em <%= event.created_at.strftime("%d/%m/%Y") %>
+                Criado em <%= event.formatted_created_at %>
               </small>
               <%= link_to direction_event_path(event), class: "btn btn-sm btn-outline-primary" do %>
                 <i class="fas fa-arrow-right"></i> Ver Mais

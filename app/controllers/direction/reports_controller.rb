@@ -23,8 +23,8 @@ class Direction::ReportsController < ApplicationController
     @academic_report = {
       attendance_rate: calculate_school_attendance_rate,
       average_grades: calculate_school_average_grades,
-      total_activities: Activity.joins(subject: { classrooms: :school }).where(schools: { id: @school.id }).count,
-      completed_activities: Activity.joins(subject: { classrooms: :school }).where(schools: { id: @school.id }, active: false).count
+      total_activities: Activity.joins(subject: { classroom: :school }).where(schools: { id: @school.id }).count,
+      completed_activities: Activity.joins(subject: { classroom: :school }).where(schools: { id: @school.id }).where("due_date < ?", Time.current).count
     }
   end
 
@@ -82,14 +82,47 @@ class Direction::ReportsController < ApplicationController
   end
 
   def generate_pdf
-    # Implementar geração de PDF dos relatórios
+    @school = current_user.school
+
+    # Coletar dados para o PDF
+    @students_report = {
+      total: User.where(school_id: @school.id, user_type: "student").count,
+      active: User.where(school_id: @school.id, user_type: "student", active: true).count,
+      by_classroom: classroom_student_stats
+    }
+
+    @teachers_report = {
+      total: User.where(school_id: @school.id, user_type: "teacher").count,
+      active: User.where(school_id: @school.id, user_type: "teacher", active: true).count,
+      subjects_assigned: teacher_subject_stats
+    }
+
+    @academic_report = {
+      attendance_rate: calculate_school_attendance_rate,
+      average_grades: calculate_school_average_grades,
+      total_activities: Activity.joins(subject: { classroom: :school }).where(schools: { id: @school.id }).count,
+      completed_activities: Activity.joins(subject: { classroom: :school }).where(schools: { id: @school.id }).where("due_date < ?", Time.current).count
+    }
+
     respond_to do |format|
       format.pdf do
-        render pdf: "relatorio_escola_#{@school.id}",
-               template: "direction/reports/pdf_report",
-               layout: "pdf"
+        render pdf: "relatorio_geral_#{@school.name.parameterize}_#{Date.current.strftime('%Y%m%d')}",
+               template: "direction/reports/generate_pdf",
+               layout: "pdf",
+               page_size: "A4",
+               margin: { top: 20, bottom: 20, left: 15, right: 15 },
+               header: { html: { template: "shared/pdf_header" } },
+               footer: { html: { template: "shared/pdf_footer" } }
+      end
+
+      format.html do
+        # Fallback para HTML se PDF não funcionar
+        render :index
       end
     end
+  rescue => e
+    Rails.logger.error "Erro na geração de PDF: #{e.message}"
+    redirect_to direction_reports_path, alert: "Erro ao gerar PDF. Tente novamente."
   end
 
   private
@@ -109,23 +142,26 @@ class Direction::ReportsController < ApplicationController
   end
 
   def calculate_school_attendance_rate
-    total_schedules = ClassSchedule.joins(classroom: :school)
-                                  .where(schools: { id: current_user.school.id })
-                                  .where("date >= ?", 30.days.ago)
-                                  .count
+    # Calculate based on absences vs total possible class days for students
+    students = User.where(school_id: current_user.school.id, user_type: "student", active: true)
+    return 0 if students.empty?
 
-    return 0 if total_schedules.zero?
-
-    total_absences = Absence.joins(:user)
+    total_absences = Absence.joins(:student)
                            .where(users: { school_id: current_user.school.id })
                            .where("date >= ?", 30.days.ago)
                            .count
 
-    ((total_schedules - total_absences).to_f / total_schedules * 100).round(1)
+    # Estimate total possible attendances (students * school days in period)
+    school_days_in_period = 22 # approximate school days in 30 days
+    total_possible_attendances = students.count * school_days_in_period
+
+    return 0 if total_possible_attendances.zero?
+
+    ((total_possible_attendances - total_absences).to_f / total_possible_attendances * 100).round(1)
   end
 
   def calculate_school_average_grades
-    Grade.joins(:user)
+    Grade.joins(:student)
          .where(users: { school_id: current_user.school.id })
          .where("grades.created_at >= ?", 30.days.ago)
          .average(:value)&.round(2) || 0

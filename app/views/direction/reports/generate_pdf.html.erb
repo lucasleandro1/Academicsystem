@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Relatório Geral - <%= @school.name %></title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      font-size: 12px;
+      line-height: 1.4;
+      margin: 0;
+      padding: 20px;
+    }
+    .header {
+      text-align: center;
+      border-bottom: 2px solid #333;
+      padding-bottom: 20px;
+      margin-bottom: 30px;
+    }
+    .school-name {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    .report-title {
+      font-size: 16px;
+      color: #666;
+      margin-bottom: 10px;
+    }
+    .report-date {
+      font-size: 10px;
+      color: #999;
+    }
+    .section {
+      margin-bottom: 30px;
+      page-break-inside: avoid;
+    }
+    .section-title {
+      font-size: 14px;
+      font-weight: bold;
+      background-color: #f5f5f5;
+      padding: 10px;
+      border-left: 4px solid #007bff;
+      margin-bottom: 15px;
+    }
+    .stats-grid {
+      display: table;
+      width: 100%;
+      margin-bottom: 20px;
+    }
+    .stats-row {
+      display: table-row;
+    }
+    .stats-cell {
+      display: table-cell;
+      padding: 8px;
+      border: 1px solid #ddd;
+      text-align: center;
+      vertical-align: middle;
+    }
+    .stats-header {
+      background-color: #f8f9fa;
+      font-weight: bold;
+    }
+    .number {
+      font-size: 16px;
+      font-weight: bold;
+      color: #007bff;
+    }
+    .label {
+      font-size: 10px;
+      color: #666;
+      text-transform: uppercase;
+    }
+    .classroom-list {
+      font-size: 11px;
+      margin-top: 10px;
+    }
+    .classroom-item {
+      margin-bottom: 5px;
+      padding: 5px;
+      background-color: #f9f9f9;
+      border-left: 3px solid #28a745;
+    }
+    .footer {
+      margin-top: 40px;
+      text-align: center;
+      font-size: 10px;
+      color: #999;
+      border-top: 1px solid #ddd;
+      padding-top: 20px;
+    }
+    .page-break {
+      page-break-before: always;
+    }
+  </style>
+</head>
+<body>
+  <!-- Cabeçalho -->
+  <div class="header">
+    <div class="school-name"><%= @school.name %></div>
+    <div class="report-title">Relatório Geral da Escola</div>
+    <div class="report-date">
+      Gerado em <%= Date.current.strftime("%d/%m/%Y às %H:%M") %>
+    </div>
+  </div>
+
+  <!-- Resumo Executivo -->
+  <div class="section">
+    <div class="section-title">📊 Resumo Executivo</div>
+    
+    <div class="stats-grid">
+      <div class="stats-row">
+        <div class="stats-cell stats-header">Categoria</div>
+        <div class="stats-cell stats-header">Total</div>
+        <div class="stats-cell stats-header">Ativos</div>
+        <div class="stats-cell stats-header">Status</div>
+      </div>
+      <div class="stats-row">
+        <div class="stats-cell">
+          <strong>👨‍🎓 Alunos</strong>
+        </div>
+        <div class="stats-cell">
+          <div class="number"><%= @students_report[:total] %></div>
+          <div class="label">Total</div>
+        </div>
+        <div class="stats-cell">
+          <div class="number"><%= @students_report[:active] %></div>
+          <div class="label">Ativos</div>
+        </div>
+        <div class="stats-cell">
+          <% if @students_report[:active] == @students_report[:total] %>
+            ✅ Todos ativos
+          <% else %>
+            ⚠️ <%= @students_report[:total] - @students_report[:active] %> inativos
+          <% end %>
+        </div>
+      </div>
+      <div class="stats-row">
+        <div class="stats-cell">
+          <strong>👨‍🏫 Professores</strong>
+        </div>
+        <div class="stats-cell">
+          <div class="number"><%= @teachers_report[:total] %></div>
+          <div class="label">Total</div>
+        </div>
+        <div class="stats-cell">
+          <div class="number"><%= @teachers_report[:active] %></div>
+          <div class="label">Ativos</div>
+        </div>
+        <div class="stats-cell">
+          <% if @teachers_report[:active] == @teachers_report[:total] %>
+            ✅ Todos ativos
+          <% else %>
+            ⚠️ <%= @teachers_report[:total] - @teachers_report[:active] %> inativos
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Distribuição por Turmas -->
+  <div class="section">
+    <div class="section-title">🏫 Distribuição de Alunos por Turma</div>
+    
+    <div class="classroom-list">
+      <% @students_report[:by_classroom].each do |classroom_name, student_count| %>
+        <div class="classroom-item">
+          <strong><%= classroom_name %></strong>: 
+          <%= student_count %> aluno<%= student_count != 1 ? 's' : '' %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Desempenho Acadêmico -->
+  <div class="section">
+    <div class="section-title">📈 Desempenho Acadêmico</div>
+    
+    <div class="stats-grid">
+      <div class="stats-row">
+        <div class="stats-cell stats-header">Métrica</div>
+        <div class="stats-cell stats-header">Valor</div>
+        <div class="stats-cell stats-header">Status</div>
+      </div>
+      <div class="stats-row">
+        <div class="stats-cell">Taxa de Frequência</div>
+        <div class="stats-cell">
+          <div class="number"><%= @academic_report[:attendance_rate] %>%</div>
+        </div>
+        <div class="stats-cell">
+          <% if @academic_report[:attendance_rate] >= 85 %>
+            ✅ Excelente
+          <% elsif @academic_report[:attendance_rate] >= 75 %>
+            ⚠️ Atenção
+          <% else %>
+            ❌ Crítico
+          <% end %>
+        </div>
+      </div>
+      <div class="stats-row">
+        <div class="stats-cell">Média Geral</div>
+        <div class="stats-cell">
+          <div class="number"><%= @academic_report[:average_grades] %></div>
+        </div>
+        <div class="stats-cell">
+          <% if @academic_report[:average_grades] >= 7.0 %>
+            ✅ Boa
+          <% elsif @academic_report[:average_grades] >= 5.0 %>
+            ⚠️ Regular
+          <% else %>
+            ❌ Baixa
+          <% end %>
+        </div>
+      </div>
+      <div class="stats-row">
+        <div class="stats-cell">Atividades Totais</div>
+        <div class="stats-cell">
+          <div class="number"><%= @academic_report[:total_activities] %></div>
+        </div>
+        <div class="stats-cell">
+          <% completion_rate = @academic_report[:total_activities] > 0 ? (@academic_report[:completed_activities].to_f / @academic_report[:total_activities] * 100).round(1) : 0 %>
+          <%= completion_rate %>% concluídas
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Atribuição de Professores -->
+  <div class="section page-break">
+    <div class="section-title">👥 Atribuição de Professores</div>
+    
+    <div class="classroom-list">
+      <% @teachers_report[:subjects_assigned].each do |teacher_name, subject_count| %>
+        <div class="classroom-item">
+          <strong><%= teacher_name %></strong>: 
+          <%= subject_count %> disciplina<%= subject_count != 1 ? 's' : '' %> atribuída<%= subject_count != 1 ? 's' : '' %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Recomendações -->
+  <div class="section">
+    <div class="section-title">💡 Recomendações</div>
+    
+    <div style="font-size: 11px; line-height: 1.5;">
+      <% recommendations = [] %>
+      
+      <% if @academic_report[:attendance_rate] < 85 %>
+        <% recommendations << "• Implementar estratégias para melhorar a taxa de frequência dos alunos" %>
+      <% end %>
+      
+      <% if @academic_report[:average_grades] < 6.0 %>
+        <% recommendations << "• Revisar metodologias de ensino para melhorar o desempenho acadêmico" %>
+      <% end %>
+      
+      <% if @students_report[:active] < @students_report[:total] %>
+        <% recommendations << "• Verificar situação dos alunos inativos e buscar estratégias de reintegração" %>
+      <% end %>
+      
+      <% if @teachers_report[:active] < @teachers_report[:total] %>
+        <% recommendations << "• Avaliar necessidade de contratação de novos professores" %>
+      <% end %>
+      
+      <% if recommendations.empty? %>
+        <% recommendations << "• Continuar mantendo os bons indicadores da escola" %>
+        <% recommendations << "• Buscar sempre melhorias contínuas nos processos educacionais" %>
+      <% end %>
+      
+      <% recommendations.each do |recommendation| %>
+        <div style="margin-bottom: 8px;"><%= recommendation %></div>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Rodapé -->
+  <div class="footer">
+    <div>
+      <strong><%= @school.name %></strong><br>
+      Relatório gerado automaticamente pelo Sistema Acadêmico<br>
+      Data: <%= Date.current.strftime("%d/%m/%Y") %> | 
+      Ano Letivo: <%= Date.current.year %>
+    </div>
+  </div>
+</body>
+</html>

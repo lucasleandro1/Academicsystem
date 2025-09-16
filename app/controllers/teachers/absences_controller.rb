@@ -4,8 +4,8 @@ class Teachers::AbsencesController < ApplicationController
   before_action :set_absence, only: [ :show, :edit, :update, :destroy ]
 
   def index
-    @subjects = current_user.subjects.includes(:classroom)
-    @selected_subject = params[:subject_id] ? current_user.subjects.find(params[:subject_id]) : @subjects.first
+    @subjects = current_user.teacher_subjects.includes(:classroom)
+    @selected_subject = params[:subject_id] ? current_user.teacher_subjects.find(params[:subject_id]) : @subjects.first
     @absences = @selected_subject&.absences&.includes(:student) || Absence.none
     @students = @selected_subject&.students || []
   end
@@ -15,8 +15,8 @@ class Teachers::AbsencesController < ApplicationController
 
   def new
     @absence = Absence.new
-    @subjects = current_user.subjects
-    @subject = params[:subject_id] ? current_user.subjects.find(params[:subject_id]) : nil
+    @subjects = current_user.teacher_subjects
+    @subject = params[:subject_id] ? current_user.teacher_subjects.find(params[:subject_id]) : nil
     @students = @subject&.students || []
   end
 

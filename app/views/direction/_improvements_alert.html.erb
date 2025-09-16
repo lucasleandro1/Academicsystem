@@ -1,0 +1,47 @@
+<!-- Alerta sobre as melhorias implementadas -->
+<% if params[:show_improvements] == 'true' %>
+  <div class="alert alert-success alert-dismissible fade show" role="alert">
+    <h5 class="alert-heading"><i class="fas fa-check-circle"></i> Sistema Atualizado!</h5>
+    <p class="mb-2">As seguintes melhorias foram implementadas no painel da direção:</p>
+    <ul class="mb-2">
+      <li><strong>Eventos Escolares:</strong> Criação, edição e visualização completas</li>
+      <li><strong>GED (Gestão de Documentos):</strong> Upload, download e organização de arquivos</li>
+      <li><strong>Relatórios:</strong> Geração de PDFs e relatórios detalhados</li>
+      <li><strong>Dashboard:</strong> Acesso rápido e intuitivo aos principais módulos</li>
+    </ul>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+<% end %>
+
+<!-- Debug de Rotas (apenas em desenvolvimento) -->
+<% if Rails.env.development? %>
+  <div class="alert alert-info alert-dismissible fade show" role="alert">
+    <h6><i class="fas fa-info-circle"></i> Teste dos Módulos Principais</h6>
+    <div class="row">
+      <div class="col-md-4">
+        <strong>Links Diretos:</strong><br>
+        <small>
+          <%= link_to "📅 Eventos", direction_events_path, class: "text-decoration-none btn btn-sm btn-outline-primary me-1" %> 
+          <%= link_to "📁 Documentos", direction_documents_path, class: "text-decoration-none btn btn-sm btn-outline-info me-1" %> 
+          <%= link_to "📊 Relatórios", direction_reports_path, class: "text-decoration-none btn btn-sm btn-outline-success" %>
+        </small>
+      </div>
+      <div class="col-md-4">
+        <strong>Usuário:</strong> <small><%= current_user.email rescue "N/A" %></small><br>
+        <strong>Tipo:</strong> <small><%= current_user.user_type rescue "N/A" %></small><br>
+        <strong>Escola:</strong> <small><%= current_user.school.name rescue "N/A" %></small>
+      </div>
+      <div class="col-md-4">
+        <strong>Sistema:</strong> <small class="text-success">✅ Funcionando</small><br>
+        <strong>Eventos:</strong> <small><%= defined?(@upcoming_events) ? @upcoming_events.count : 0 %> próximos</small><br>
+        <strong>Autorização:</strong> 
+        <% if current_user&.direction? %>
+          <small class="text-success">✅ Direção</small>
+        <% else %>
+          <small class="text-danger">❌ Não é direção</small>
+        <% end %>
+      </div>
+    </div>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+<% end %>

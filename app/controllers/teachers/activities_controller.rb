@@ -13,11 +13,11 @@ class Teachers::ActivitiesController < ApplicationController
 
   def new
     @activity = current_user.activities.build
-    @subjects = current_user.subjects
+    @subjects = current_user.teacher_subjects
   end
 
   def edit
-    @subjects = current_user.subjects
+    @subjects = current_user.teacher_subjects
   end
 
   def create
@@ -27,7 +27,7 @@ class Teachers::ActivitiesController < ApplicationController
     if @activity.save
       redirect_to teachers_activity_path(@activity), notice: "Atividade criada com sucesso."
     else
-      @subjects = current_user.subjects
+      @subjects = current_user.teacher_subjects
       render :new
     end
   end
@@ -36,7 +36,7 @@ class Teachers::ActivitiesController < ApplicationController
     if @activity.update(activity_params)
       redirect_to teachers_activity_path(@activity), notice: "Atividade atualizada com sucesso."
     else
-      @subjects = current_user.subjects
+      @subjects = current_user.teacher_subjects
       render :edit
     end
   end

@@ -91,7 +91,11 @@ Rails.application.routes.draw do
         get :disciplinary_report
       end
     end
-    resources :documents
+    resources :documents do
+      member do
+        get :download
+      end
+    end
     resources :class_schedules
     resources :messages, only: [ :index, :new, :create, :show ] do
       collection do

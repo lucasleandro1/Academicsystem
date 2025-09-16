@@ -1,0 +1,182 @@
+<% content_for :title, @document.title %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h1><i class="fas fa-file-alt"></i> <%= @document.title %></h1>
+    <p class="text-muted mb-0">
+      Documento da escola <%= current_user.school.name %>
+    </p>
+  </div>
+  <div class="btn-group">
+    <%= link_to direction_documents_path, class: "btn btn-outline-secondary" do %>
+      <i class="fas fa-arrow-left"></i> Voltar
+    <% end %>
+    <%= link_to edit_direction_document_path(@document), class: "btn btn-warning" do %>
+      <i class="fas fa-edit"></i> Editar
+    <% end %>
+    <%= link_to direction_document_path(@document), method: :delete, 
+                confirm: "Tem certeza que deseja excluir este documento?",
+                class: "btn btn-danger" do %>
+      <i class="fas fa-trash"></i> Excluir
+    <% end %>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-header">
+        <h5><i class="fas fa-info-circle"></i> Detalhes do Documento</h5>
+      </div>
+      <div class="card-body">
+        <div class="row mb-3">
+          <div class="col-sm-3">
+            <strong>Título:</strong>
+          </div>
+          <div class="col-sm-9">
+            <%= @document.title %>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <div class="col-sm-3">
+            <strong>Descrição:</strong>
+          </div>
+          <div class="col-sm-9">
+            <% if @document.description.present? %>
+              <%= simple_format(@document.description) %>
+            <% else %>
+              <em class="text-muted">Nenhuma descrição fornecida</em>
+            <% end %>
+          </div>
+        </div>
+
+        <% if @document.respond_to?(:document_type) && @document.document_type.present? %>
+        <div class="row mb-3">
+          <div class="col-sm-3">
+            <strong>Tipo:</strong>
+          </div>
+          <div class="col-sm-9">
+            <span class="badge bg-info"><%= @document.document_type.humanize %></span>
+          </div>
+        </div>
+        <% end %>
+
+
+
+        <div class="row mb-3">
+          <div class="col-sm-3">
+            <strong>Criado por:</strong>
+          </div>
+          <div class="col-sm-9">
+            <%= @document.user&.full_name || "Sistema" %>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <div class="col-sm-3">
+            <strong>Criado em:</strong>
+          </div>
+          <div class="col-sm-9">
+            <%= @document.created_at.strftime("%d/%m/%Y às %H:%M") %>
+          </div>
+        </div>
+
+        <% if @document.updated_at != @document.created_at %>
+        <div class="row mb-3">
+          <div class="col-sm-3">
+            <strong>Última atualização:</strong>
+          </div>
+          <div class="col-sm-9">
+            <%= @document.updated_at.strftime("%d/%m/%Y às %H:%M") %>
+          </div>
+        </div>
+        <% end %>
+
+        <% if @document.respond_to?(:file) && @document.file.present? %>
+        <div class="row mb-3">
+          <div class="col-sm-3">
+            <strong>Arquivo:</strong>
+          </div>
+          <div class="col-sm-9">
+            <div class="d-flex align-items-center">
+              <i class="fas fa-file me-2"></i>
+              <span><%= @document.file.filename if @document.file.respond_to?(:filename) %></span>
+              <%= link_to "Baixar", download_direction_document_path(@document), 
+                          class: "btn btn-sm btn-primary ms-2", target: "_blank" do %>
+                <i class="fas fa-download"></i> Baixar
+              <% end %>
+            </div>
+          </div>
+        </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card">
+      <div class="card-header">
+        <h5><i class="fas fa-cogs"></i> Ações</h5>
+      </div>
+      <div class="card-body">
+        <div class="d-grid gap-2">
+          <%= link_to edit_direction_document_path(@document), class: "btn btn-warning" do %>
+            <i class="fas fa-edit"></i> Editar Documento
+          <% end %>
+          
+          <% if @document.respond_to?(:file) && @document.file.present? %>
+            <%= link_to download_direction_document_path(@document), 
+                        class: "btn btn-success", target: "_blank" do %>
+              <i class="fas fa-download"></i> Baixar Arquivo
+            <% end %>
+          <% end %>
+
+          <button type="button" class="btn btn-info" onclick="copyDocumentLink()">
+            <i class="fas fa-link"></i> Copiar Link
+          </button>
+
+          <hr>
+
+          <%= link_to direction_document_path(@document), method: :delete, 
+                      confirm: "Tem certeza que deseja excluir este documento? Esta ação não pode ser desfeita.",
+                      class: "btn btn-danger" do %>
+            <i class="fas fa-trash"></i> Excluir Documento
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mt-3">
+      <div class="card-header">
+        <h5><i class="fas fa-info"></i> Informações do Sistema</h5>
+      </div>
+      <div class="card-body">
+        <small class="text-muted">
+          <strong>Escola:</strong> <%= current_user.school.name %><br>
+          <strong>ID do documento:</strong> #<%= @document.id %><br>
+          <% if @document.respond_to?(:file) && @document.file.present? %>
+            <strong>Tamanho do arquivo:</strong> 
+            <% if @document.file.respond_to?(:byte_size) %>
+              <%= number_to_human_size(@document.file.byte_size) %>
+            <% else %>
+              Não disponível
+            <% end %>
+          <% end %>
+        </small>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function copyDocumentLink() {
+  const url = window.location.href;
+  navigator.clipboard.writeText(url).then(function() {
+    alert('Link copiado para a área de transferência!');
+  }, function(err) {
+    console.error('Erro ao copiar link: ', err);
+    alert('Erro ao copiar link. Tente novamente.');
+  });
+}
+</script>

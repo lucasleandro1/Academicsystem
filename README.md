@@ -20,7 +20,7 @@ Um sistema completo de gerenciamento acadêmico desenvolvido em Ruby on Rails 8.
 - **Interface Responsiva**: Desenvolvido com Bootstrap 5 para acesso via dispositivos móveis
 - **Autenticação Segura**: Sistema de login implementado com Devise
 - **Sistema de Mensagens**: Comunicação interna entre usuários
-- **Gestão Completa**: Notas, faltas, horários, documentos, eventos e ocorrências
+- **Gestão Completa**: Notas, faltas, horários, documentos e eventos
 - **Dashboards Personalizados**: Interface específica para cada tipo de usuário
 - **Relatórios Estatísticos**: Métricas e análises de desempenho
 
@@ -45,7 +45,6 @@ Um sistema completo de gerenciamento acadêmico desenvolvido em Ruby on Rails 8.
 - Aprovar matrículas de alunos
 - Cadastrar e gerenciar disciplinas
 - Programar eventos escolares
-- Visualizar e gerenciar ocorrências
 - Sistema de mensagens interno
 
 ### 👨‍🏫 Módulo Professor
@@ -54,7 +53,6 @@ Um sistema completo de gerenciamento acadêmico desenvolvido em Ruby on Rails 8.
 - Registrar faltas dos alunos
 - Criar e gerenciar atividades/trabalhos
 - Avaliar submissões de atividades
-- Registrar ocorrências disciplinares
 - Visualizar horários de aula
 - Sistema de mensagens com alunos e direção
 
@@ -65,7 +63,6 @@ Um sistema completo de gerenciamento acadêmico desenvolvido em Ruby on Rails 8.
 - Acessar documentos disponibilizados
 - Visualizar eventos da escola
 - Consultar suas disciplinas e professores
-- Ver ocorrências registradas
 - Sistema de mensagens com professores e direção
 - **Gestão Completa**: Desde cadastros básicos até relatórios detalhados
 - **Sistema de Mensagens**: Comunicação interna entre usuários
@@ -94,7 +91,6 @@ Um sistema completo de gerenciamento acadêmico desenvolvido em Ruby on Rails 8.
 - **Grade**: Notas dos alunos
 - **Absence**: Faltas dos alunos
 - **Event**: Eventos escolares
-- **Occurrence**: Ocorrências disciplinares
 - **Message**: Sistema de mensagens
 - **ClassSchedule**: Grade de horários
 
@@ -116,7 +112,6 @@ Um sistema completo de gerenciamento acadêmico desenvolvido em Ruby on Rails 8.
 - ✅ Visualização de relatórios do sistema
 - ✅ Acesso a documentos da escola
 - ✅ Criação e edição de eventos escolares
-- ✅ Acompanhamento de ocorrências disciplinares
 - ✅ Aprovação/gestão de matrículas
 - ✅ Envio de mensagens
 - ✅ Consulta de dados e atividades
@@ -128,7 +123,6 @@ Um sistema completo de gerenciamento acadêmico desenvolvido em Ruby on Rails 8.
 - ✅ Registro de notas por bimestre e tipo
 - ✅ Registro de faltas de alunos
 - ✅ Cadastro de documentos associados a alunos
-- ✅ Registro de ocorrências por aluno
 - ✅ Criação de atividades para alunos
 - ✅ Correção de atividades enviadas
 - ✅ Envio de mensagens e avisos
@@ -142,7 +136,6 @@ Um sistema completo de gerenciamento acadêmico desenvolvido em Ruby on Rails 8.
 - ✅ Verificação de frequência (faltas)
 - ✅ Consulta de documentos (boletins, declarações)
 - ✅ Visualização de eventos escolares
-- ✅ Visualização de ocorrências registradas
 - ✅ Recebimento de mensagens e avisos
 - ✅ Visualização de atividades do professor
 - ✅ Envio de respostas para atividades
@@ -217,7 +210,7 @@ rails server
 - Gerencie alunos e professores nos respectivos menus
 - Crie turmas e disciplinas
 - Aprove matrículas
-- Monitore ocorrências e eventos
+- Monitore eventos
 
 #### Como Professor
 - Acesse suas disciplinas e turmas
@@ -244,7 +237,6 @@ rails server
 - **grades**: Notas dos alunos
 - **absences**: Faltas dos alunos
 - **events**: Eventos escolares
-- **occurrences**: Ocorrências disciplinares
 - **messages**: Sistema de mensagens
 - **class_schedules**: Grade de horários
 
@@ -294,7 +286,6 @@ app/views/
 ### Dashboard da Direção
 - Total de alunos, professores e turmas
 - Matrículas pendentes
-- Ocorrências recentes
 - Eventos próximos
 - Estatísticas de desempenho
 
@@ -311,7 +302,6 @@ app/views/
 - Notas recentes
 - Total de faltas
 - Mensagens não lidas
-- Ocorrências registradas
 
 ## 🔐 Sistema de Permissões
 

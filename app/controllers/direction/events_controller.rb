@@ -48,6 +48,6 @@ class Direction::EventsController < ApplicationController
   end
 
   def event_params
-    params.require(:event).permit(:title, :description, :start_date, :end_date, :visible_to)
+    params.require(:event).permit(:title, :description, :start_date, :end_date, :start_time, :end_time, :event_type, :visible_to)
   end
 end

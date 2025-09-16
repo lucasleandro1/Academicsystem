@@ -3,7 +3,7 @@ class Teachers::ClassroomsController < ApplicationController
   before_action :ensure_teacher!
 
   def index
-    @classrooms = current_user.subjects
+    @classrooms = current_user.teacher_subjects
                              .joins(:classroom)
                              .includes(classroom: [ :school ])
                              .distinct

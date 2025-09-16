@@ -3,12 +3,12 @@ class Teachers::ReportsController < ApplicationController
   before_action :ensure_teacher!
 
   def index
-    @subjects = current_user.subjects.includes(:classroom)
+    @subjects = current_user.teacher_subjects.includes(:classroom)
     @classrooms = available_classrooms
   end
 
   def student_performance
-    @subject = current_user.subjects.find(params[:subject_id]) if params[:subject_id]
+    @subject = current_user.teacher_subjects.find(params[:subject_id]) if params[:subject_id]
     @classroom = Classroom.find(params[:classroom_id]) if params[:classroom_id]
 
     if @subject
@@ -17,7 +17,7 @@ class Teachers::ReportsController < ApplicationController
       @student_performance = calculate_student_performance(@students, @subject)
     elsif @classroom
       @students = @classroom.students
-      @subjects = current_user.subjects.where(classroom: @classroom)
+      @subjects = current_user.teacher_subjects.where(classroom: @classroom)
       @classroom_performance = calculate_classroom_performance(@students, @subjects)
     end
 
@@ -29,7 +29,7 @@ class Teachers::ReportsController < ApplicationController
 
   def classroom_attendance
     @classroom = Classroom.find(params[:classroom_id]) if params[:classroom_id]
-    @subject = current_user.subjects.find(params[:subject_id]) if params[:subject_id]
+    @subject = current_user.teacher_subjects.find(params[:subject_id]) if params[:subject_id]
 
     @start_date = params[:start_date]&.to_date || 1.month.ago
     @end_date = params[:end_date]&.to_date || Date.current
@@ -37,7 +37,7 @@ class Teachers::ReportsController < ApplicationController
     if @subject
       @attendance_data = calculate_subject_attendance(@subject, @start_date, @end_date)
     elsif @classroom
-      @subjects = current_user.subjects.where(classroom: @classroom)
+      @subjects = current_user.teacher_subjects.where(classroom: @classroom)
       @attendance_data = calculate_classroom_attendance(@classroom, @subjects, @start_date, @end_date)
     end
 
@@ -48,13 +48,13 @@ class Teachers::ReportsController < ApplicationController
   end
 
   def grade_summary
-    @subject = current_user.subjects.find(params[:subject_id]) if params[:subject_id]
+    @subject = current_user.teacher_subjects.find(params[:subject_id]) if params[:subject_id]
     @classroom = Classroom.find(params[:classroom_id]) if params[:classroom_id]
 
     if @subject
       @grade_summary = calculate_subject_grades(@subject)
     elsif @classroom
-      @subjects = current_user.subjects.where(classroom: @classroom)
+      @subjects = current_user.teacher_subjects.where(classroom: @classroom)
       @grade_summary = calculate_classroom_grades(@classroom, @subjects)
     end
 
@@ -78,7 +78,7 @@ class Teachers::ReportsController < ApplicationController
   end
 
   def available_classrooms
-    classroom_ids = current_user.subjects.pluck(:classroom_id).uniq
+    classroom_ids = current_user.teacher_subjects.pluck(:classroom_id).uniq
     Classroom.where(id: classroom_ids)
   end
 

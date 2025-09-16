@@ -3,7 +3,7 @@ class Teachers::ClassSchedulesController < ApplicationController
   before_action :ensure_teacher!
 
   def index
-    @subjects = current_user.subjects.includes(:classroom, :class_schedules)
+    @subjects = current_user.teacher_subjects.includes(:classroom, :class_schedules)
     @schedules_by_subject = {}
 
     @subjects.each do |subject|
@@ -16,7 +16,7 @@ class Teachers::ClassSchedulesController < ApplicationController
   end
 
   def show
-    @subject = current_user.subjects.find(params[:id])
+    @subject = current_user.teacher_subjects.find(params[:id])
     @schedules = @subject.class_schedules
                         .group_by(&:weekday)
                         .transform_values { |schedules| schedules.sort_by(&:start_time) }

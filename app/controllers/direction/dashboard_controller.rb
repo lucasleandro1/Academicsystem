@@ -29,6 +29,24 @@ class Direction::DashboardController < ApplicationController
 
     # Alertas e avisos
     @alerts = generate_school_alerts
+  rescue => e
+    Rails.logger.error "Erro no dashboard da direção: #{e.message}"
+    Rails.logger.error e.backtrace.join("\n")
+
+    # Valores padrão em caso de erro
+    @total_students = 0
+    @total_teachers = 0
+    @total_classrooms = 0
+    @total_subjects = 0
+    @upcoming_events = []
+    @important_notifications = []
+    @attendance_rate = 0
+    @average_grade = "0.0"
+    @total_activities = 0
+    @total_messages = 0
+    @alerts = []
+
+    flash.now[:alert] = "Erro ao carregar dados do dashboard. Alguns indicadores podem não estar atualizados."
   end
 
   private

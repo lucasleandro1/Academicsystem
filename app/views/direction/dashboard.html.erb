@@ -1,5 +1,7 @@
 <% content_for :title, "Painel da Direção" %>
 
+<%= render 'improvements_alert' %>
+
 <div class="d-flex justify-content-between align-items-center mb-4">
   <div>
     <h1><i class="fas fa-tachometer-alt"></i> Painel da Direção</h1>
@@ -143,6 +145,177 @@
     </div>
   </div>
 
+  <!-- Gestão Escolar -->
+  <div class="col-md-6 mb-4">
+    <div class="card">
+      <div class="card-header">
+        <h5><i class="fas fa-cogs"></i> Gestão Escolar</h5>
+      </div>
+      <div class="card-body">
+        <div class="d-grid gap-2">
+          <%= link_to direction_events_path, class: "btn btn-outline-primary" do %>
+            <i class="fas fa-calendar-alt"></i>
+            <strong>Eventos Escolares</strong><br>
+            <small class="text-muted">Gerenciar calendário e eventos</small>
+          <% end %>
+          <%= link_to direction_documents_path, class: "btn btn-outline-info" do %>
+            <i class="fas fa-folder-open"></i>
+            <strong>GED - Gestão de Documentos</strong><br>
+            <small class="text-muted">Armazenar e organizar documentos</small>
+          <% end %>
+          <%= link_to direction_reports_path, class: "btn btn-outline-success" do %>
+            <i class="fas fa-chart-bar"></i>
+            <strong>Relatórios Gerenciais</strong><br>
+            <small class="text-muted">Acompanhar indicadores da escola</small>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Seção de Módulos Principais -->
+<div class="row mb-4">
+  <div class="col-12">
+    <h4><i class="fas fa-layer-group"></i> Módulos Principais</h4>
+    <p class="text-muted">Acesso rápido aos principais recursos da direção</p>
+    
+    <!-- Botões de teste rápido -->
+    <div class="btn-group mb-3" role="group">
+      <%= link_to direction_events_path, class: "btn btn-outline-primary btn-sm" do %>
+        <i class="fas fa-calendar-alt"></i> Testar Eventos
+      <% end %>
+      <%= link_to direction_documents_path, class: "btn btn-outline-info btn-sm" do %>
+        <i class="fas fa-folder-open"></i> Testar Documentos
+      <% end %>
+      <%= link_to direction_reports_path, class: "btn btn-outline-success btn-sm" do %>
+        <i class="fas fa-chart-bar"></i> Testar Relatórios
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<div class="row mb-4">
+  <!-- Eventos Escolares -->
+  <div class="col-lg-4 mb-3">
+    <div class="card border-primary h-100">
+      <div class="card-header bg-primary text-white">
+        <h6 class="mb-0"><i class="fas fa-calendar-alt"></i> Eventos Escolares</h6>
+      </div>
+      <div class="card-body">
+        <p class="card-text">Organize e gerencie eventos, reuniões e atividades escolares.</p>
+        <div class="row g-2">
+          <div class="col-6">
+            <%= link_to direction_events_path, 
+                        class: "btn btn-sm btn-outline-primary w-100",
+                        'data-bs-toggle': "tooltip",
+                        'data-bs-placement': "top",
+                        title: "Ver lista de eventos" do %>
+              <i class="fas fa-list"></i> Ver Eventos
+            <% end %>
+          </div>
+          <div class="col-6">
+            <%= link_to new_direction_event_path, 
+                        class: "btn btn-sm btn-primary w-100",
+                        'data-bs-toggle': "tooltip",
+                        'data-bs-placement': "top", 
+                        title: "Criar novo evento" do %>
+              <i class="fas fa-plus"></i> Novo
+            <% end %>
+          </div>
+        </div>
+        <div class="mt-2">
+          <small class="text-muted">
+            <strong>Próximos:</strong> <%= @upcoming_events.count %> evento(s)
+          </small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GED - Gestão de Documentos -->
+  <div class="col-lg-4 mb-3">
+    <div class="card border-info h-100">
+      <div class="card-header bg-info text-white">
+        <h6 class="mb-0"><i class="fas fa-folder-open"></i> GED - Documentos</h6>
+      </div>
+      <div class="card-body">
+        <p class="card-text">Sistema de gestão eletrônica de documentos da escola.</p>
+        <div class="row g-2">
+          <div class="col-6">
+            <%= link_to direction_documents_path, 
+                        class: "btn btn-sm btn-outline-info w-100",
+                        'data-bs-toggle': "tooltip",
+                        'data-bs-placement': "top",
+                        title: "Ver documentos da escola" do %>
+              <i class="fas fa-folder"></i> Documentos
+            <% end %>
+          </div>
+          <div class="col-6">
+            <%= link_to new_direction_document_path, 
+                        class: "btn btn-sm btn-info w-100",
+                        'data-bs-toggle': "tooltip",
+                        'data-bs-placement': "top",
+                        title: "Fazer upload de documento" do %>
+              <i class="fas fa-upload"></i> Upload
+            <% end %>
+          </div>
+        </div>
+        <div class="mt-2">
+          <small class="text-muted">
+            <strong>Total:</strong> 
+            <% begin %>
+              <%= Document.where(school: current_user.school).count %> documento(s)
+            <% rescue %>
+              --- documento(s)
+            <% end %>
+          </small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Relatórios Gerenciais -->
+  <div class="col-lg-4 mb-3">
+    <div class="card border-success h-100">
+      <div class="card-header bg-success text-white">
+        <h6 class="mb-0"><i class="fas fa-chart-bar"></i> Relatórios</h6>
+      </div>
+      <div class="card-body">
+        <p class="card-text">Acompanhe indicadores e gere relatórios da escola.</p>
+        <div class="row g-2">
+          <div class="col-6">
+            <%= link_to direction_reports_path, 
+                        class: "btn btn-sm btn-outline-success w-100",
+                        'data-bs-toggle': "tooltip",
+                        'data-bs-placement': "top",
+                        title: "Ver todos os relatórios" do %>
+              <i class="fas fa-chart-line"></i> Relatórios
+            <% end %>
+          </div>
+          <div class="col-6">
+            <%= link_to generate_pdf_direction_reports_path(format: :pdf), 
+                        class: "btn btn-sm btn-success w-100", 
+                        target: "_blank",
+                        'data-bs-toggle': "tooltip",
+                        'data-bs-placement': "top",
+                        title: "Gerar relatório em PDF" do %>
+              <i class="fas fa-file-pdf"></i> PDF
+            <% end %>
+          </div>
+        </div>
+        <div class="mt-2">
+          <small class="text-muted">
+            <strong>Frequência:</strong> <%= @attendance_rate %>% | 
+            <strong>Média:</strong> <%= @average_grade %>
+          </small>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
   <!-- Próximos Eventos -->
   <div class="col-md-6 mb-4">
     <div class="card">
@@ -163,9 +336,9 @@
                 <strong><%= event.title %></strong>
                 <br>
                 <small class="text-muted">
-                  <%= event.start_date.strftime("%d/%m/%Y") %>
+                  <%= event.formatted_start_date %>
                   <% if event.end_date != event.start_date %>
-                    até <%= event.end_date.strftime("%d/%m/%Y") %>
+                    até <%= event.formatted_end_date %>
                   <% end %>
                 </small>
               </div>
@@ -218,3 +391,55 @@
     </div>
   </div>
 </div>
+
+<style>
+.card.border-primary:hover,
+.card.border-info:hover,
+.card.border-success:hover {
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  transition: box-shadow 0.3s ease;
+}
+
+.hover-shadow:hover {
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  transition: box-shadow 0.3s ease;
+}
+
+.card-stat:hover {
+  transform: translateY(-2px);
+  transition: transform 0.3s ease;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Inicializar tooltips
+  var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+  var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+    return new bootstrap.Tooltip(tooltipTriggerEl);
+  });
+
+  // Adicionar listeners para debugging dos cliques
+  const eventButtons = document.querySelectorAll('a[href*="/direction/events"]');
+  const documentButtons = document.querySelectorAll('a[href*="/direction/documents"]');
+  const reportButtons = document.querySelectorAll('a[href*="/direction/reports"]');
+  
+  eventButtons.forEach(button => {
+    button.addEventListener('click', function(e) {
+      console.log('Clique no botão de eventos:', this.href);
+    });
+  });
+  
+  documentButtons.forEach(button => {
+    button.addEventListener('click', function(e) {
+      console.log('Clique no botão de documentos:', this.href);
+    });
+  });
+  
+  reportButtons.forEach(button => {
+    button.addEventListener('click', function(e) {
+      console.log('Clique no botão de relatórios:', this.href);
+    });
+  });
+});
+</script>

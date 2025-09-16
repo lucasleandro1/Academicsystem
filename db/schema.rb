@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_09_10_150944) do
+ActiveRecord::Schema[8.0].define(version: 2025_09_16_154345) do
   create_table "absences", force: :cascade do |t|
     t.integer "subject_id", null: false
     t.date "date"
@@ -125,6 +125,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_10_150944) do
     t.boolean "is_municipal"
     t.string "event_type"
     t.date "event_date"
+    t.time "start_time"
+    t.time "end_time"
     t.index ["school_id"], name: "index_events_on_school_id"
   end
 
@@ -190,21 +192,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_10_150944) do
     t.index ["sender_id"], name: "index_notifications_on_sender_id"
     t.index ["user_id", "read"], name: "index_notifications_on_user_id_and_read"
     t.index ["user_id"], name: "index_notifications_on_user_id"
-  end
-
-  create_table "occurrences", force: :cascade do |t|
-    t.text "description"
-    t.string "occurrence_type"
-    t.string "author_type", null: false
-    t.integer "author_id", null: false
-    t.date "date"
-    t.integer "school_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.integer "user_id", null: false
-    t.index ["author_type", "author_id"], name: "index_occurrences_on_author"
-    t.index ["school_id"], name: "index_occurrences_on_school_id"
-    t.index ["user_id"], name: "index_occurrences_on_user_id"
   end
 
   create_table "schools", force: :cascade do |t|
@@ -302,8 +289,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_10_150944) do
   add_foreign_key "notifications", "schools"
   add_foreign_key "notifications", "users"
   add_foreign_key "notifications", "users", column: "sender_id"
-  add_foreign_key "occurrences", "schools"
-  add_foreign_key "occurrences", "users"
   add_foreign_key "subjects", "classrooms"
   add_foreign_key "subjects", "schools"
   add_foreign_key "subjects", "users"

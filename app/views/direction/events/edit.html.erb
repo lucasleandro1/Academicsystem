@@ -1,27 +1,41 @@
-<% content_for :title, "Novo Evento" %>
+<% content_for :title, "Editar Evento" %>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-  <h1><i class="fas fa-calendar-plus"></i> Novo Evento</h1>
-  <%= link_to direction_events_path, class: "btn btn-outline-secondary" do %>
-    <i class="fas fa-arrow-left"></i> Voltar
-  <% end %>
+  <div>
+    <h1><i class="fas fa-edit"></i> Editar Evento</h1>
+    <p class="text-muted mb-0">Atualize as informações do evento</p>
+  </div>
+  <div class="btn-group">
+    <%= link_to direction_event_path(@event), class: "btn btn-outline-secondary" do %>
+      <i class="fas fa-arrow-left"></i> Voltar
+    <% end %>
+  </div>
 </div>
 
 <div class="row">
   <div class="col-lg-8 mx-auto">
-    <%= form_with model: [:direction, @event], local: true, class: "needs-validation", novalidate: true do |form| %>
-      
-      <!-- Informações Básicas -->
-      <div class="card mb-4">
-        <div class="card-header">
-          <h5 class="mb-0"><i class="fas fa-info-circle"></i> Informações Básicas</h5>
-        </div>
-        <div class="card-body">
+    <div class="card">
+      <div class="card-header">
+        <h5><i class="fas fa-calendar-alt"></i> Informações do Evento</h5>
+      </div>
+      <div class="card-body">
+        <%= form_with model: [:direction, @event], local: true, class: "needs-validation", novalidate: true do |form| %>
+          <% if @event.errors.any? %>
+            <div class="alert alert-danger">
+              <h5><i class="fas fa-exclamation-circle"></i> Erro ao salvar o evento:</h5>
+              <ul class="mb-0">
+                <% @event.errors.full_messages.each do |message| %>
+                  <li><%= message %></li>
+                <% end %>
+              </ul>
+            </div>
+          <% end %>
+
           <div class="row">
             <div class="col-md-8 mb-3">
-              <%= form.label :title, "Título do Evento *", class: "form-label" %>
-              <%= form.text_field :title, class: "form-control", 
-                                 placeholder: "Ex: Reunião de Pais, Feira de Ciências, Formatura", required: true %>
+              <%= form.label :title, "Título do Evento", class: "form-label required" %>
+              <%= form.text_field :title, class: "form-control", required: true, 
+                                 placeholder: "Ex: Reunião de Pais, Festa Junina, etc." %>
               <div class="invalid-feedback">
                 Por favor, informe o título do evento.
               </div>
@@ -44,24 +58,27 @@
             </div>
 
             <div class="col-12 mb-3">
-              <%= form.label :description, "Descrição do Evento", class: "form-label" %>
+              <%= form.label :description, "Descrição", class: "form-label" %>
               <%= form.text_area :description, class: "form-control", rows: 4,
                                 placeholder: "Descreva os detalhes do evento, objetivos, público-alvo, etc." %>
-            </div>
-
-            <div class="col-md-6 mb-3">
-              <%= form.label :start_date, "Data de Início *", class: "form-label" %>
-              <%= form.date_field :start_date, class: "form-control", required: true %>
-              <div class="invalid-feedback">
-                Por favor, informe a data de início.
+              <div class="form-text">
+                Opcional. Forneça mais detalhes sobre o evento para informar melhor os participantes.
               </div>
             </div>
 
             <div class="col-md-6 mb-3">
-              <%= form.label :end_date, "Data de Término *", class: "form-label" %>
+              <%= form.label :start_date, "Data de Início", class: "form-label required" %>
+              <%= form.date_field :start_date, class: "form-control", required: true %>
+              <div class="invalid-feedback">
+                Por favor, informe a data de início do evento.
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <%= form.label :end_date, "Data de Término", class: "form-label required" %>
               <%= form.date_field :end_date, class: "form-control", required: true %>
-              <div class="form-text">
-                Para eventos de um dia só, use a mesma data
+              <div class="invalid-feedback">
+                Por favor, informe a data de término do evento.
               </div>
             </div>
 
@@ -75,6 +92,7 @@
               <%= form.time_field :end_time, class: "form-control" %>
             </div>
 
+            <% if @event.respond_to?(:visible_to) %>
             <div class="col-12 mb-3">
               <%= form.label :visible_to, "Visibilidade", class: "form-label" %>
               <%= form.select :visible_to, 
@@ -89,29 +107,31 @@
                 Escolha quem poderá visualizar este evento na escola.
               </div>
             </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Ações -->
-      <div class="card">
-        <div class="card-body">
-          <div class="d-flex justify-content-between">
-            <%= link_to direction_events_path, class: "btn btn-outline-secondary" do %>
-              <i class="fas fa-times"></i> Cancelar
             <% end %>
-            
-            <%= form.submit "Criar Evento", class: "btn btn-primary" %>
           </div>
-        </div>
-      </div>
 
-    <% end %>
+          <hr>
+
+          <div class="d-flex justify-content-between">
+            <div>
+              <%= link_to direction_event_path(@event), class: "btn btn-outline-secondary" do %>
+                <i class="fas fa-times"></i> Cancelar
+              <% end %>
+            </div>
+            <div>
+              <%= form.submit "Atualizar Evento", class: "btn btn-primary" do %>
+                <i class="fas fa-save"></i> Atualizar Evento
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
   </div>
 </div>
 
 <script>
-// Validação do formulário
+// Validação de formulário Bootstrap
 (function() {
   'use strict';
   window.addEventListener('load', function() {
@@ -139,3 +159,10 @@
   }, false);
 })();
 </script>
+
+<style>
+.required::after {
+  content: " *";
+  color: red;
+}
+</style>

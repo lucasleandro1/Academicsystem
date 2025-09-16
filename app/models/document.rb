@@ -47,7 +47,6 @@ class Document < ApplicationRecord
     case document_type
     when "boletim" then "Boletim"
     when "historico" then "Histórico Escolar"
-    when "ocorrencia" then "Ocorrência"
     when "comunicado" then "Comunicado"
     when "regulamento" then "Regulamento"
     when "circular" then "Circular"
