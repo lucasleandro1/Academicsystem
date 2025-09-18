@@ -49,12 +49,6 @@
                   </td>
                 </tr>
               <% end %>
-              <% if current_user.cpf.present? %>
-                <tr>
-                  <th>CPF:</th>
-                  <td><%= current_user.cpf %></td>
-                </tr>
-              <% end %>
               <% if current_user.address.present? %>
                 <tr>
                   <th>Endereço:</th>

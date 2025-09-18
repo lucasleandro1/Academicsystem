@@ -48,18 +48,7 @@
               </div>
               <div class="col-md-6 mb-3">
                 <%= form.label :phone, "Telefone", class: "form-label" %>
-                <%= form.tel_field :phone, class: "form-control" %>
-              </div>
-            </div>
-            
-            <div class="row">
-              <div class="col-md-6 mb-3">
-                <%= form.label :birth_date, "Data de Nascimento", class: "form-label" %>
-                <%= form.date_field :birth_date, class: "form-control" %>
-              </div>
-              <div class="col-md-6 mb-3">
-                <%= form.label :cpf, "CPF", class: "form-label" %>
-                <%= form.text_field :cpf, class: "form-control" %>
+                <%= form.telephone_field :phone, class: "form-control" %>
               </div>
             </div>
           </div>
@@ -77,12 +66,6 @@
                 <%= form.label :specialization, "Especialização", class: "form-label" %>
                 <%= form.text_field :specialization, class: "form-control", placeholder: "Ex: Matemática, História" %>
               </div>
-            </div>
-            
-            <div class="mb-3">
-              <%= form.label :qualification, "Formação", class: "form-label" %>
-              <%= form.text_area :qualification, class: "form-control", rows: 3, 
-                                placeholder: "Descreva a formação acadêmica do professor" %>
             </div>
           </div>
 

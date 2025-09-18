@@ -66,17 +66,6 @@
         <hr>
         <div class="row">
           <div class="col-md-6">
-            <strong>CPF:</strong><br>
-            <span class="text-muted"><%= @teacher.cpf.present? ? @teacher.cpf : 'Não informado' %></span>
-          </div>
-          <div class="col-md-6">
-            <strong>Data de Nascimento:</strong><br>
-            <span class="text-muted"><%= @teacher.birth_date.present? ? l(@teacher.birth_date) : 'Não informado' %></span>
-          </div>
-        </div>
-        <hr>
-        <div class="row">
-          <div class="col-md-6">
             <strong>Matrícula:</strong><br>
             <span class="text-muted"><%= @teacher.registration_number.present? ? @teacher.registration_number : 'Não informado' %></span>
           </div>
