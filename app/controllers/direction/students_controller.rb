@@ -78,7 +78,7 @@ class Direction::StudentsController < ApplicationController
   def user_params
     params.require(:user).permit(
       :email, :password, :password_confirmation, :first_name, :last_name,
-      :birth_date, :guardian_name, :phone, :registration_number, :active, :classroom_id
+      :birth_date, :guardian_name, :phone, :registration_number, :classroom_id
     )
   end
 end

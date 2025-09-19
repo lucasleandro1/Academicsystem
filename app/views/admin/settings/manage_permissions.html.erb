@@ -90,11 +90,7 @@
                   <%= user.school&.name || "Sem escola" %>
                 </td>
                 <td>
-                  <% if user.active %>
-                    <span class="badge bg-success">Ativo</span>
-                  <% else %>
-                    <span class="badge bg-danger">Inativo</span>
-                  <% end %>
+                  <span class="badge bg-success">Ativo</span>
                 </td>
                 <td>
                   <div class="btn-group btn-group-sm">
@@ -128,16 +124,6 @@
                                title: "Reset de Senha",
                                confirm: "Tem certeza que deseja resetar a senha deste usuário?" do %>
                       <i class="fas fa-key"></i>
-                    <% end %>
-
-                    <!-- Ativar/Desativar -->
-                    <%= link_to admin_settings_path, 
-                               method: :patch, 
-                               params: { user_id: user.id, user: { active: !user.active } },
-                               class: "btn btn-outline-#{user.active ? 'danger' : 'success'}",
-                               title: user.active ? "Desativar" : "Ativar",
-                               confirm: "Confirma #{user.active ? 'desativação' : 'ativação'} deste usuário?" do %>
-                      <i class="fas fa-#{user.active ? 'ban' : 'check'}"></i>
                     <% end %>
                   </div>
                 </td>

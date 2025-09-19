@@ -144,17 +144,6 @@
           <div class="number"><%= @teachers_report[:total] %></div>
           <div class="label">Total</div>
         </div>
-        <div class="stats-cell">
-          <div class="number"><%= @teachers_report[:active] %></div>
-          <div class="label">Ativos</div>
-        </div>
-        <div class="stats-cell">
-          <% if @teachers_report[:active] == @teachers_report[:total] %>
-            ✅ Todos ativos
-          <% else %>
-            ⚠️ <%= @teachers_report[:total] - @teachers_report[:active] %> inativos
-          <% end %>
-        </div>
       </div>
     </div>
   </div>
@@ -257,10 +246,6 @@
       
       <% if @students_report[:active] < @students_report[:total] %>
         <% recommendations << "• Verificar situação dos alunos inativos e buscar estratégias de reintegração" %>
-      <% end %>
-      
-      <% if @teachers_report[:active] < @teachers_report[:total] %>
-        <% recommendations << "• Avaliar necessidade de contratação de novos professores" %>
       <% end %>
       
       <% if recommendations.empty? %>

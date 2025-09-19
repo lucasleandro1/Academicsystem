@@ -4,7 +4,7 @@ class Direction::TeacherAssignmentsController < ApplicationController
 
   def index
     @school = current_user.school
-    @teachers = @school.teachers.active.includes(:teacher_subjects)
+    @teachers = @school.teachers.includes(:teacher_subjects)
     @classrooms = @school.classrooms.includes(:subjects)
     @unassigned_teachers = @teachers.left_joins(:teacher_subjects).where(subjects: { id: nil })
     @unassigned_subjects = @school.subjects.where(user_id: nil)

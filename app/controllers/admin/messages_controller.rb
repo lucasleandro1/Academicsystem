@@ -80,16 +80,16 @@ class Admin::MessagesController < ApplicationController
   def get_broadcast_recipients
     case params[:broadcast_type]
     when "all_schools"
-      User.directions.active
+      User.directions
     when "all_directors"
-      User.directions.active
+      User.directions
     when "school"
       school = School.find(params[:school_id])
       school.users.where.not(id: current_user.id)
     when "all_teachers"
-      User.teachers.active
+      User.teachers
     when "all_students"
-      User.students.active
+      User.students
     else
       User.none
     end

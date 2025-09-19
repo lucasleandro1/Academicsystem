@@ -58,12 +58,6 @@
             </div>
           <% end %>
           <div class="col-md-6 mb-3">
-            <strong>Status:</strong><br>
-            <span class="badge bg-<%= @subject.active? ? 'success' : 'secondary' %>">
-              <%= @subject.active? ? 'Ativa' : 'Inativa' %>
-            </span>
-          </div>
-          <div class="col-md-6 mb-3">
             <strong>Criada em:</strong><br>
             <%= @subject.created_at.strftime("%d/%m/%Y às %H:%M") %>
           </div>
@@ -80,7 +74,7 @@
       </div>
       <div class="card-body">
         <div class="text-center mb-3">
-          <h3 class="text-primary"><%= @subject.classroom.students.count %></h3>
+          <h3 class="text-primary"><%= @subject.classroom&.students&.count || 0 %></h3>
           <small class="text-muted">Alunos</small>
         </div>
         <div class="text-center mb-3">
@@ -133,6 +127,7 @@
 </div>
 
 <!-- Turma -->
+<% if @subject.classroom.present? %>
 <div class="card mb-4">
   <div class="card-header">
     <h5 class="mb-0"><i class="fas fa-users"></i> Turma: <%= @subject.classroom.name %></h5>
@@ -153,12 +148,26 @@
       </div>
       <div class="col-md-6">
         <strong>Total de Alunos:</strong> <%= @subject.classroom.students.count %><br>
-        <strong>Alunos Ativos:</strong> <%= @subject.classroom.students.active.count %><br>
         <strong>Coordenador:</strong> <%= @subject.classroom.coordinator&.full_name || 'Não definido' %>
       </div>
     </div>
   </div>
 </div>
+<% else %>
+<div class="card mb-4">
+  <div class="card-header">
+    <h5 class="mb-0"><i class="fas fa-exclamation-triangle text-warning"></i> Turma não Definida</h5>
+  </div>
+  <div class="card-body">
+    <div class="alert alert-info">
+      <i class="fas fa-info-circle"></i>
+      Esta disciplina ainda não foi associada a uma turma específica. 
+      <%= link_to "Editar disciplina", edit_direction_subject_path(@subject), class: "alert-link" %> 
+      para associar uma turma.
+    </div>
+  </div>
+</div>
+<% end %>
 
 <!-- Atividades Recentes -->
 <% if @activities.any? %>
@@ -289,7 +298,7 @@
               <%= form.label :user_id, "Selecionar Professor", class: "form-label" %>
               <%= form.select :user_id, 
                               options_from_collection_for_select(
-                                current_user.school.teachers.active, 
+                                current_user.school.teachers, 
                                 :id, :full_name
                               ),
                               { prompt: "Selecione um professor..." }, 

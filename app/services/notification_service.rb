@@ -55,7 +55,7 @@ class NotificationService
   end
 
   def self.notify_activity_assigned(activity)
-    students = activity.subject.classroom.students.active
+    students = activity.subject.students.where(active: true)
 
     students.find_each do |student|
       Notification.create!(

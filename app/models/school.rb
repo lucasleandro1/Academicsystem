@@ -25,11 +25,11 @@ class School < ApplicationRecord
   end
 
   def total_students
-    students.active.count
+    students.count
   end
 
   def total_teachers
-    teachers.active.count
+    teachers.count
   end
 
   def total_classrooms

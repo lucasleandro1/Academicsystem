@@ -143,11 +143,11 @@
               <strong>
                 <%= case params[:broadcast_type]
                     when 'all_directors'
-                      "#{User.directions.active.count} diretores"
+                      "#{User.directions.count} diretores"
                     when 'all_teachers'
-                      "#{User.teachers.active.count} professores"
+                      "#{User.teachers.count} professores"
                     when 'all_students'
-                      "#{User.students.active.count} alunos"
+                      "#{User.students.count} alunos"
                     when 'all_schools'
                       "todos os usuários das #{School.count} escolas"
                     end %>
@@ -189,7 +189,7 @@
             </div>
           </div>
           <div class="col-6">
-            <div class="h5 mb-0 text-success"><%= User.active.count %></div>
+            <div class="h5 mb-0 text-success"><%= User.count %></div>
             <small class="text-muted">Usuários</small>
           </div>
         </div>

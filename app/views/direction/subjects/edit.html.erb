@@ -121,23 +121,13 @@
         </div>
       </div>
 
-      <!-- Status e Configurações -->
+      <!-- Configurações -->
       <div class="card mb-4">
         <div class="card-header">
-          <h5 class="mb-0"><i class="fas fa-cog"></i> Status e Configurações</h5>
+          <h5 class="mb-0"><i class="fas fa-cog"></i> Configurações</h5>
         </div>
         <div class="card-body">
           <div class="row">
-            <div class="col-md-6 mb-3">
-              <div class="form-check form-switch">
-                <%= form.check_box :active, class: "form-check-input" %>
-                <%= form.label :active, "Disciplina Ativa", class: "form-check-label" %>
-              </div>
-              <div class="form-text">
-                Disciplinas inativas não aparecem nos horários e relatórios
-              </div>
-            </div>
-
             <div class="col-md-6 mb-3">
               <div class="form-check form-switch">
                 <%= form.check_box :allows_makeup_exams, class: "form-check-input" %>

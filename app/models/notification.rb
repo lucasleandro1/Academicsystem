@@ -81,7 +81,7 @@ class Notification < ApplicationRecord
 
   # Métodos de classe para criar notificações específicas
   def self.create_system_announcement(title, content, recipient_users = nil)
-    recipient_users ||= User.active
+    recipient_users ||= User.all
     recipient_users.find_each do |user|
       create!(
         user: user,
@@ -120,7 +120,7 @@ class Notification < ApplicationRecord
   end
 
   def self.create_activity_notification(activity)
-    students = activity.subject.classroom.students
+    students = activity.subject.students
     students.find_each do |student|
       create!(
         user: student,

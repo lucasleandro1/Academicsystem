@@ -74,7 +74,7 @@
           </div>
           <div class="col-md-2">
             <h4 class="text-info">
-              <%= current_user.teacher_subjects.joins(:classroom).joins(:students).where(users: { active: true }).distinct.count('users.id') %>
+              <%= current_user.teacher_subjects.joins(:classroom).joins(:students).distinct.count('users.id') %>
             </h4>
             <small class="text-muted">Alunos Total</small>
           </div>

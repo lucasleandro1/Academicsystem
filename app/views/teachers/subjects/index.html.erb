@@ -15,12 +15,12 @@
               <div class="card-header">
                 <div class="d-flex justify-content-between align-items-center">
                   <h5 class="card-title mb-0"><%= subject.name %></h5>
-                  <span class="badge bg-primary"><%= subject.classroom.students.count %> alunos</span>
+                  <span class="badge bg-primary"><%= subject.students.count %> alunos</span>
                 </div>
               </div>
               <div class="card-body">
                 <p class="card-text">
-                  <strong>Turma:</strong> <%= subject.classroom.name %><br>
+                  <strong>Turma:</strong> <%= subject.classroom&.name || 'Não definida' %><br>
                   <strong>Carga Horária:</strong> <%= subject.workload %>h
                 </p>
                 <% if subject.description.present? %>

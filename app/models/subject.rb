@@ -1,7 +1,6 @@
 class Subject < ApplicationRecord
-  belongs_to :classroom
-  belongs_to :teacher, class_name: "User", foreign_key: "user_id"
-  belongs_to :user, class_name: "User", foreign_key: "user_id"
+  belongs_to :classroom, optional: true
+  belongs_to :user, class_name: "User", foreign_key: "user_id", optional: true
   belongs_to :school
 
   has_many :activities, dependent: :destroy
@@ -11,7 +10,7 @@ class Subject < ApplicationRecord
   has_many :submissions, through: :activities
 
   validates :name, :workload, presence: true
-  validates :name, uniqueness: { scope: [ :classroom_id, :school_id ] }
+  validates :name, uniqueness: { scope: [ :school_id ] }
   validates :workload, numericality: { greater_than: 0 }
   validates :code, uniqueness: { scope: :school_id }, allow_blank: true
   validates :area, inclusion: {
@@ -22,11 +21,14 @@ class Subject < ApplicationRecord
 
   scope :by_teacher, ->(teacher) { where(user_id: teacher.id) }
   scope :by_classroom, ->(classroom) { where(classroom: classroom) }
-  scope :active, -> { where(active: true) }
   scope :by_area, ->(area) { where(area: area) }
 
+  def teacher
+    user
+  end
+
   def students
-    classroom.students.active
+    classroom&.students || User.none
   end
 
   def average_grade_by_bimester(bimester)
@@ -53,13 +55,20 @@ class Subject < ApplicationRecord
     (total_submissions.to_f / total_possible_submissions * 100).round(2)
   end
 
-  def active?
-    active
-  end
-
   private
 
   def teacher_must_be_teacher
-    errors.add(:teacher, "deve ser um professor") unless teacher&.teacher?
+    return if user_id.blank?
+
+    user_record = User.find_by(id: user_id)
+    return errors.add(:user_id, "não encontrado") unless user_record
+
+    unless user_record.teacher?
+      return errors.add(:user_id, "deve ser um professor")
+    end
+
+    unless user_record.school_id == school_id
+      errors.add(:user_id, "deve ser um professor desta escola")
+    end
   end
 end

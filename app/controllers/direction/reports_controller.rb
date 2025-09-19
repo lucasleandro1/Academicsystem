@@ -8,14 +8,12 @@ class Direction::ReportsController < ApplicationController
     # Relatórios de alunos
     @students_report = {
       total: User.where(school_id: @school.id, user_type: "student").count,
-      active: User.where(school_id: @school.id, user_type: "student", active: true).count,
       by_classroom: classroom_student_stats
     }
 
     # Relatórios de professores
     @teachers_report = {
       total: User.where(school_id: @school.id, user_type: "teacher").count,
-      active: User.where(school_id: @school.id, user_type: "teacher", active: true).count,
       subjects_assigned: teacher_subject_stats
     }
 
@@ -87,13 +85,11 @@ class Direction::ReportsController < ApplicationController
     # Coletar dados para o PDF
     @students_report = {
       total: User.where(school_id: @school.id, user_type: "student").count,
-      active: User.where(school_id: @school.id, user_type: "student", active: true).count,
       by_classroom: classroom_student_stats
     }
 
     @teachers_report = {
       total: User.where(school_id: @school.id, user_type: "teacher").count,
-      active: User.where(school_id: @school.id, user_type: "teacher", active: true).count,
       subjects_assigned: teacher_subject_stats
     }
 
@@ -143,7 +139,7 @@ class Direction::ReportsController < ApplicationController
 
   def calculate_school_attendance_rate
     # Calculate based on absences vs total possible class days for students
-    students = User.where(school_id: current_user.school.id, user_type: "student", active: true)
+    students = User.where(school_id: current_user.school.id, user_type: "student")
     return 0 if students.empty?
 
     total_absences = Absence.joins(:student)
@@ -286,7 +282,7 @@ class Direction::ReportsController < ApplicationController
   end
 
   def calculate_month_attendance_rate(start_date, end_date)
-    total_students = User.where(school_id: current_user.school.id, user_type: "student", active: true).count
+    total_students = User.where(school_id: current_user.school.id, user_type: "student").count
     return 0 if total_students.zero?
 
     total_absences = Absence.joins(:user)

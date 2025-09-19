@@ -107,22 +107,6 @@
                   <%= @class_schedule.errors[:end_time].first if @class_schedule.errors[:end_time].any? %>
                 </div>
               </div>
-
-              <!-- Status -->
-              <div class="col-md-6 mb-3">
-                <div class="form-check form-switch">
-                  <%= form.check_box :active, 
-                      class: "form-check-input",
-                      id: "schedule_active" %>
-                  <%= form.label :active, "Horário Ativo", 
-                      class: "form-check-label",
-                      for: "schedule_active" %>
-                </div>
-                <small class="form-text text-muted">
-                  Horários inativos não aparecem na grade
-                </small>
-              </div>
-
               <!-- Observações -->
               <div class="col-12 mb-3">
                 <%= form.label :notes, "Observações", class: "form-label" %>
@@ -186,8 +170,8 @@
 
             <div class="border rounded p-3">
               <h6 class="text-success mb-2">Status</h6>
-              <span class="badge bg-<%= @class_schedule.active? ? 'success' : 'danger' %>">
-                <%= @class_schedule.active? ? 'Ativo' : 'Inativo' %>
+              <span class="badge bg-success">
+                Ativo
               </span>
             </div>
           </div>

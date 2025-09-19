@@ -142,17 +142,10 @@
             <div class="col-12 mt-4">
               <h6 class="text-muted border-bottom pb-2 mb-3">
                 <i class="fas fa-toggle-on me-1"></i>
-                Status
+                Status: <span class="badge bg-success">Ativo</span>
               </h6>
             </div>
-
-            <div class="col-md-6">
-              <div class="form-check form-switch">
-                <%= form.check_box :active, class: "form-check-input", checked: @teacher.active? %>
-                <%= form.label :active, "Professor Ativo", class: "form-check-label" %>
-              </div>
-              <small class="text-muted">Desmarque para inativar o professor</small>
-            </div>
+          </div>
 
             <!-- Botões -->
             <div class="col-12 mt-4">

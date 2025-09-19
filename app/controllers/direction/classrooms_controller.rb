@@ -24,7 +24,7 @@ class Direction::ClassroomsController < ApplicationController
 
   def show
     @students = @classroom.students
-    @subjects = @classroom.subjects.includes(:teacher)
+    @subjects = @classroom.subjects.includes(:user)
     @class_schedules = @classroom.class_schedules.includes(:subject).by_time
   end
 

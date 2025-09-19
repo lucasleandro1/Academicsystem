@@ -166,7 +166,7 @@
                 <small class="text-muted">Disciplinas</small>
               </div>
               <div class="col-4 text-center">
-                <h4 class="text-info"><%= classroom.subjects.joins(:teacher).distinct.count %></h4>
+                <h4 class="text-info"><%= classroom.subjects.joins(:user).distinct.count %></h4>
                 <small class="text-muted">Professores</small>
               </div>
             </div>

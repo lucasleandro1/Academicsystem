@@ -28,7 +28,7 @@ class Classroom < ApplicationRecord
   end
 
   def student_count
-    students.active.count
+    students.count
   end
 
   def average_attendance_rate

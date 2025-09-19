@@ -44,15 +44,15 @@
       </div>
     </div>
   </div>
-  <div class="col-md-3">
+  <div class="col-md-4">
     <div class="card text-center">
       <div class="card-body">
-        <h3 class="text-success"><%= @students.where(active: true).count %></h3>
-        <small class="text-muted">Alunos Ativos</small>
+        <h3 class="text-success"><%= @students.joins(:classroom).count %></h3>
+        <small class="text-muted">Com Turma</small>
       </div>
     </div>
   </div>
-  <div class="col-md-3">
+  <div class="col-md-4">
     <div class="card text-center">
       <div class="card-body">
         <h3 class="text-info"><%= User.where(school: current_user.school, user_type: 'student', classroom_id: current_user.school.classrooms.pluck(:id)).count %></h3>
@@ -155,11 +155,7 @@
                   <% end %>
                 </td>
                 <td>
-                  <% if student.active? %>
-                    <span class="badge bg-success">Ativo</span>
-                  <% else %>
-                    <span class="badge bg-danger">Inativo</span>
-                  <% end %>
+                  <span class="badge bg-success">Ativo</span>
                   <% if student.classroom %>
                     <br>
                     <span class="badge bg-primary">Com turma</span>

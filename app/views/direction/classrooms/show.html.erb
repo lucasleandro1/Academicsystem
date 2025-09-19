@@ -147,7 +147,7 @@
       <div class="col-12 mb-3">
         <div class="card text-center">
           <div class="card-body">
-            <h3 class="text-info"><%= @classroom.subjects.joins(:teacher).distinct.count %></h3>
+            <h3 class="text-info"><%= @classroom.subjects.joins(:user).distinct.count %></h3>
             <small class="text-muted">Professores</small>
           </div>
         </div>

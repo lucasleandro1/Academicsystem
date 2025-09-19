@@ -47,8 +47,8 @@
   <div class="col-md-3">
     <div class="card text-center">
       <div class="card-body">
-        <h3 class="text-success"><%= @teachers.where(active: true).count %></h3>
-        <small class="text-muted">Professores Ativos</small>
+        <h3 class="text-success"><%= @teachers.count %></h3>
+        <small class="text-muted">Total de Professores</small>
       </div>
     </div>
   </div>
@@ -139,15 +139,9 @@
                   <% end %>
                 </td>
                 <td>
-                  <% if teacher.active? %>
-                    <span class="badge bg-success">
-                      <i class="fas fa-check"></i> Ativo
-                    </span>
-                  <% else %>
-                    <span class="badge bg-danger">
-                      <i class="fas fa-times"></i> Inativo
-                    </span>
-                  <% end %>
+                  <span class="badge bg-success">
+                    <i class="fas fa-check"></i> Ativo
+                  </span>
                 </td>
                 <td>
                   <% if teacher.respond_to?(:last_sign_in_at) && teacher.last_sign_in_at %>
@@ -177,18 +171,6 @@
                         <li>
                           <%= link_to "#", class: "dropdown-item" do %>
                             <i class="fas fa-key"></i> Redefinir Senha
-                          <% end %>
-                        </li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li>
-                          <% if teacher.active? %>
-                            <%= link_to "#", class: "dropdown-item text-warning" do %>
-                              <i class="fas fa-pause"></i> Desativar
-                            <% end %>
-                          <% else %>
-                            <%= link_to "#", class: "dropdown-item text-success" do %>
-                              <i class="fas fa-play"></i> Ativar
-                            <% end %>
                           <% end %>
                         </li>
                       </ul>

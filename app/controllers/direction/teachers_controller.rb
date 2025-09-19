@@ -13,15 +13,6 @@ class Direction::TeachersController < ApplicationController
                                  "%#{params[:search]}%", "%#{params[:search]}%", "%#{params[:search]}%", "%#{params[:search]}%")
     end
 
-    if params[:status].present?
-      case params[:status]
-      when "active"
-        @teachers = @teachers.where(active: true)
-      when "inactive"
-        @teachers = @teachers.where(active: false)
-      end
-    end
-
     if params[:subject_id].present?
       @teachers = @teachers.joins(:teacher_subjects).where(subjects: { id: params[:subject_id] }).distinct
     end
@@ -35,8 +26,8 @@ class Direction::TeachersController < ApplicationController
 
   def show
     @subjects = Subject.where(teacher: @teacher)
-    @classrooms = Classroom.joins(:subjects).where(subjects: { teacher: @teacher }).distinct
-    @activities = Activity.joins(:subject).where(subjects: { teacher: @teacher }).order(created_at: :desc).limit(10)
+    @classrooms = Classroom.joins(:subjects).where(subjects: { user_id: @teacher.id }).distinct
+    @activities = Activity.joins(:subject).where(subjects: { user_id: @teacher.id }).order(created_at: :desc).limit(10)
   end
 
   def new
@@ -85,7 +76,7 @@ class Direction::TeachersController < ApplicationController
     params.require(:user).permit(
       :email, :password, :password_confirmation, :first_name, :last_name,
       :phone, :registration_number, :position,
-      :specialization, :active
+      :specialization
     )
   end
 end

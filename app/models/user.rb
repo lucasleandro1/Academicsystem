@@ -69,7 +69,6 @@ class User < ApplicationRecord
     validates :guardian_name, presence: true
   end
 
-  scope :active, -> { where(active: true) }
   scope :students, -> { where(user_type: "student") }
   scope :teachers, -> { where(user_type: "teacher") }
   scope :directions, -> { where(user_type: "direction") }

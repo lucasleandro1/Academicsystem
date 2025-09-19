@@ -107,7 +107,7 @@ class Admin::SettingsController < ApplicationController
   private
 
   def user_params
-    params.require(:user).permit(:user_type, :school_id, :active)
+    params.require(:user).permit(:user_type, :school_id)
   end
 
   def generate_secure_password
