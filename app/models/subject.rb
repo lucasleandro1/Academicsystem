@@ -3,11 +3,9 @@ class Subject < ApplicationRecord
   belongs_to :user, class_name: "User", foreign_key: "user_id", optional: true
   belongs_to :school
 
-  has_many :activities, dependent: :destroy
   has_many :grades, dependent: :destroy
   has_many :absences, dependent: :destroy
   has_many :class_schedules, dependent: :destroy
-  has_many :submissions, through: :activities
 
   validates :name, :workload, presence: true
   validates :name, uniqueness: { scope: [ :school_id ] }
@@ -35,6 +33,10 @@ class Subject < ApplicationRecord
     grades.where(bimester: bimester).average(:value)&.round(2)
   end
 
+  def overall_average
+    grades.average(:value)&.round(2)
+  end
+
   def attendance_rate
     return 100.0 if students.empty?
 
@@ -45,14 +47,12 @@ class Subject < ApplicationRecord
     ((total_possible_attendances - total_absences).to_f / total_possible_attendances * 100).round(2)
   end
 
-  def activity_completion_rate
-    return 0.0 if activities.empty? || students.empty?
+  def weekly_schedule
+    class_schedules.order(:weekday, :start_time)
+  end
 
-    total_possible_submissions = activities.count * students.count
-    return 0.0 if total_possible_submissions.zero?
-
-    total_submissions = submissions.count
-    (total_submissions.to_f / total_possible_submissions * 100).round(2)
+  def schedule_summary
+    class_schedules.group(:weekday).count
   end
 
   private

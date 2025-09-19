@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_09_19_002721) do
+ActiveRecord::Schema[8.0].define(version: 2025_09_19_011116) do
   create_table "absences", force: :cascade do |t|
     t.integer "subject_id", null: false
     t.date "date"
@@ -20,44 +20,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_19_002721) do
     t.integer "user_id", null: false
     t.index ["subject_id"], name: "index_absences_on_subject_id"
     t.index ["user_id"], name: "index_absences_on_user_id"
-  end
-
-  create_table "activities", force: :cascade do |t|
-    t.integer "subject_id", null: false
-    t.string "title"
-    t.text "description"
-    t.datetime "due_date"
-    t.integer "school_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.integer "user_id", null: false
-    t.index ["school_id"], name: "index_activities_on_school_id"
-    t.index ["subject_id"], name: "index_activities_on_subject_id"
-    t.index ["user_id"], name: "index_activities_on_user_id"
-  end
-
-  create_table "announcements", force: :cascade do |t|
-    t.string "title"
-    t.text "content"
-    t.string "announcement_type"
-    t.text "target_schools"
-    t.integer "user_id", null: false
-    t.integer "priority"
-    t.datetime "published_at"
-    t.datetime "expires_at"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["user_id"], name: "index_announcements_on_user_id"
-  end
-
-  create_table "attachments", force: :cascade do |t|
-    t.string "attachable_type", null: false
-    t.integer "attachable_id", null: false
-    t.integer "school_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["attachable_type", "attachable_id"], name: "index_attachments_on_attachable"
-    t.index ["school_id"], name: "index_attachments_on_school_id"
   end
 
   create_table "calendars", force: :cascade do |t|
@@ -75,14 +37,22 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_19_002721) do
   create_table "class_schedules", force: :cascade do |t|
     t.integer "classroom_id", null: false
     t.integer "subject_id", null: false
-    t.integer "weekday"
-    t.time "start_time"
-    t.time "end_time"
     t.integer "school_id", null: false
+    t.integer "weekday", null: false
+    t.time "start_time", null: false
+    t.time "end_time", null: false
+    t.string "period"
+    t.integer "class_order"
+    t.boolean "active", default: true
+    t.text "notes"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["classroom_id", "weekday", "start_time", "end_time"], name: "unique_classroom_schedule", unique: true
+    t.index ["classroom_id", "weekday", "start_time"], name: "index_class_schedules_on_classroom_weekday_time"
     t.index ["classroom_id"], name: "index_class_schedules_on_classroom_id"
+    t.index ["school_id", "weekday"], name: "index_class_schedules_on_school_weekday"
     t.index ["school_id"], name: "index_class_schedules_on_school_id"
+    t.index ["subject_id", "weekday"], name: "index_class_schedules_on_subject_weekday"
     t.index ["subject_id"], name: "index_class_schedules_on_subject_id"
   end
 
@@ -117,7 +87,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_19_002721) do
     t.text "description"
     t.date "start_date"
     t.date "end_date"
-    t.string "visible_to"
     t.integer "school_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -132,11 +101,17 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_19_002721) do
   create_table "grades", force: :cascade do |t|
     t.integer "subject_id", null: false
     t.integer "bimester"
-    t.decimal "value"
+    t.decimal "value", precision: 5, scale: 2
     t.string "grade_type"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "user_id", null: false
+    t.string "assessment_name"
+    t.date "assessment_date"
+    t.decimal "max_value", precision: 5, scale: 2
+    t.text "teacher_notes"
+    t.integer "school_id"
+    t.index ["school_id"], name: "index_grades_on_school_id"
     t.index ["subject_id"], name: "index_grades_on_subject_id"
     t.index ["user_id"], name: "index_grades_on_user_id"
   end
@@ -155,42 +130,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_19_002721) do
     t.index ["school_id"], name: "index_messages_on_school_id"
     t.index ["sender_id", "created_at"], name: "index_messages_on_sender_id_and_created_at"
     t.index ["sender_id"], name: "index_messages_on_sender_id"
-  end
-
-  create_table "municipal_events", force: :cascade do |t|
-    t.string "title"
-    t.text "description"
-    t.string "event_type"
-    t.datetime "start_date"
-    t.datetime "end_date"
-    t.string "location"
-    t.integer "user_id", null: false
-    t.text "schools_participating"
-    t.boolean "registration_required"
-    t.integer "max_participants"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["user_id"], name: "index_municipal_events_on_user_id"
-  end
-
-  create_table "notifications", force: :cascade do |t|
-    t.integer "user_id", null: false
-    t.integer "sender_id", null: false
-    t.integer "school_id"
-    t.string "title", null: false
-    t.text "content", null: false
-    t.string "notification_type", null: false
-    t.boolean "read", default: false
-    t.datetime "read_at"
-    t.json "metadata"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["created_at"], name: "index_notifications_on_created_at"
-    t.index ["school_id", "notification_type"], name: "index_notifications_on_school_id_and_notification_type"
-    t.index ["school_id"], name: "index_notifications_on_school_id"
-    t.index ["sender_id"], name: "index_notifications_on_sender_id"
-    t.index ["user_id", "read"], name: "index_notifications_on_user_id_and_read"
-    t.index ["user_id"], name: "index_notifications_on_user_id"
   end
 
   create_table "schools", force: :cascade do |t|
@@ -221,21 +160,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_19_002721) do
     t.index ["user_id"], name: "index_subjects_on_user_id"
   end
 
-  create_table "submissions", force: :cascade do |t|
-    t.integer "activity_id", null: false
-    t.text "answer"
-    t.datetime "submission_date"
-    t.decimal "teacher_grade"
-    t.text "feedback"
-    t.integer "school_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.integer "user_id", null: false
-    t.index ["activity_id"], name: "index_submissions_on_activity_id"
-    t.index ["school_id"], name: "index_submissions_on_school_id"
-    t.index ["user_id"], name: "index_submissions_on_user_id"
-  end
-
   create_table "users", force: :cascade do |t|
     t.string "email", default: "", null: false
     t.string "encrypted_password", default: "", null: false
@@ -247,11 +171,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_19_002721) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "admin"
-    t.string "registration_number"
     t.date "birth_date"
     t.string "guardian_name"
-    t.string "position"
-    t.string "specialization"
     t.string "first_name"
     t.string "last_name"
     t.string "phone"
@@ -264,11 +185,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_19_002721) do
 
   add_foreign_key "absences", "subjects"
   add_foreign_key "absences", "users"
-  add_foreign_key "activities", "schools"
-  add_foreign_key "activities", "subjects"
-  add_foreign_key "activities", "users"
-  add_foreign_key "announcements", "users"
-  add_foreign_key "attachments", "schools"
   add_foreign_key "calendars", "schools"
   add_foreign_key "class_schedules", "classrooms"
   add_foreign_key "class_schedules", "schools"
@@ -277,20 +193,14 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_19_002721) do
   add_foreign_key "documents", "schools"
   add_foreign_key "documents", "users"
   add_foreign_key "events", "schools"
+  add_foreign_key "grades", "schools"
   add_foreign_key "grades", "subjects"
   add_foreign_key "grades", "users"
   add_foreign_key "messages", "schools"
   add_foreign_key "messages", "users", column: "recipient_id"
   add_foreign_key "messages", "users", column: "sender_id"
-  add_foreign_key "municipal_events", "users"
-  add_foreign_key "notifications", "schools"
-  add_foreign_key "notifications", "users"
-  add_foreign_key "notifications", "users", column: "sender_id"
   add_foreign_key "subjects", "classrooms"
   add_foreign_key "subjects", "schools"
   add_foreign_key "subjects", "users"
-  add_foreign_key "submissions", "activities"
-  add_foreign_key "submissions", "schools"
-  add_foreign_key "submissions", "users"
   add_foreign_key "users", "classrooms"
 end

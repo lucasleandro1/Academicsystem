@@ -3,10 +3,9 @@ class Classroom < ApplicationRecord
   has_many :students, -> { where(user_type: "student") }, class_name: "User", foreign_key: "classroom_id", dependent: :nullify
   has_many :subjects, dependent: :destroy
   has_many :class_schedules, dependent: :destroy
-  has_many :teachers, through: :subjects, source: :teacher
+  has_many :teachers, through: :subjects, source: :user
   has_many :grades, through: :subjects
   has_many :absences, through: :subjects
-  has_many :activities, through: :subjects
 
   validates :name, :academic_year, :shift, :level, presence: true
   validates :name, uniqueness: { scope: :school_id }
@@ -29,6 +28,18 @@ class Classroom < ApplicationRecord
 
   def student_count
     students.count
+  end
+
+  def subject_count
+    subjects.count
+  end
+
+  def weekly_schedule
+    class_schedules.includes(:subject).order(:weekday, :start_time)
+  end
+
+  def schedule_by_day(weekday)
+    class_schedules.includes(:subject).where(weekday: weekday).order(:start_time)
   end
 
   def average_attendance_rate
