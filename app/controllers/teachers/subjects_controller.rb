@@ -11,7 +11,6 @@ class Teachers::SubjectsController < ApplicationController
   def show
     @subject = current_user.teacher_subjects.includes(:classroom, :students).find(params[:id])
     @students = @subject.students
-    @recent_activities = @subject.activities.order(created_at: :desc).limit(5)
     @recent_grades = @subject.grades.includes(:student).order(created_at: :desc).limit(10)
   end
 

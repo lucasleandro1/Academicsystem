@@ -54,26 +54,6 @@ class NotificationService
     )
   end
 
-  def self.notify_activity_assigned(activity)
-    students = activity.subject.students.where(active: true)
-
-    students.find_each do |student|
-      Notification.create!(
-        user: student,
-        sender: activity.teacher,
-        school: activity.school,
-        title: "Nova atividade: #{activity.title}",
-        content: "#{activity.description}\nPrazo: #{activity.due_date&.strftime('%d/%m/%Y às %H:%M')}",
-        notification_type: "activity_assigned",
-        metadata: {
-          activity_id: activity.id,
-          subject_id: activity.subject.id,
-          due_date: activity.due_date
-        }
-      )
-    end
-  end
-
   def self.notify_document_available(document, recipients)
     recipients.find_each do |user|
       Notification.create!(

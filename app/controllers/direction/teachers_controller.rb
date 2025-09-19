@@ -23,7 +23,6 @@ class Direction::TeachersController < ApplicationController
   def show
     @subjects = Subject.where(teacher: @teacher)
     @classrooms = Classroom.joins(:subjects).where(subjects: { user_id: @teacher.id }).distinct
-    @activities = Activity.joins(:subject).where(subjects: { user_id: @teacher.id }).order(created_at: :desc).limit(10)
   end
 
   def new

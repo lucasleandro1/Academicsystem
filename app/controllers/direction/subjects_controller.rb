@@ -14,7 +14,6 @@ class Direction::SubjectsController < ApplicationController
   end
 
   def show
-    @activities = @subject.activities.recent
     @grades = @subject.grades.includes(:student)
     @class_schedules = @subject.class_schedules
   end

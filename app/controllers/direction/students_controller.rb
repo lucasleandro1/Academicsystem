@@ -24,7 +24,7 @@ class Direction::StudentsController < ApplicationController
   end
 
   def show
-    @grades = Grade.where(user: @student).includes(:subject, :activity).order(created_at: :desc).limit(10)
+    @grades = Grade.where(user: @student).includes(:subject).order(created_at: :desc).limit(10)
     @absences = Absence.where(user: @student).order(date: :desc).limit(10)
   end
 

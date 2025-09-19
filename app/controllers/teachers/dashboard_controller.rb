@@ -5,8 +5,6 @@ class Teachers::DashboardController < ApplicationController
   def index
     @teacher = current_user
     @subjects = @teacher.teacher_subjects.includes(:classroom, :school)
-    @recent_activities = @teacher.activities.recent.limit(5)
-    @pending_submissions = pending_submissions
     @recent_messages = @teacher.received_messages.unread.recent.limit(5)
     @total_students = total_students_count
     @classes_today = classes_today
@@ -14,12 +12,9 @@ class Teachers::DashboardController < ApplicationController
     # Additional instance variables needed by the view
     @my_classrooms = @teacher.my_classrooms
     @my_subjects = @teacher.my_subjects
-    @active_activities = @teacher.my_activities
     @today_schedule = @classes_today
-    @upcoming_activities = @teacher.my_activities.upcoming.limit(5)
     @average_grade = calculate_average_grade
     @attendance_rate = calculate_attendance_rate
-    @submitted_activities = @teacher.my_activities.count
   end
 
   private
@@ -30,13 +25,6 @@ class Teachers::DashboardController < ApplicationController
     end
   end
 
-  def pending_submissions
-    activity_ids = @teacher.activities.pluck(:id)
-    Submission.joins(:activity)
-              .where(activity_id: activity_ids, teacher_grade: nil)
-              .includes(:student, :activity)
-              .limit(10)
-  end
 
   def total_students_count
     classroom_ids = @teacher.teacher_subjects.pluck(:classroom_id).uniq

@@ -22,7 +22,6 @@ class Direction::DashboardController < ApplicationController
       total_subjects: @total_subjects,
       attendance_rate: @attendance_rate,
       average_grade: @average_grade,
-      total_activities: @total_activities,
       total_messages: @total_messages,
       updated_at: Time.current.strftime("%d/%m/%Y às %H:%M")
     }
@@ -53,7 +52,6 @@ class Direction::DashboardController < ApplicationController
     # Relatórios gerais
     @attendance_rate = calculate_attendance_rate
     @average_grade = calculate_average_grade
-    @total_activities = calculate_total_activities
     @total_messages = calculate_total_messages
 
     # Alertas e avisos
@@ -70,7 +68,6 @@ class Direction::DashboardController < ApplicationController
     @important_notifications = []
     @attendance_rate = 0
     @average_grade = "0.0"
-    @total_activities = 0
     @total_messages = 0
     @alerts = []
 
@@ -173,11 +170,6 @@ class Direction::DashboardController < ApplicationController
     return "0.0" if grades.empty?
 
     (grades.average(:value) || 0).round(1).to_s
-  end
-
-  def calculate_total_activities
-    # Contando eventos como atividades da escola
-    Event.where(school_id: @school.id).count
   end
 
   def calculate_total_messages

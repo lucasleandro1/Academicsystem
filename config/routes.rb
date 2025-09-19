@@ -106,16 +106,12 @@ Rails.application.routes.draw do
 
   namespace :teachers do
     resources :classrooms, only: [ :index, :show ]
-    resources :activities do
-      resources :submissions, only: [ :index, :show, :edit, :update ]
-    end
     resources :grades
     resources :absences
     resources :subjects, only: [ :index, :show ] do
       resources :class_schedules, only: [ :index, :show ]
     end
     resources :class_schedules, only: [ :index, :show ]
-    resources :submissions, only: [ :index, :show, :edit, :update ]
     resources :documents do
       member do
         get :download
@@ -143,9 +139,6 @@ Rails.application.routes.draw do
     resource :profile, only: [ :show, :edit, :update ]
     resources :grades, only: [ :index ]
     resources :subjects, only: [ :index, :show ]
-    resources :activities, only: [ :index, :show ] do
-      resources :submissions, except: [ :index ]
-    end
     resources :absences, only: [ :index ]
     resources :class_schedules, only: [ :index ]
     resources :documents, only: [ :index, :show ]

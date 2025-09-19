@@ -15,9 +15,6 @@
   </div>
   <div class="btn-toolbar mb-2 mb-md-0">
     <div class="btn-group me-2">
-      <%= link_to new_teachers_activity_path, class: "btn btn-sm btn-outline-primary" do %>
-        <i class="fas fa-plus"></i> Nova Atividade
-      <% end %>
       <%= link_to new_teachers_grade_path, class: "btn btn-sm btn-outline-success" do %>
         <i class="fas fa-clipboard-check"></i> Lançar Nota
       <% end %>
@@ -68,26 +65,6 @@
   </div>
 
   <div class="col-xl-3 col-md-6 mb-4">
-    <div class="card card-stat border-left-info shadow h-100 py-2">
-      <div class="card-body">
-        <div class="row no-gutters align-items-center">
-          <div class="col mr-2">
-            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-              Atividades Criadas
-            </div>
-            <div class="h5 mb-0 font-weight-bold text-gray-800">
-              <%= current_user.activities.count %>
-            </div>
-          </div>
-          <div class="col-auto">
-            <i class="fas fa-tasks fa-2x text-gray-300"></i>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="col-xl-3 col-md-6 mb-4">
     <div class="card card-stat border-left-warning shadow h-100 py-2">
       <div class="card-body">
         <div class="row no-gutters align-items-center">
@@ -108,9 +85,9 @@
   </div>
 </div>
 
-<!-- My Classes and Activities -->
+<!-- My Classes -->
 <div class="row">
-  <div class="col-lg-8 mb-4">
+  <div class="col-lg-12 mb-4">
     <div class="card shadow mb-4">
       <div class="card-header py-3">
         <h6 class="m-0 font-weight-bold text-primary">
@@ -177,45 +154,6 @@
             <i class="fas fa-chalkboard fa-3x mb-3"></i>
             <p>Você ainda não possui turmas atribuídas</p>
             <small>Entre em contato com a direção da escola</small>
-          </div>
-        <% end %>
-      </div>
-    </div>
-  </div>
-
-  <div class="col-lg-4 mb-4">
-    <div class="card shadow mb-4">
-      <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-primary">
-          <i class="fas fa-calendar-alt me-2"></i>
-          Próximas Atividades
-        </h6>
-      </div>
-      <div class="card-body">
-        <% upcoming_activities = current_user.activities.where(due_date: Date.current..1.month.from_now).order(:due_date).limit(5) %>
-        <% if upcoming_activities.any? %>
-          <% upcoming_activities.each do |activity| %>
-            <div class="d-flex align-items-center mb-3 p-2 border rounded">
-              <div class="me-3">
-                <div class="rounded-circle bg-<%= activity.due_date < Date.current ? 'danger' : activity.due_date <= 1.week.from_now ? 'warning' : 'success' %> text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
-                  <i class="fas fa-tasks"></i>
-                </div>
-              </div>
-              <div class="flex-grow-1">
-                <h6 class="mb-0"><%= truncate(activity.title, length: 30) %></h6>
-                <small class="text-muted">
-                  Vence em <%= time_ago_in_words(activity.due_date) %>
-                  <br>
-                  <%= activity.subject.name %>
-                </small>
-              </div>
-            </div>
-          <% end %>
-        <% else %>
-          <div class="text-center text-muted py-4">
-            <i class="fas fa-tasks fa-2x mb-3"></i>
-            <p>Nenhuma atividade próxima</p>
-            <%= link_to "Criar Atividade", "teachers/activities/new", class: "btn btn-primary btn-sm" %>
           </div>
         <% end %>
       </div>
