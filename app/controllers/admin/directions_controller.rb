@@ -53,7 +53,7 @@ class Admin::DirectionsController < ApplicationController
   def direction_params
     params.require(:user).permit(
       :email, :password, :school_id, :first_name, :last_name, :phone,
-      :registration_number, :birth_date, :position
+      :birth_date
     )
   end
 end

@@ -8,7 +8,6 @@ admin = User.find_or_create_by(email: 'admin@sistema.com') do |user|
   user.password_confirmation = 'password123'
   user.user_type = 'admin'
   user.admin = true
-  user.active = true
   user.first_name = 'Admin'
   user.last_name = 'Sistema'
 end
@@ -30,7 +29,6 @@ direction = User.find_or_create_by(email: 'direcao@escola.com') do |user|
   user.password_confirmation = 'password123'
   user.user_type = 'direction'
   user.school = school
-  user.active = true
   user.first_name = 'Maria'
   user.last_name = 'Diretora'
 end
@@ -43,11 +41,8 @@ teacher1 = User.find_or_create_by(email: 'professor1@escola.com') do |user|
   user.password_confirmation = 'password123'
   user.user_type = 'teacher'
   user.school = school
-  user.active = true
   user.first_name = 'João'
   user.last_name = 'Professor'
-  user.position = 'Professor'
-  user.specialization = 'Matemática'
 end
 
 teacher2 = User.find_or_create_by(email: 'professor2@escola.com') do |user|
@@ -55,11 +50,8 @@ teacher2 = User.find_or_create_by(email: 'professor2@escola.com') do |user|
   user.password_confirmation = 'password123'
   user.user_type = 'teacher'
   user.school = school
-  user.active = true
   user.first_name = 'Ana'
   user.last_name = 'Professora'
-  user.position = 'Professora'
-  user.specialization = 'Português'
 end
 
 puts "Professores criados: #{teacher1.email}, #{teacher2.email}"
@@ -70,12 +62,10 @@ student1 = User.find_or_create_by(email: 'aluno1@escola.com') do |user|
   user.password_confirmation = 'password123'
   user.user_type = 'student'
   user.school = school
-  user.active = true
   user.first_name = 'Pedro'
   user.last_name = 'Aluno'
   user.birth_date = Date.new(2005, 1, 15)
   user.guardian_name = 'José da Silva'
-  user.registration_number = '2024001'
 end
 
 student2 = User.find_or_create_by(email: 'aluno2@escola.com') do |user|
@@ -83,12 +73,10 @@ student2 = User.find_or_create_by(email: 'aluno2@escola.com') do |user|
   user.password_confirmation = 'password123'
   user.user_type = 'student'
   user.school = school
-  user.active = true
   user.first_name = 'Carla'
   user.last_name = 'Aluna'
   user.birth_date = Date.new(2005, 3, 20)
   user.guardian_name = 'Maria Santos'
-  user.registration_number = '2024002'
 end
 
 puts "Alunos criados: #{student1.email}, #{student2.email}"

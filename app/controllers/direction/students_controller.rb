@@ -11,8 +11,8 @@ class Direction::StudentsController < ApplicationController
 
     # Filtros
     if params[:search].present?
-      @students = @students.where("users.first_name ILIKE ? OR users.last_name ILIKE ? OR users.email ILIKE ? OR users.registration_number ILIKE ?",
-                                 "%#{params[:search]}%", "%#{params[:search]}%", "%#{params[:search]}%", "%#{params[:search]}%")
+      @students = @students.where("users.first_name ILIKE ? OR users.last_name ILIKE ? OR users.email ILIKE ?",
+                                 "%#{params[:search]}%", "%#{params[:search]}%", "%#{params[:search]}%")
     end
 
     if params[:classroom_id].present?
@@ -78,7 +78,7 @@ class Direction::StudentsController < ApplicationController
   def user_params
     params.require(:user).permit(
       :email, :password, :password_confirmation, :first_name, :last_name,
-      :birth_date, :guardian_name, :phone, :registration_number, :classroom_id
+      :birth_date, :guardian_name, :phone, :classroom_id
     )
   end
 end

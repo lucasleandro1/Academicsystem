@@ -47,16 +47,14 @@
           </div>
         </div>
 
-        <% if @user.registration_number.present? %>
-          <div class="row">
-            <div class="col-md-6">
-              <div class="mb-3">
-                <label class="form-label text-muted">Número de Matrícula/Registro</label>
-                <div><%= @user.registration_number %></div>
-              </div>
+        <div class="row">
+          <div class="col-md-6">
+            <div class="mb-3">
+              <label class="form-label text-muted">ID do Usuário</label>
+              <div><%= @user.id %></div>
             </div>
           </div>
-        <% end %>
+        </div>
 
         <% if @user.phone.present? %>
           <div class="row">
@@ -101,7 +99,7 @@
       </div>
     <% end %>
 
-    <% if @user.teacher? && (@user.position.present? || @user.specialization.present?) %>
+    <% if @user.teacher? && @user.position.present? %>
       <div class="card mt-4">
         <div class="card-header">
           <h5 class="mb-0">Informações Profissionais</h5>
@@ -113,14 +111,6 @@
                 <div class="mb-3">
                   <label class="form-label text-muted">Cargo</label>
                   <div><%= @user.position %></div>
-                </div>
-              </div>
-            <% end %>
-            <% if @user.specialization.present? %>
-              <div class="col-md-6">
-                <div class="mb-3">
-                  <label class="form-label text-muted">Especialização</label>
-                  <div><%= @user.specialization %></div>
                 </div>
               </div>
             <% end %>

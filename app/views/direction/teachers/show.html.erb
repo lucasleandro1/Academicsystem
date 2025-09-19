@@ -60,12 +60,8 @@
         <hr>
         <div class="row">
           <div class="col-md-6">
-            <strong>Matrícula:</strong><br>
-            <span class="text-muted"><%= @teacher.registration_number.present? ? @teacher.registration_number : 'Não informado' %></span>
-          </div>
-          <div class="col-md-6">
-            <strong>Especialização:</strong><br>
-            <span class="text-muted"><%= @teacher.specialization.present? ? @teacher.specialization : 'Não informado' %></span>
+            <strong>ID do Professor:</strong><br>
+            <span class="text-muted"><%= @teacher.id %></span>
           </div>
         </div>
       </div>

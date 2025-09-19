@@ -9,16 +9,12 @@ class Direction::TeachersController < ApplicationController
 
     # Filtros
     if params[:search].present?
-      @teachers = @teachers.where("first_name ILIKE ? OR last_name ILIKE ? OR email ILIKE ? OR registration_number ILIKE ?",
-                                 "%#{params[:search]}%", "%#{params[:search]}%", "%#{params[:search]}%", "%#{params[:search]}%")
+      @teachers = @teachers.where("first_name ILIKE ? OR last_name ILIKE ? OR email ILIKE ?",
+                                 "%#{params[:search]}%", "%#{params[:search]}%", "%#{params[:search]}%")
     end
 
     if params[:subject_id].present?
       @teachers = @teachers.joins(:teacher_subjects).where(subjects: { id: params[:subject_id] }).distinct
-    end
-
-    if params[:specialization].present?
-      @teachers = @teachers.where("specialization ILIKE ?", "%#{params[:specialization]}%")
     end
 
     @teachers = @teachers.order(:first_name, :last_name)
@@ -75,8 +71,7 @@ class Direction::TeachersController < ApplicationController
   def user_params
     params.require(:user).permit(
       :email, :password, :password_confirmation, :first_name, :last_name,
-      :phone, :registration_number, :position,
-      :specialization
+      :phone
     )
   end
 end

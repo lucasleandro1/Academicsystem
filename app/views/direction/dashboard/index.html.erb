@@ -24,6 +24,9 @@
       <%= link_to direction_messages_path, class: "btn btn-sm btn-outline-info" do %>
         <i class="fas fa-envelope"></i> Mensagens
       <% end %>
+      <button id="refresh-dashboard" class="btn btn-sm btn-outline-success" title="Atualizar dados">
+        <i class="fas fa-sync-alt"></i> Atualizar
+      </button>
     </div>
   </div>
 </div>
@@ -38,7 +41,7 @@
             <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
               Alunos Matriculados
             </div>
-            <div class="h5 mb-0 font-weight-bold text-gray-800">
+            <div class="h5 mb-0 font-weight-bold text-gray-800" id="total-students">
               <%= @total_students %>
             </div>
           </div>
@@ -58,7 +61,7 @@
             <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
               Professores Ativos
             </div>
-            <div class="h5 mb-0 font-weight-bold text-gray-800">
+            <div class="h5 mb-0 font-weight-bold text-gray-800" id="total-teachers">
               <%= @total_teachers %>
             </div>
           </div>
@@ -78,7 +81,7 @@
             <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
               Turmas Ativas
             </div>
-            <div class="h5 mb-0 font-weight-bold text-gray-800">
+            <div class="h5 mb-0 font-weight-bold text-gray-800" id="total-classrooms">
               <%= @total_classrooms %>
             </div>
           </div>
@@ -98,7 +101,7 @@
             <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
               Disciplinas
             </div>
-            <div class="h5 mb-0 font-weight-bold text-gray-800">
+            <div class="h5 mb-0 font-weight-bold text-gray-800" id="total-subjects">
               <%= @total_subjects %>
             </div>
           </div>
@@ -200,25 +203,25 @@
         <div class="row text-center">
           <div class="col-md-3 mb-3">
             <div class="border-left-success p-3">
-              <h4 class="text-success"><%= @attendance_rate %>%</h4>
+              <h4 class="text-success" id="attendance-rate"><%= @attendance_rate %>%</h4>
               <small class="text-muted">Taxa de Frequência</small>
             </div>
           </div>
           <div class="col-md-3 mb-3">
             <div class="border-left-info p-3">
-              <h4 class="text-info"><%= @average_grade %></h4>
+              <h4 class="text-info" id="average-grade"><%= @average_grade %></h4>
               <small class="text-muted">Média Geral</small>
             </div>
           </div>
           <div class="col-md-3 mb-3">
             <div class="border-left-warning p-3">
-              <h4 class="text-warning"><%= @total_activities %></h4>
+              <h4 class="text-warning" id="total-activities"><%= @total_activities %></h4>
               <small class="text-muted">Atividades Totais</small>
             </div>
           </div>
           <div class="col-md-3 mb-3">
             <div class="border-left-primary p-3">
-              <h4 class="text-primary"><%= @total_messages %></h4>
+              <h4 class="text-primary" id="total-messages"><%= @total_messages %></h4>
               <small class="text-muted">Mensagens Enviadas</small>
             </div>
           </div>
@@ -251,3 +254,84 @@
     color: #dddfeb !important;
   }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const refreshButton = document.getElementById('refresh-dashboard');
+  const refreshIcon = refreshButton.querySelector('i');
+  
+  refreshButton.addEventListener('click', function() {
+    // Mostrar loading
+    refreshIcon.classList.remove('fa-sync-alt');
+    refreshIcon.classList.add('fa-spinner', 'fa-spin');
+    refreshButton.disabled = true;
+    
+    // Fazer requisição AJAX
+    fetch('<%= direction_dashboard_refresh_data_path %>', {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.error) {
+        throw new Error(data.error);
+      }
+      
+      // Atualizar os valores na tela
+      document.getElementById('total-students').textContent = data.total_students;
+      document.getElementById('total-teachers').textContent = data.total_teachers;
+      document.getElementById('total-classrooms').textContent = data.total_classrooms;
+      document.getElementById('total-subjects').textContent = data.total_subjects;
+      document.getElementById('attendance-rate').textContent = data.attendance_rate + '%';
+      document.getElementById('average-grade').textContent = data.average_grade;
+      document.getElementById('total-activities').textContent = data.total_activities;
+      document.getElementById('total-messages').textContent = data.total_messages;
+      
+      // Mostrar mensagem de sucesso
+      showUpdateMessage('Dados atualizados com sucesso! Última atualização: ' + data.updated_at, 'success');
+    })
+    .catch(error => {
+      console.error('Erro ao atualizar dados:', error);
+      showUpdateMessage('Erro ao atualizar dados: ' + error.message, 'danger');
+    })
+    .finally(() => {
+      // Restaurar botão
+      refreshIcon.classList.remove('fa-spinner', 'fa-spin');
+      refreshIcon.classList.add('fa-sync-alt');
+      refreshButton.disabled = false;
+    });
+  });
+  
+  function showUpdateMessage(message, type) {
+    // Remover mensagens anteriores
+    const existingAlert = document.querySelector('.dashboard-update-alert');
+    if (existingAlert) {
+      existingAlert.remove();
+    }
+    
+    // Criar nova mensagem
+    const alert = document.createElement('div');
+    alert.className = `alert alert-${type} alert-dismissible fade show dashboard-update-alert`;
+    alert.innerHTML = `
+      <i class="fas fa-info-circle me-2"></i>
+      ${message}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    // Inserir no topo da página
+    const container = document.querySelector('.container-fluid') || document.body;
+    container.insertBefore(alert, container.firstChild);
+    
+    // Auto remover após 5 segundos
+    setTimeout(() => {
+      if (alert.parentNode) {
+        alert.remove();
+      }
+    }, 5000);
+  }
+});
+</script>

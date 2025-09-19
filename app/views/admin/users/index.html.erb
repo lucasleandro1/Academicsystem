@@ -71,11 +71,7 @@
                       <strong><%= user.full_name %></strong>
                       <br>
                       <small class="text-muted">
-                        <% if user.registration_number.present? %>
-                          Matrícula: <%= user.registration_number %>
-                        <% else %>
-                          <%= user.email %>
-                        <% end %>
+                        <%= user.email %>
                       </small>
                     </div>
                   </div>

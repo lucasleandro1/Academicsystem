@@ -4,11 +4,40 @@ class Direction::DashboardController < ApplicationController
 
   def index
     @school = current_user.school
+    load_dashboard_data
+  rescue => e
+    Rails.logger.error "Erro no dashboard da direção: #{e.message}"
+    Rails.logger.error e.backtrace.join("\n")
+    handle_dashboard_error
+  end
 
+  def refresh_data
+    @school = current_user.school
+    load_dashboard_data
+
+    render json: {
+      total_students: @total_students,
+      total_teachers: @total_teachers,
+      total_classrooms: @total_classrooms,
+      total_subjects: @total_subjects,
+      attendance_rate: @attendance_rate,
+      average_grade: @average_grade,
+      total_activities: @total_activities,
+      total_messages: @total_messages,
+      updated_at: Time.current.strftime("%d/%m/%Y às %H:%M")
+    }
+  rescue => e
+    Rails.logger.error "Erro ao atualizar dados do dashboard: #{e.message}"
+    render json: { error: "Erro ao atualizar dados" }, status: 500
+  end
+
+  private
+
+  def load_dashboard_data
     # Estatísticas básicas
     @total_students = User.where(school_id: @school.id, user_type: "student")
                          .distinct.count
-    @total_teachers = User.where(school_id: @school.id, user_type: "teacher", active: true).count
+    @total_teachers = User.where(school_id: @school.id, user_type: "teacher").count
     @total_classrooms = Classroom.where(school_id: @school.id).count
     @total_subjects = Subject.joins(:classroom).where(classrooms: { school_id: @school.id }).distinct.count
 
@@ -29,10 +58,9 @@ class Direction::DashboardController < ApplicationController
 
     # Alertas e avisos
     @alerts = generate_school_alerts
-  rescue => e
-    Rails.logger.error "Erro no dashboard da direção: #{e.message}"
-    Rails.logger.error e.backtrace.join("\n")
+  end
 
+  def handle_dashboard_error
     # Valores padrão em caso de erro
     @total_students = 0
     @total_teachers = 0
@@ -48,8 +76,6 @@ class Direction::DashboardController < ApplicationController
 
     flash.now[:alert] = "Erro ao carregar dados do dashboard. Alguns indicadores podem não estar atualizados."
   end
-
-  private
 
   # ... métodos privados existentes ...
 
@@ -69,7 +95,7 @@ class Direction::DashboardController < ApplicationController
     end
 
     # Verificar professores sem disciplinas
-    teachers_without_subjects = User.where(school_id: @school.id, user_type: "teacher", active: true)
+    teachers_without_subjects = User.where(school_id: @school.id, user_type: "teacher")
                                    .left_joins(:teacher_subjects)
                                    .where(subjects: { id: nil })
                                    .count
@@ -117,22 +143,26 @@ class Direction::DashboardController < ApplicationController
   private
 
   def calculate_attendance_rate
-    # Como ClassSchedule pode não ter campo date, vamos usar uma abordagem diferente
-    total_students = User.where(school_id: @school.id, user_type: "student")
-                        .count
+    # Calculando taxa de frequência baseada nas ausências dos últimos 30 dias
+    total_students = User.where(school_id: @school.id, user_type: "student").count
 
-    return 0 if total_students.zero?
+    return 95.0 if total_students.zero?
 
     total_absences = Absence.joins(:student)
                            .where(users: { school_id: @school.id })
                            .where("absences.date >= ?", 30.days.ago)
                            .count
 
-    # Calculamos uma estimativa simples de presença
+    # Se não há ausências, consideramos 95% de frequência como padrão
     return 95.0 if total_absences.zero?
 
-    attendance_rate = [ 100.0 - (total_absences.to_f / total_students * 10), 0 ].max
-    attendance_rate.round(1)
+    # Calculamos uma estimativa baseada nas ausências
+    # Assumindo que cada aluno deveria ter pelo menos 20 presenças no mês
+    expected_presences = total_students * 20
+    actual_presences = expected_presences - total_absences
+
+    attendance_rate = (actual_presences.to_f / expected_presences * 100).round(1)
+    [ attendance_rate, 0.0 ].max
   end
 
   def calculate_average_grade
@@ -146,12 +176,15 @@ class Direction::DashboardController < ApplicationController
   end
 
   def calculate_total_activities
-    Activity.where(school_id: @school.id).count
+    # Contando eventos como atividades da escola
+    Event.where(school_id: @school.id).count
   end
 
   def calculate_total_messages
-    Message.where(sender: current_user)
-           .where("created_at >= ?", 30.days.ago)
+    # Contando mensagens enviadas pelos usuários da escola nos últimos 30 dias
+    Message.joins(:sender)
+           .where(users: { school_id: @school.id })
+           .where("messages.created_at >= ?", 30.days.ago)
            .count
   end
 end

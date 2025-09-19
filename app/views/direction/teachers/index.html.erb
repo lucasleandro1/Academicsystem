@@ -20,11 +20,6 @@
                         options_from_collection_for_select(current_user.school.subjects, :id, :name, params[:subject_id]),
                         { prompt: "Todas as disciplinas" }, { class: "form-select" } %>
       </div>
-      <div class="col-md-2">
-        <%= form.select :status, 
-                        options_for_select([['Todos', ''], ['Ativos', 'active'], ['Inativos', 'inactive']], params[:status]),
-                        {}, { class: "form-select" } %>
-      </div>
       <div class="col-md-3">
         <div class="d-grid">
           <%= form.submit "Filtrar", class: "btn btn-outline-secondary" %>
@@ -83,9 +78,7 @@
             <tr>
               <th>Professor</th>
               <th>Contato</th>
-              <th>Especialização</th>
               <th>Disciplinas</th>
-              <th>Status</th>
               <th>Última Atividade</th>
               <th>Ações</th>
             </tr>
@@ -103,7 +96,7 @@
                     </div>
                     <div>
                       <div class="fw-medium"><%= "#{teacher.first_name} #{teacher.last_name}" %></div>
-                      <small class="text-muted">Prof. <%= teacher.specialization || 'Geral' %></small>
+                      <small class="text-muted">Professor(a)</small>
                     </div>
                   </div>
                 </td>
@@ -120,13 +113,6 @@
                   <% end %>
                 </td>
                 <td>
-                  <% if teacher.specialization.present? %>
-                    <span class="badge bg-info"><%= teacher.specialization %></span>
-                  <% else %>
-                    <span class="text-muted">-</span>
-                  <% end %>
-                </td>
-                <td>
                   <% if teacher.teacher_subjects.any? %>
                     <% teacher.teacher_subjects.limit(3).each do |subject| %>
                       <span class="badge bg-secondary me-1"><%= subject.name %></span>
@@ -137,11 +123,6 @@
                   <% else %>
                     <span class="text-muted">Nenhuma</span>
                   <% end %>
-                </td>
-                <td>
-                  <span class="badge bg-success">
-                    <i class="fas fa-check"></i> Ativo
-                  </span>
                 </td>
                 <td>
                   <% if teacher.respond_to?(:last_sign_in_at) && teacher.last_sign_in_at %>

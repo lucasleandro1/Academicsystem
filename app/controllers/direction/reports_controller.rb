@@ -21,8 +21,8 @@ class Direction::ReportsController < ApplicationController
     @academic_report = {
       attendance_rate: calculate_school_attendance_rate,
       average_grades: calculate_school_average_grades,
-      total_activities: Activity.joins(subject: { classroom: :school }).where(schools: { id: @school.id }).count,
-      completed_activities: Activity.joins(subject: { classroom: :school }).where(schools: { id: @school.id }).where("due_date < ?", Time.current).count
+      total_activities: Grade.joins(subject: { classroom: :school }).where(schools: { id: @school.id }, grade_type: "atividade").count,
+      completed_activities: Grade.joins(subject: { classroom: :school }).where(schools: { id: @school.id }, grade_type: "atividade").where("assessment_date < ?", Time.current).count
     }
   end
 
@@ -96,8 +96,8 @@ class Direction::ReportsController < ApplicationController
     @academic_report = {
       attendance_rate: calculate_school_attendance_rate,
       average_grades: calculate_school_average_grades,
-      total_activities: Activity.joins(subject: { classroom: :school }).where(schools: { id: @school.id }).count,
-      completed_activities: Activity.joins(subject: { classroom: :school }).where(schools: { id: @school.id }).where("due_date < ?", Time.current).count
+      total_activities: Grade.joins(subject: { classroom: :school }).where(schools: { id: @school.id }, grade_type: "atividade").count,
+      completed_activities: Grade.joins(subject: { classroom: :school }).where(schools: { id: @school.id }, grade_type: "atividade").where("assessment_date < ?", Time.current).count
     }
 
     respond_to do |format|

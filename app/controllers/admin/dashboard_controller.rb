@@ -5,13 +5,13 @@ class Admin::DashboardController < ApplicationController
   def index
     # Estatísticas gerais municipais
     @total_schools = School.count
-    @total_students = User.students.active.count
-    @total_teachers = User.teachers.active.count
-    @total_directors = User.directions.active.count
+    @total_students = User.students.count
+    @total_teachers = User.teachers.count
+    @total_directors = User.directions.count
 
     # Distribuição de alunos por escola
     @students_by_school = School.joins(:students)
-                                .where(users: { user_type: "student", active: true })
+                                .where(users: { user_type: "student" })
                                 .group("schools.name")
                                 .count
 
@@ -19,7 +19,7 @@ class Admin::DashboardController < ApplicationController
     @general_attendance_rate = calculate_general_attendance_rate
 
     # Estudantes ativos no município
-    @active_students = User.where(user_type: "student", active: true).count
+    @active_students = User.where(user_type: "student").count
 
     # Últimos comunicados enviados
     @recent_events = Event.order(created_at: :desc).limit(5)
@@ -46,7 +46,7 @@ class Admin::DashboardController < ApplicationController
 
   def calculate_attendance_summary
     School.joins(:students)
-          .where(users: { user_type: "student", active: true })
+          .where(users: { user_type: "student" })
           .group("schools.name")
           .average("100 - (SELECT COUNT(*) FROM absences WHERE absences.user_id = users.id AND absences.date >= '#{30.days.ago.to_date}') * 10")
   end

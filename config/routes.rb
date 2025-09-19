@@ -73,13 +73,6 @@ Rails.application.routes.draw do
       end
     end
     resources :subjects
-    resources :teacher_assignments, only: [ :index ] do
-      collection do
-        patch :assign_teacher
-        patch :remove_assignment
-        patch :bulk_assign
-      end
-    end
     resources :events
     resources :reports, only: [ :index, :show ] do
       collection do
@@ -106,6 +99,9 @@ Rails.application.routes.draw do
       end
     end
     root to: "dashboard#index"
+
+    # Dashboard refresh route
+    get "dashboard/refresh_data", to: "dashboard#refresh_data"
   end
 
   namespace :teachers do
