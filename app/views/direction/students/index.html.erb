@@ -44,27 +44,27 @@
       </div>
     </div>
   </div>
-  <div class="col-md-3">
+  <div class="col-md-4">
     <div class="card text-center">
       <div class="card-body">
-        <h3 class="text-success"><%= @students.where(active: true).count %></h3>
-        <small class="text-muted">Alunos Ativos</small>
+        <h3 class="text-success"><%= @students.joins(:classroom).count %></h3>
+        <small class="text-muted">Com Turma</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card text-center">
+      <div class="card-body">
+        <h3 class="text-info"><%= User.where(school: current_user.school, user_type: 'student', classroom_id: current_user.school.classrooms.pluck(:id)).count %></h3>
+        <small class="text-muted">Em turmas</small>
       </div>
     </div>
   </div>
   <div class="col-md-3">
     <div class="card text-center">
       <div class="card-body">
-        <h3 class="text-info"><%= Enrollment.joins(:student).where(students: { school: current_user.school }).where(status: 'active').count %></h3>
-        <small class="text-muted">Matriculados</small>
-      </div>
-    </div>
-  </div>
-  <div class="col-md-3">
-    <div class="card text-center">
-      <div class="card-body">
-        <h3 class="text-warning"><%= Enrollment.joins(:student).where(students: { school: current_user.school }).where(status: 'pending').count %></h3>
-        <small class="text-muted">Pendentes</small>
+        <h3 class="text-warning"><%= User.where(school: current_user.school, user_type: 'student', classroom_id: nil).count %></h3>
+        <small class="text-muted">Sem turma</small>
       </div>
     </div>
   </div>
@@ -119,18 +119,17 @@
                   </div>
                 </td>
                 <td>
-                  <strong><%= student.registration_number %></strong>
+                  <strong>ID: <%= student.id %></strong>
                   <br>
                   <small class="text-muted">
                     Ingressou em <%= student.created_at.strftime("%m/%Y") %>
                   </small>
                 </td>
                 <td>
-                  <% enrollment = student.enrollments.where(status: 'active').first %>
-                  <% if enrollment&.classroom %>
-                    <span class="badge bg-info"><%= enrollment.classroom.name %></span>
+                  <% if student.classroom %>
+                    <span class="badge bg-info"><%= student.classroom.name %></span>
                     <br>
-                    <small class="text-muted"><%= enrollment.classroom.shift.humanize %></small>
+                    <small class="text-muted"><%= student.classroom.shift.humanize %></small>
                   <% else %>
                     <span class="text-muted">Sem turma</span>
                   <% end %>
@@ -145,7 +144,7 @@
                 <td>
                   <% if student.guardian_name.present? %>
                     <strong><%= student.guardian_name %></strong>
-                    <% if student.guardian_phone.present? %>
+                    <% if student.respond_to?(:guardian_phone) && student.guardian_phone.present? %>
                       <br>
                       <small class="text-muted">
                         <i class="fas fa-phone"></i> <%= student.guardian_phone %>
@@ -156,15 +155,10 @@
                   <% end %>
                 </td>
                 <td>
-                  <% if student.active? %>
-                    <span class="badge bg-success">Ativo</span>
-                  <% else %>
-                    <span class="badge bg-danger">Inativo</span>
-                  <% end %>
-                  <% enrollment = student.enrollments.where(status: 'active').first %>
-                  <% if enrollment %>
+                  <span class="badge bg-success">Ativo</span>
+                  <% if student.classroom %>
                     <br>
-                    <span class="badge bg-primary">Matriculado</span>
+                    <span class="badge bg-primary">Com turma</span>
                   <% end %>
                 </td>
                 <td>
@@ -183,18 +177,8 @@
                       </button>
                       <ul class="dropdown-menu">
                         <li>
-                          <%= link_to direction_student_enrollments_path(student), class: "dropdown-item" do %>
-                            <i class="fas fa-id-card"></i> Matrículas
-                          <% end %>
-                        </li>
-                        <li>
-                          <%= link_to direction_student_grades_path(student), class: "dropdown-item" do %>
-                            <i class="fas fa-chart-line"></i> Notas
-                          <% end %>
-                        </li>
-                        <li>
-                          <%= link_to direction_student_absences_path(student), class: "dropdown-item" do %>
-                            <i class="fas fa-calendar-times"></i> Faltas
+                          <%= link_to direction_student_path(student), class: "dropdown-item" do %>
+                            <i class="fas fa-chart-line"></i> Ver Detalhes
                           <% end %>
                         </li>
                         <li><hr class="dropdown-divider"></li>

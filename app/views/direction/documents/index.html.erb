@@ -52,7 +52,6 @@
               <th>Tipo</th>
               <th>Criado por</th>
               <th>Data</th>
-              <th>Status</th>
               <th>Ações</th>
             </tr>
           </thead>
@@ -79,13 +78,6 @@
                 <td>
                   <%= document.created_at.strftime("%d/%m/%Y") %>
                   <br><small class="text-muted"><%= document.created_at.strftime("%H:%M") %></small>
-                </td>
-                <td>
-                  <% if document.active? %>
-                    <span class="badge bg-success">Ativo</span>
-                  <% else %>
-                    <span class="badge bg-secondary">Inativo</span>
-                  <% end %>
                 </td>
                 <td>
                   <div class="btn-group" role="group">
@@ -133,19 +125,11 @@
 
 <!-- Estatísticas -->
 <div class="row mt-4">
-  <div class="col-md-3">
+  <div class="col-md-4">
     <div class="card text-center">
       <div class="card-body">
         <h4 class="text-primary"><%= @documents.count %></h4>
         <small class="text-muted">Total de Documentos</small>
-      </div>
-    </div>
-  </div>
-  <div class="col-md-3">
-    <div class="card text-center">
-      <div class="card-body">
-        <h4 class="text-success"><%= @documents.where(active: true).count %></h4>
-        <small class="text-muted">Documentos Ativos</small>
       </div>
     </div>
   </div>

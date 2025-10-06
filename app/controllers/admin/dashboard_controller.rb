@@ -2,5 +2,52 @@ class Admin::DashboardController < ApplicationController
   before_action :authenticate_user!
   before_action :authorize_superadmin!
 
-  def index; end
+  def index
+    # Estatísticas gerais municipais
+    @total_schools = School.count
+    @total_students = User.students.count
+    @total_teachers = User.teachers.count
+    @total_directors = User.directions.count
+
+    # Distribuição de alunos por escola
+    @students_by_school = School.joins(:students)
+                                .where(users: { user_type: "student" })
+                                .group("schools.name")
+                                .count
+
+    # Taxa de presença média geral
+    @general_attendance_rate = calculate_general_attendance_rate
+
+    # Estudantes ativos no município
+    @active_students = User.where(user_type: "student").count
+
+    # Últimos comunicados enviados
+    @recent_events = Event.order(created_at: :desc).limit(5)
+
+    # Gráfico de distribuição de alunos por escola
+    @school_distribution = @students_by_school.map { |school, count| [ school, count ] }
+
+    # Relatório rápido de presença
+    @attendance_summary = calculate_attendance_summary
+  end
+
+  private
+
+  def calculate_general_attendance_rate
+    total_students = User.where(user_type: "student").count
+    return 0 if total_students.zero?
+
+    total_absences = Absence.where("date >= ?", 30.days.ago).count
+    return 95.0 if total_absences.zero?
+
+    attendance_rate = [ 100.0 - (total_absences.to_f / total_students * 10), 0 ].max
+    attendance_rate.round(1)
+  end
+
+  def calculate_attendance_summary
+    School.joins(:students)
+          .where(users: { user_type: "student" })
+          .group("schools.name")
+          .average("100 - (SELECT COUNT(*) FROM absences WHERE absences.user_id = users.id AND absences.date >= '#{30.days.ago.to_date}') * 10")
+  end
 end

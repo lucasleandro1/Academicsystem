@@ -9,16 +9,12 @@ class Direction::TeachersController < ApplicationController
 
     # Filtros
     if params[:search].present?
-      @teachers = @teachers.where("first_name ILIKE ? OR last_name ILIKE ? OR email ILIKE ? OR registration_number ILIKE ?",
-                                 "%#{params[:search]}%", "%#{params[:search]}%", "%#{params[:search]}%", "%#{params[:search]}%")
+      @teachers = @teachers.where("first_name ILIKE ? OR last_name ILIKE ? OR email ILIKE ?",
+                                 "%#{params[:search]}%", "%#{params[:search]}%", "%#{params[:search]}%")
     end
 
-    if params[:active].present?
-      @teachers = @teachers.where(active: params[:active] == "true")
-    end
-
-    if params[:specialization].present?
-      @teachers = @teachers.where("specialization ILIKE ?", "%#{params[:specialization]}%")
+    if params[:subject_id].present?
+      @teachers = @teachers.joins(:teacher_subjects).where(subjects: { id: params[:subject_id] }).distinct
     end
 
     @teachers = @teachers.order(:first_name, :last_name)
@@ -26,8 +22,7 @@ class Direction::TeachersController < ApplicationController
 
   def show
     @subjects = Subject.where(teacher: @teacher)
-    @classrooms = Classroom.joins(:subjects).where(subjects: { teacher: @teacher }).distinct
-    @activities = Activity.joins(:subject).where(subjects: { teacher: @teacher }).order(created_at: :desc).limit(10)
+    @classrooms = Classroom.joins(:subjects).where(subjects: { user_id: @teacher.id }).distinct
   end
 
   def new
@@ -48,25 +43,19 @@ class Direction::TeachersController < ApplicationController
   end
 
   def update
-    if @user.update(user_params)
-      redirect_to direction_teacher_path(@user), notice: "Professor atualizado com sucesso."
+    if @teacher.update(user_params)
+      redirect_to direction_teacher_path(@teacher), notice: "Professor atualizado com sucesso."
     else
       render :edit
     end
   end
 
   def destroy
-    @user.destroy
+    @teacher.destroy
     redirect_to direction_teachers_path, notice: "Professor removido com sucesso."
   end
 
   private
-
-  def ensure_direction!
-    unless current_user&.direction?
-      redirect_to root_path, alert: "Acesso não autorizado."
-    end
-  end
 
   def set_teacher
     @user = User.where(school_id: current_user.school.id, user_type: "teacher", id: params[:id]).first
@@ -81,8 +70,7 @@ class Direction::TeachersController < ApplicationController
   def user_params
     params.require(:user).permit(
       :email, :password, :password_confirmation, :first_name, :last_name,
-      :phone, :birth_date, :cpf, :registration_number, :position,
-      :specialization, :active
+      :phone
     )
   end
 end

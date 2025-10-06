@@ -22,7 +22,7 @@ class Direction::DocumentsController < ApplicationController
       @documents = @documents.joins(:user).where(users: { user_type: params[:user_type] })
     end
 
-    @documents = @documents.page(params[:page]).per(20)
+    @documents = @documents.limit(50) # Limitar a 50 resultados por enquanto
     @document_types = Document.distinct.pluck(:document_type).compact
   end
 
@@ -89,15 +89,38 @@ class Direction::DocumentsController < ApplicationController
     redirect_to direction_documents_path, notice: "Documento excluído com sucesso."
   end
 
-  private
+  def download
+    @document = Document.find(params[:id])
 
-  def ensure_direction!
-    unless current_user&.direction?
-      redirect_to root_path, alert: "Acesso não autorizado."
+    # Verificar se o documento pertence à escola do diretor
+    unless @document.school == current_user.school
+      redirect_to direction_documents_path, alert: "Documento não encontrado."
+      return
+    end
+
+    if @document.respond_to?(:file) && @document.file.present?
+      if @document.file.respond_to?(:download)
+        send_data @document.file.download,
+                  filename: @document.file.filename.to_s,
+                  type: @document.file.content_type,
+                  disposition: "attachment"
+      elsif @document.file.respond_to?(:path)
+        send_file @document.file.path,
+                  filename: @document.title + File.extname(@document.file.path),
+                  type: @document.file.content_type || "application/octet-stream",
+                  disposition: "attachment"
+      else
+        redirect_to direction_document_path(@document), alert: "Arquivo não disponível para download."
+      end
+    else
+      redirect_to direction_document_path(@document), alert: "Nenhum arquivo anexado a este documento."
     end
   end
 
+  private
+
+
   def document_params
-    params.require(:document).permit(:title, :description, :document_type, :file, :active)
+    params.require(:document).permit(:title, :description, :document_type, :file)
   end
 end

@@ -20,11 +20,6 @@
                         options_from_collection_for_select(current_user.school.subjects, :id, :name, params[:subject_id]),
                         { prompt: "Todas as disciplinas" }, { class: "form-select" } %>
       </div>
-      <div class="col-md-2">
-        <%= form.select :status, 
-                        options_for_select([['Todos', ''], ['Ativos', 'active'], ['Inativos', 'inactive']], params[:status]),
-                        {}, { class: "form-select" } %>
-      </div>
       <div class="col-md-3">
         <div class="d-grid">
           <%= form.submit "Filtrar", class: "btn btn-outline-secondary" %>
@@ -47,15 +42,15 @@
   <div class="col-md-3">
     <div class="card text-center">
       <div class="card-body">
-        <h3 class="text-success"><%= @teachers.where(active: true).count %></h3>
-        <small class="text-muted">Professores Ativos</small>
+        <h3 class="text-success"><%= @teachers.count %></h3>
+        <small class="text-muted">Total de Professores</small>
       </div>
     </div>
   </div>
   <div class="col-md-3">
     <div class="card text-center">
       <div class="card-body">
-        <h3 class="text-info"><%= @teachers.joins(:subjects).distinct.count %></h3>
+        <h3 class="text-info"><%= @teachers.joins(:teacher_subjects).distinct.count %></h3>
         <small class="text-muted">Com Disciplinas</small>
       </div>
     </div>
@@ -83,9 +78,7 @@
             <tr>
               <th>Professor</th>
               <th>Contato</th>
-              <th>Especialização</th>
               <th>Disciplinas</th>
-              <th>Status</th>
               <th>Última Atividade</th>
               <th>Ações</th>
             </tr>
@@ -96,18 +89,14 @@
                 <td>
                   <div class="d-flex align-items-center">
                     <div class="avatar me-3">
-                      <% if teacher.avatar.present? %>
-                        <%= image_tag teacher.avatar, class: "rounded-circle", size: "40x40" %>
-                      <% else %>
-                        <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center text-white" 
-                             style="width: 40px; height: 40px;">
-                          <%= teacher.full_name.first.upcase %>
-                        </div>
-                      <% end %>
+                      <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center text-white" 
+                           style="width: 40px; height: 40px;">
+                        <%= teacher.first_name&.first&.upcase || 'P' %>
+                      </div>
                     </div>
                     <div>
-                      <div class="fw-medium"><%= teacher.full_name %></div>
-                      <small class="text-muted">Prof. <%= teacher.position || 'Geral' %></small>
+                      <div class="fw-medium"><%= "#{teacher.first_name} #{teacher.last_name}" %></div>
+                      <small class="text-muted">Professor(a)</small>
                     </div>
                   </div>
                 </td>
@@ -124,37 +113,19 @@
                   <% end %>
                 </td>
                 <td>
-                  <% if teacher.specialization.present? %>
-                    <span class="badge bg-info"><%= teacher.specialization %></span>
-                  <% else %>
-                    <span class="text-muted">-</span>
-                  <% end %>
-                </td>
-                <td>
-                  <% if teacher.subjects.any? %>
-                    <% teacher.subjects.limit(3).each do |subject| %>
+                  <% if teacher.teacher_subjects.any? %>
+                    <% teacher.teacher_subjects.limit(3).each do |subject| %>
                       <span class="badge bg-secondary me-1"><%= subject.name %></span>
                     <% end %>
-                    <% if teacher.subjects.count > 3 %>
-                      <small class="text-muted">+<%= teacher.subjects.count - 3 %> mais</small>
+                    <% if teacher.teacher_subjects.count > 3 %>
+                      <small class="text-muted">+<%= teacher.teacher_subjects.count - 3 %> mais</small>
                     <% end %>
                   <% else %>
                     <span class="text-muted">Nenhuma</span>
                   <% end %>
                 </td>
                 <td>
-                  <% if teacher.active? %>
-                    <span class="badge bg-success">
-                      <i class="fas fa-check"></i> Ativo
-                    </span>
-                  <% else %>
-                    <span class="badge bg-danger">
-                      <i class="fas fa-times"></i> Inativo
-                    </span>
-                  <% end %>
-                </td>
-                <td>
-                  <% if teacher.last_sign_in_at %>
+                  <% if teacher.respond_to?(:last_sign_in_at) && teacher.last_sign_in_at %>
                     <%= time_ago_in_words(teacher.last_sign_in_at) %> atrás
                   <% else %>
                     <span class="text-muted">Nunca acessou</span>
@@ -183,18 +154,6 @@
                             <i class="fas fa-key"></i> Redefinir Senha
                           <% end %>
                         </li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li>
-                          <% if teacher.active? %>
-                            <%= link_to "#", class: "dropdown-item text-warning" do %>
-                              <i class="fas fa-pause"></i> Desativar
-                            <% end %>
-                          <% else %>
-                            <%= link_to "#", class: "dropdown-item text-success" do %>
-                              <i class="fas fa-play"></i> Ativar
-                            <% end %>
-                          <% end %>
-                        </li>
                       </ul>
                     </div>
                   </div>
@@ -209,7 +168,7 @@
         <i class="fas fa-chalkboard-teacher fa-3x text-muted mb-3"></i>
         <h5 class="text-muted">Nenhum professor encontrado</h5>
         <p class="text-muted">
-          <% if params.any? %>
+          <% if params.except(:action, :controller).present? %>
             Não há professores que correspondam aos filtros selecionados.
           <% else %>
             Nenhum professor foi cadastrado ainda.
@@ -231,7 +190,7 @@
     </div>
     <div class="card-body">
       <div class="row">
-        <% subject_stats = @teachers.joins(:subjects).group('subjects.name').count %>
+        <% subject_stats = @teachers.joins(:teacher_subjects).group('subjects.name').count %>
         <% subject_stats.each do |subject_name, count| %>
           <div class="col-md-6 col-lg-3 mb-3">
             <div class="text-center">

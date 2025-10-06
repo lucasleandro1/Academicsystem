@@ -1,0 +1,102 @@
+<% case current_user.user_type %>
+<% when 'admin' %>
+  <!-- Navegação para Admin -->
+  <ul class="nav flex-column">
+    <li class="nav-item">
+      <%= link_to admin_root_path, class: "nav-link #{'active' if current_page?(admin_root_path)}" do %>
+        <i class="fas fa-tachometer-alt"></i> Dashboard
+      <% end %>
+    </li>
+    
+    <li class="nav-item">
+      <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+        <span>Gestão da Rede</span>
+      </h6>
+    </li>
+    
+    <li class="nav-item">
+      <%= link_to admin_schools_path, class: "nav-link #{'active' if current_page?(admin_schools_path)}" do %>
+        <i class="fas fa-school"></i> Escolas
+      <% end %>
+    </li>
+    
+    <li class="nav-item">
+      <%= link_to admin_users_path, class: "nav-link #{'active' if current_page?(admin_users_path)}" do %>
+        <i class="fas fa-users"></i> Usuários
+      <% end %>
+    </li>
+    
+    <li class="nav-item">
+      <%= link_to admin_directions_path, class: "nav-link #{'active' if current_page?(admin_directions_path)}" do %>
+        <i class="fas fa-user-tie"></i> Diretores
+      <% end %>
+    </li>
+    
+    <li class="nav-item">
+      <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+        <span>Gestão Municipal</span>
+      </h6>
+    </li>
+    
+    <li class="nav-item">
+      <%= link_to admin_events_path, class: "nav-link #{'active' if controller_name == 'events' && controller.class.module_parent.name.downcase == 'admin'}" do %>
+        <i class="fas fa-calendar-alt"></i> Eventos Municipais
+      <% end %>
+    </li>
+    
+    <li class="nav-item">
+      <%= link_to admin_documents_path, class: "nav-link #{'active' if controller_name == 'documents' && controller.class.module_parent.name.downcase == 'admin'}" do %>
+        <i class="fas fa-file-archive"></i> GED Municipal
+      <% end %>
+    </li>
+    
+    <li class="nav-item">
+      <%= link_to admin_reports_path, class: "nav-link #{'active' if controller_name == 'reports' && controller.class.module_parent.name.downcase == 'admin'}" do %>
+        <i class="fas fa-chart-bar"></i> Relatórios
+      <% end %>
+    </li>
+    
+    <li class="nav-item">
+      <%= link_to admin_settings_path, class: "nav-link #{'active' if controller_name == 'settings' && controller.class.module_parent.name.downcase == 'admin'}" do %>
+        <i class="fas fa-cogs"></i> Configurações
+      <% end %>
+    </li>
+  </ul>
+
+<% when 'direction' %>
+  <!-- Navegação para Direção -->
+  <ul class="nav flex-column">
+    <li class="nav-item">
+      <%= link_to direction_root_path, class: "nav-link #{'active' if current_page?(direction_root_path)}" do %>
+        <i class="fas fa-tachometer-alt"></i> Dashboard
+      <% end %>
+    </li>
+    
+    <li class="nav-item">
+      <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+        <span>Gestão da Escola</span>
+      </h6>
+    </li>
+    
+    <li class="nav-item">
+      <%= link_to direction_school_path, class: "nav-link #{'active' if current_page?(direction_school_path)}" do %>
+        <i class="fas fa-school"></i> Dados da Escola
+      <% end %>
+    </li>
+    
+    <li class="nav-item">
+      <%= link_to direction_students_path, class: "nav-link #{'active' if controller_name == 'students' && action_name == 'index'}" do %>
+        <i class="fas fa-user-graduate"></i> Alunos
+        <span class="badge bg-primary ms-auto"><%= current_user.school.users.where(user_type: 'student').count %></span>
+      <% end %>
+    </li>
+    
+    <li class="nav-item">
+      <%= link_to direction_teachers_path, class: "nav-link #{'active' if controller_name == 'teachers' && action_name == 'index'}" do %>
+        <i class="fas fa-chalkboard-teacher"></i> Professores
+        <span class="badge bg-success ms-auto"><%= current_user.school.users.where(user_type: 'teacher').count %></span>
+      <% end %>
+    </li>
+  </ul>
+
+<% when 'teacher' %>

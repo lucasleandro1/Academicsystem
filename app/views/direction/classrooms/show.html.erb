@@ -4,7 +4,7 @@
   <div>
     <h1><i class="fas fa-door-open"></i> <%= @classroom.name %></h1>
     <small class="text-muted">
-      <%= @classroom.grade %> - <%= 
+      <%= @classroom.level.humanize %> - <%= 
         case @classroom.shift
         when 'morning' then 'Matutino'
         when 'afternoon' then 'Vespertino'  
@@ -26,13 +26,8 @@
         <% end %>
       </li>
       <li>
-        <%= link_to "#", class: "dropdown-item", data: { bs_toggle: "modal", bs_target: "#enrollModal" } do %>
-          <i class="fas fa-user-plus"></i> Matricular Aluno
-        <% end %>
-      </li>
-      <li>
-        <%= link_to "#", class: "dropdown-item", data: { bs_toggle: "modal", bs_target: "#subjectModal" } do %>
-          <i class="fas fa-book"></i> Atribuir Disciplina
+        <%= link_to "#", class: "dropdown-item", data: { bs_toggle: "modal", bs_target: "#addStudentModal" } do %>
+          <i class="fas fa-user-plus"></i> Adicionar Aluno
         <% end %>
       </li>
       <li><hr class="dropdown-divider"></li>
@@ -45,120 +40,50 @@
   </div>
 </div>
 
-<!-- Informações Gerais -->
+<!-- Estatísticas Rápidas -->
 <div class="row mb-4">
-  <div class="col-lg-8">
-    <div class="card">
-      <div class="card-header">
-        <h5><i class="fas fa-info-circle"></i> Informações Gerais</h5>
-      </div>
+  <div class="col-lg-3 col-md-6 mb-3">
+    <div class="card text-center border-primary">
       <div class="card-body">
-        <div class="row">
-          <div class="col-md-6 mb-3">
-            <strong>Nome:</strong><br>
-            <span class="text-muted"><%= @classroom.name %></span>
-          </div>
-          
-          <% if @classroom.code.present? %>
-            <div class="col-md-6 mb-3">
-              <strong>Código:</strong><br>
-              <span class="text-muted"><%= @classroom.code %></span>
-            </div>
-          <% end %>
-          
-          <div class="col-md-6 mb-3">
-            <strong>Série/Ano:</strong><br>
-            <span class="text-muted"><%= @classroom.grade %></span>
-          </div>
-          
-          <div class="col-md-6 mb-3">
-            <strong>Turno:</strong><br>
-            <span class="badge bg-<%= 
-              case @classroom.shift
-              when 'morning' then 'warning'
-              when 'afternoon' then 'info'
-              when 'evening' then 'dark'
-              else 'secondary'
-              end
-            %>">
-              <%= 
-                case @classroom.shift
-                when 'morning' then 'Matutino'
-                when 'afternoon' then 'Vespertino'
-                when 'evening' then 'Noturno'
-                else 'Não definido'
-                end
-              %>
-            </span>
-          </div>
-          
-          <% if @classroom.capacity.present? %>
-            <div class="col-md-6 mb-3">
-              <strong>Capacidade:</strong><br>
-              <span class="text-muted">
-                <%= @classroom.enrollments.count %>/<%= @classroom.capacity %> alunos
-                <% occupancy = (@classroom.enrollments.count.to_f / @classroom.capacity * 100).round(1) %>
-                (<%= occupancy %>% ocupação)
-              </span>
-              <div class="progress mt-1" style="height: 6px;">
-                <div class="progress-bar bg-<%= occupancy > 90 ? 'danger' : occupancy > 70 ? 'warning' : 'success' %>" 
-                     style="width: <%= occupancy %>%"></div>
-              </div>
-            </div>
-          <% end %>
-          
-          <div class="col-md-6 mb-3">
-            <strong>Status:</strong><br>
-            <span class="badge bg-<%= @classroom.active? ? 'success' : 'secondary' %>">
-              <%= @classroom.active? ? 'Ativa' : 'Inativa' %>
-            </span>
-          </div>
-          
-          <% if @classroom.description.present? %>
-            <div class="col-12 mb-3">
-              <strong>Descrição:</strong><br>
-              <span class="text-muted"><%= @classroom.description %></span>
-            </div>
-          <% end %>
-        </div>
+        <i class="fas fa-users fa-2x text-primary mb-2"></i>
+        <h3 class="text-primary"><%= @classroom.students.count %></h3>
+        <p class="mb-0">Alunos Matriculados</p>
       </div>
     </div>
   </div>
   
-  <!-- Estatísticas Rápidas -->
-  <div class="col-lg-4">
-    <div class="row">
-      <div class="col-12 mb-3">
-        <div class="card text-center">
-          <div class="card-body">
-            <h3 class="text-primary"><%= @classroom.enrollments.count %></h3>
-            <small class="text-muted">Alunos Matriculados</small>
-          </div>
-        </div>
+  <div class="col-lg-3 col-md-6 mb-3">
+    <div class="card text-center border-success">
+      <div class="card-body">
+        <i class="fas fa-book fa-2x text-success mb-2"></i>
+        <h3 class="text-success"><%= @classroom.subjects.count %></h3>
+        <p class="mb-0">Disciplinas</p>
       </div>
-      
-      <div class="col-12 mb-3">
-        <div class="card text-center">
-          <div class="card-body">
-            <h3 class="text-success"><%= @classroom.subjects.count %></h3>
-            <small class="text-muted">Disciplinas</small>
-          </div>
-        </div>
+    </div>
+  </div>
+  
+  <div class="col-lg-3 col-md-6 mb-3">
+    <div class="card text-center border-info">
+      <div class="card-body">
+        <i class="fas fa-chalkboard-teacher fa-2x text-info mb-2"></i>
+        <h3 class="text-info"><%= @classroom.teachers.distinct.count %></h3>
+        <p class="mb-0">Professores</p>
       </div>
-      
-      <div class="col-12 mb-3">
-        <div class="card text-center">
-          <div class="card-body">
-            <h3 class="text-info"><%= @classroom.subjects.joins(:user).distinct.count %></h3>
-            <small class="text-muted">Professores</small>
-          </div>
-        </div>
+    </div>
+  </div>
+  
+  <div class="col-lg-3 col-md-6 mb-3">
+    <div class="card text-center border-warning">
+      <div class="card-body">
+        <i class="fas fa-clock fa-2x text-warning mb-2"></i>
+        <h3 class="text-warning"><%= @classroom.subjects.sum(:workload) %></h3>
+        <p class="mb-0">Horas/Semana</p>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Horários e Localização -->
+<!-- Horários -->
 <div class="row mb-4">
   <div class="col-md-6">
     <div class="card">
@@ -166,25 +91,29 @@
         <h5><i class="fas fa-clock"></i> Horários</h5>
       </div>
       <div class="card-body">
-        <% if @classroom.start_time && @classroom.end_time %>
+        <% if @classroom.weekly_schedule.any? %>
           <div class="mb-3">
-            <strong>Período das Aulas:</strong><br>
+            <strong>Horário de Funcionamento:</strong><br>
             <span class="text-muted">
-              <%= @classroom.start_time.strftime("%H:%M") %> às <%= @classroom.end_time.strftime("%H:%M") %>
+              <% first_class = @classroom.weekly_schedule.minimum(:start_time) %>
+              <% last_class = @classroom.weekly_schedule.maximum(:end_time) %>
+              <% if first_class && last_class %>
+                <%= first_class.strftime("%H:%M") %> às <%= last_class.strftime("%H:%M") %>
+              <% end %>
             </span>
           </div>
-        <% end %>
-        
-        <% if @classroom.active_days.present? %>
+          
           <div class="mb-3">
-            <strong>Dias Ativos:</strong><br>
-            <% day_names = { 
-              'monday' => 'Segunda', 'tuesday' => 'Terça', 'wednesday' => 'Quarta',
-              'thursday' => 'Quinta', 'friday' => 'Sexta', 'saturday' => 'Sábado'
-            } %>
-            <% @classroom.active_days.each do |day| %>
+            <strong>Dias com Aulas:</strong><br>
+            <% active_weekdays = @classroom.weekly_schedule.distinct.pluck(:weekday).sort %>
+            <% day_names = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'] %>
+            <% active_weekdays.each do |day| %>
               <span class="badge bg-primary me-1"><%= day_names[day] %></span>
             <% end %>
+          </div>
+        <% else %>
+          <div class="text-muted">
+            <i class="fas fa-info-circle me-2"></i>Nenhum horário definido para esta turma.
           </div>
         <% end %>
       </div>
@@ -194,29 +123,39 @@
   <div class="col-md-6">
     <div class="card">
       <div class="card-header">
-        <h5><i class="fas fa-map-marker-alt"></i> Localização</h5>
+        <h5><i class="fas fa-chart-bar"></i> Informações Gerais</h5>
       </div>
       <div class="card-body">
-        <% if @classroom.classroom_number.present? %>
-          <div class="mb-3">
-            <strong>Sala:</strong><br>
-            <span class="text-muted"><%= @classroom.classroom_number %></span>
-          </div>
-        <% end %>
+        <div class="mb-3">
+          <strong>Nível:</strong><br>
+          <span class="text-muted"><%= @classroom.level.humanize %></span>
+        </div>
         
-        <% if @classroom.building.present? %>
-          <div class="mb-3">
-            <strong>Prédio/Bloco:</strong><br>
-            <span class="text-muted"><%= @classroom.building %></span>
-          </div>
-        <% end %>
+        <div class="mb-3">
+          <strong>Turno:</strong><br>
+          <span class="badge bg-<%= 
+            case @classroom.shift
+            when 'morning' then 'warning'
+            when 'afternoon' then 'info'
+            when 'evening' then 'dark'
+            else 'secondary'
+            end
+          %>">
+            <%= 
+              case @classroom.shift
+              when 'morning' then 'Matutino'
+              when 'afternoon' then 'Vespertino'
+              when 'evening' then 'Noturno'
+              else 'Não definido'
+              end
+            %>
+          </span>
+        </div>
         
-        <% if @classroom.location_notes.present? %>
-          <div class="mb-3">
-            <strong>Observações:</strong><br>
-            <span class="text-muted"><%= @classroom.location_notes %></span>
-          </div>
-        <% end %>
+        <div class="mb-3">
+          <strong>Ano Letivo:</strong><br>
+          <span class="text-muted"><%= @classroom.academic_year %></span>
+        </div>
       </div>
     </div>
   </div>
@@ -225,44 +164,40 @@
 <!-- Lista de Alunos -->
 <div class="card mb-4">
   <div class="card-header d-flex justify-content-between align-items-center">
-    <h5><i class="fas fa-users"></i> Alunos Matriculados</h5>
-    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#enrollModal">
-      <i class="fas fa-user-plus"></i> Matricular Aluno
+    <h5><i class="fas fa-users"></i> Alunos da Turma</h5>
+    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addStudentModal">
+      <i class="fas fa-user-plus"></i> Adicionar Aluno
     </button>
   </div>
   <div class="card-body">
-    <% if @classroom.enrollments.any? %>
+    <% if @classroom.students.any? %>
       <div class="table-responsive">
         <table class="table table-hover">
           <thead>
             <tr>
               <th>Nome</th>
               <th>Email</th>
-              <th>Data de Matrícula</th>
+              <th>Data de Cadastro</th>
               <th>Status</th>
               <th class="text-center">Ações</th>
             </tr>
           </thead>
           <tbody>
-            <% @classroom.enrollments.joins(:user).each do |enrollment| %>
+            <% @classroom.students.each do |student| %>
               <tr>
                 <td>
-                  <strong><%= enrollment.user.name %></strong>
+                  <strong><%= student.full_name %></strong>
                 </td>
-                <td><%= enrollment.user.email %></td>
-                <td><%= enrollment.created_at.strftime("%d/%m/%Y") %></td>
-                <td>
-                  <span class="badge bg-<%= enrollment.active? ? 'success' : 'secondary' %>">
-                    <%= enrollment.active? ? 'Ativo' : 'Inativo' %>
-                  </span>
-                </td>
+                <td><%= student.email %></td>
+                <td><%= student.created_at.strftime("%d/%m/%Y") %></td>
                 <td class="text-center">
                   <div class="btn-group btn-group-sm">
-                    <%= link_to "#", class: "btn btn-outline-primary btn-sm" do %>
+                    <%= link_to direction_student_path(student), class: "btn btn-outline-primary btn-sm" do %>
                       <i class="fas fa-eye"></i>
                     <% end %>
-                    <%= link_to "#", class: "btn btn-outline-danger btn-sm", 
-                               data: { confirm: "Tem certeza que deseja remover este aluno?" } do %>
+                    <%= button_to remove_student_direction_classroom_path(@classroom, student), 
+                               method: :patch, class: "btn btn-outline-danger btn-sm", 
+                               data: { confirm: "Tem certeza que deseja remover este aluno da turma?" } do %>
                       <i class="fas fa-user-times"></i>
                     <% end %>
                   </div>
@@ -275,141 +210,154 @@
     <% else %>
       <div class="text-center py-4">
         <i class="fas fa-users fa-3x text-muted mb-3"></i>
-        <h6 class="text-muted">Nenhum aluno matriculado</h6>
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#enrollModal">
-          <i class="fas fa-user-plus"></i> Matricular Primeiro Aluno
+        <h6 class="text-muted">Nenhum aluno na turma</h6>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addStudentModal">
+          <i class="fas fa-user-plus"></i> Adicionar Primeiro Aluno
         </button>
       </div>
     <% end %>
   </div>
 </div>
 
-<!-- Lista de Disciplinas -->
-<div class="card mb-4">
-  <div class="card-header d-flex justify-content-between align-items-center">
-    <h5><i class="fas fa-book"></i> Disciplinas</h5>
-    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#subjectModal">
-      <i class="fas fa-plus"></i> Atribuir Disciplina
-    </button>
-  </div>
-  <div class="card-body">
-    <% if @classroom.subjects.any? %>
-      <div class="row">
-        <% @classroom.subjects.each do |subject| %>
-          <div class="col-md-6 col-lg-4 mb-3">
-            <div class="card">
-              <div class="card-body">
-                <h6 class="card-title"><%= subject.name %></h6>
-                <% if subject.user %>
-                  <p class="card-text">
-                    <small class="text-muted">
-                      <i class="fas fa-user"></i> <%= subject.user.name %>
-                    </small>
-                  </p>
-                <% end %>
-                <% if subject.workload %>
-                  <p class="card-text">
-                    <small class="text-muted">
-                      <i class="fas fa-clock"></i> <%= subject.workload %>h/semana
-                    </small>
-                  </p>
-                <% end %>
-              </div>
-            </div>
-          </div>
-        <% end %>
-      </div>
-    <% else %>
-      <div class="text-center py-4">
-        <i class="fas fa-book fa-3x text-muted mb-3"></i>
-        <h6 class="text-muted">Nenhuma disciplina atribuída</h6>
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#subjectModal">
-          <i class="fas fa-book"></i> Atribuir Primeira Disciplina
-        </button>
-      </div>
-    <% end %>
-  </div>
-</div>
 
-<!-- Modal Matricular Aluno -->
-<div class="modal fade" id="enrollModal" tabindex="-1">
+
+<!-- Modal Adicionar Aluno -->
+<div class="modal fade" id="addStudentModal" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title"><i class="fas fa-user-plus"></i> Matricular Aluno</h5>
+        <h5 class="modal-title"><i class="fas fa-user-plus"></i> Adicionar Aluno à Turma</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
-        <%= form_with url: "#", local: true do |form| %>
+        <%= form_with url: add_student_direction_classroom_path(@classroom), local: true, method: :patch, class: "add-student-form" do |form| %>
+          
           <div class="mb-3">
-            <%= form.label :student_id, "Selecionar Aluno", class: "form-label" %>
-            <%= form.select :student_id, 
-                            options_from_collection_for_select(User.where(user_type: 'student'), :id, :name),
+            <%= form.label :user_id, "Selecionar Aluno", class: "form-label" %>
+            <%= form.select :user_id, 
+                            options_from_collection_for_select(
+                              User.where(user_type: 'student', school_id: current_user.school_id, classroom_id: nil), 
+                              :id, :full_name),
                             { prompt: "Selecione um aluno..." }, 
-                            { class: "form-select" } %>
+                            { class: "form-select", required: true } %>
+            <small class="form-text text-muted">
+              Apenas alunos que não estão em nenhuma turma aparecem na lista
+            </small>
           </div>
           
-          <div class="mb-3">
-            <%= form.label :enrollment_date, "Data de Matrícula", class: "form-label" %>
-            <%= form.date_field :enrollment_date, value: Date.current, class: "form-control" %>
-          </div>
-          
-          <div class="mb-3">
-            <div class="form-check">
-              <%= form.check_box :active, checked: true, class: "form-check-input" %>
-              <%= form.label :active, "Matrícula ativa", class: "form-check-label" %>
-            </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <%= form.submit "Adicionar Aluno", class: "btn btn-primary" %>
           </div>
         <% end %>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-primary">
-          <i class="fas fa-save"></i> Matricular
-        </button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Modal Atribuir Disciplina -->
-<div class="modal fade" id="subjectModal" tabindex="-1">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title"><i class="fas fa-book"></i> Atribuir Disciplina</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <%= form_with url: "#", local: true do |form| %>
-          <div class="mb-3">
-            <%= form.label :subject_id, "Selecionar Disciplina", class: "form-label" %>
-            <%= form.select :subject_id, 
-                            options_from_collection_for_select(Subject.all, :id, :name),
-                            { prompt: "Selecione uma disciplina..." }, 
-                            { class: "form-select" } %>
-          </div>
-          
-          <div class="mb-3">
-            <%= form.label :teacher_id, "Professor Responsável", class: "form-label" %>
-            <%= form.select :teacher_id, 
-                            options_from_collection_for_select(User.where(user_type: 'teacher'), :id, :name),
-                            { prompt: "Selecione um professor..." }, 
-                            { class: "form-select" } %>
-          </div>
-          
-          <div class="mb-3">
-            <%= form.label :workload, "Carga Horária Semanal", class: "form-label" %>
-            <%= form.number_field :workload, min: 1, max: 40, class: "form-control", placeholder: "Horas por semana" %>
-          </div>
-        <% end %>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-primary">
-          <i class="fas fa-save"></i> Atribuir
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
+
+
+<style>
+/* Estilos customizados para a página de turma */
+.bg-gradient-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.hover-shadow {
+  transition: all 0.3s ease;
+}
+
+.hover-shadow:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15) !important;
+}
+
+.avatar-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.avatar-circle.small {
+  width: 30px;
+  height: 30px;
+  font-size: 12px;
+}
+
+.border-left-primary {
+  border-left: 4px solid #007bff !important;
+}
+
+.nav-pills .nav-link {
+  border-radius: 25px;
+  padding: 12px 20px;
+  margin: 0 5px;
+  transition: all 0.3s ease;
+}
+
+.nav-pills .nav-link.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+}
+
+.nav-pills .nav-link:not(.active) {
+  background-color: #f8f9fa;
+  color: #6c757d;
+}
+
+.nav-pills .nav-link:not(.active):hover {
+  background-color: #e9ecef;
+  color: #495057;
+}
+
+.card {
+  border: none;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+
+.alert-sm {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+}
+
+.bg-gradient-success {
+  background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+}
+
+.bg-gradient-info {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.bg-gradient-warning {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.table th {
+  border-top: none;
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge {
+  font-size: 0.75rem;
+  padding: 0.35em 0.65em;
+}
+
+@media (max-width: 768px) {
+  .display-6 {
+    font-size: 1.75rem;
+  }
+  
+  .nav-pills .nav-link {
+    padding: 8px 12px;
+    font-size: 0.875rem;
+  }
+}
+</style>

@@ -23,7 +23,7 @@ class Direction::EventsController < ApplicationController
     if @event.save
       redirect_to direction_event_path(@event), notice: "Evento criado com sucesso."
     else
-      render :new
+      render :new, status: :unprocessable_entity
     end
   end
 
@@ -31,7 +31,7 @@ class Direction::EventsController < ApplicationController
     if @event.update(event_params)
       redirect_to direction_event_path(@event), notice: "Evento atualizado com sucesso."
     else
-      render :edit
+      render :edit, status: :unprocessable_entity
     end
   end
 
@@ -42,17 +42,12 @@ class Direction::EventsController < ApplicationController
 
   private
 
-  def ensure_direction!
-    unless current_user&.direction?
-      redirect_to root_path, alert: "Acesso não autorizado."
-    end
-  end
 
   def set_event
     @event = current_user.school.events.find(params[:id])
   end
 
   def event_params
-    params.require(:event).permit(:title, :description, :start_date, :end_date, :visible_to)
+    params.require(:event).permit(:title, :description, :start_date, :end_date, :start_time, :end_time, :event_type)
   end
 end

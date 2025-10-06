@@ -75,7 +75,7 @@
         </div>
       </div>
       <div class="card-footer bg-info bg-opacity-75">
-        <%= link_to teachers_students_path, class: "text-white text-decoration-none small" do %>
+        <%= link_to teachers_classrooms_path, class: "text-white text-decoration-none small" do %>
           <i class="fas fa-arrow-right"></i> Ver alunos
         <% end %>
       </div>
@@ -97,8 +97,8 @@
         </div>
       </div>
       <div class="card-footer bg-warning bg-opacity-75">
-        <%= link_to teachers_activities_path, class: "text-white text-decoration-none small" do %>
-          <i class="fas fa-arrow-right"></i> Ver atividades
+        <%= link_to teachers_documents_path, class: "text-white text-decoration-none small" do %>
+          <i class="fas fa-arrow-right"></i> Ver documentos
         <% end %>
       </div>
     </div>
@@ -111,7 +111,7 @@
     <div class="card">
       <div class="card-header d-flex justify-content-between">
         <h5><i class="fas fa-calendar-day"></i> Agenda de Hoje</h5>
-        <%= link_to teachers_schedule_path, class: "btn btn-sm btn-outline-primary" do %>
+        <%= link_to teachers_class_schedules_path, class: "btn btn-sm btn-outline-primary" do %>
           <i class="fas fa-calendar-alt"></i> Ver Grade Completa
         <% end %>
       </div>
@@ -157,9 +157,9 @@
       <div class="card-body">
         <div class="row">
           <div class="col-6 mb-2">
-            <%= link_to new_teachers_activity_path, class: "btn btn-outline-primary w-100" do %>
+            <%= link_to new_teachers_document_path, class: "btn btn-outline-primary w-100" do %>
               <i class="fas fa-plus-circle"></i><br>
-              <small>Nova Atividade</small>
+              <small>Novo Documento</small>
             <% end %>
           </div>
           <div class="col-6 mb-2">
@@ -192,7 +192,7 @@
     <div class="card">
       <div class="card-header d-flex justify-content-between">
         <h5><i class="fas fa-clock"></i> Atividades Pendentes de Correção</h5>
-        <%= link_to teachers_submissions_path, class: "btn btn-sm btn-outline-warning" do %>
+        <%= link_to teachers_documents_path, class: "btn btn-sm btn-outline-warning" do %>
           <i class="fas fa-eye"></i> Ver todas
         <% end %>
       </div>
@@ -230,7 +230,7 @@
     <div class="card">
       <div class="card-header d-flex justify-content-between">
         <h5><i class="fas fa-calendar-check"></i> Próximas Atividades</h5>
-        <%= link_to teachers_activities_path, class: "btn btn-sm btn-outline-primary" do %>
+        <%= link_to teachers_documents_path, class: "btn btn-sm btn-outline-primary" do %>
           <i class="fas fa-eye"></i> Ver todas
         <% end %>
       </div>
@@ -294,10 +294,6 @@
               <h4 class="text-info"><%= @submitted_activities || 0 %></h4>
               <small class="text-muted">Atividades Entregues</small>
             </div>
-          </div>
-          <div class="col-md-3">
-            <h4 class="text-warning"><%= @total_occurrences || 0 %></h4>
-            <small class="text-muted">Ocorrências Registradas</small>
           </div>
         </div>
       </div>

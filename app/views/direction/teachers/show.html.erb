@@ -1,0 +1,253 @@
+<% content_for :title, "Professor - #{@teacher.first_name} #{@teacher.last_name}" %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><%= link_to "Dashboard", direction_root_path %></li>
+        <li class="breadcrumb-item"><%= link_to "Professores", direction_teachers_path %></li>
+        <li class="breadcrumb-item active"><%= @teacher.first_name %></li>
+      </ol>
+    </nav>
+    <h1><i class="fas fa-chalkboard-teacher"></i> <%= "#{@teacher.first_name} #{@teacher.last_name}" %></h1>
+  </div>
+  <div>
+    <%= link_to edit_direction_teacher_path(@teacher), class: "btn btn-primary me-2" do %>
+      <i class="fas fa-edit"></i> Editar
+    <% end %>
+    <%= link_to direction_teachers_path, class: "btn btn-outline-secondary" do %>
+      <i class="fas fa-arrow-left"></i> Voltar
+    <% end %>
+  </div>
+</div>
+
+<!-- Informações Básicas -->
+<div class="row mb-4">
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-body text-center">
+        <div class="avatar mb-3">
+          <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center text-white mx-auto" 
+               style="width: 80px; height: 80px; font-size: 2rem;">
+            <%= @teacher.first_name&.first&.upcase || 'P' %>
+          </div>
+        </div>
+        <h5><%= "#{@teacher.first_name} #{@teacher.last_name}" %></h5>
+        <p class="text-muted">Professor</p>
+        <span class="badge bg-success">
+          <i class="fas fa-check"></i> Ativo
+        </span>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header">
+        <h5><i class="fas fa-info-circle"></i> Informações Pessoais</h5>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6">
+            <strong>Email:</strong><br>
+            <span class="text-muted"><%= @teacher.email %></span>
+          </div>
+          <div class="col-md-6">
+            <strong>Telefone:</strong><br>
+            <span class="text-muted"><%= @teacher.phone.present? ? @teacher.phone : 'Não informado' %></span>
+          </div>
+        </div>
+        <hr>
+        <div class="row">
+          <div class="col-md-6">
+            <strong>ID do Professor:</strong><br>
+            <span class="text-muted"><%= @teacher.id %></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Estatísticas -->
+<div class="row mb-4">
+  <div class="col-md-3">
+    <div class="card text-center">
+      <div class="card-body">
+        <h3 class="text-primary"><%= @subjects.count %></h3>
+        <small class="text-muted">Disciplinas</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center">
+      <div class="card-body">
+        <h3 class="text-info"><%= @classrooms.count %></h3>
+        <small class="text-muted">Turmas</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center">
+      <div class="card-body">
+        <h3 class="text-success"><%= @activities.count %></h3>
+        <small class="text-muted">Atividades</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center">
+      <div class="card-body">
+        <h3 class="text-warning">
+          <%= @subjects.sum { |s| s.students.count } %>
+        </h3>
+        <small class="text-muted">Total de Alunos</small>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Disciplinas -->
+<div class="card mb-4">
+  <div class="card-header">
+    <h5><i class="fas fa-book"></i> Disciplinas</h5>
+  </div>
+  <div class="card-body">
+    <% if @subjects.any? %>
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>Disciplina</th>
+              <th>Turma</th>
+              <th>Carga Horária</th>
+              <th>Alunos</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @subjects.each do |subject| %>
+              <tr>
+                <td>
+                  <strong><%= subject.name %></strong>
+                </td>
+                <td>
+                  <%= subject.classroom.name %>
+                </td>
+                <td>
+                  <%= subject.workload %>h
+                </td>
+                <td>
+                  <span class="badge bg-info"><%= subject.students.count %> alunos</span>
+                </td>
+                <td>
+                  <%= link_to direction_subject_path(subject), class: "btn btn-sm btn-outline-primary" do %>
+                    <i class="fas fa-eye"></i> Ver
+                  <% end %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <div class="text-center py-4">
+        <i class="fas fa-book text-muted" style="font-size: 3rem;"></i>
+        <p class="text-muted mt-3">Este professor ainda não possui disciplinas atribuídas.</p>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<!-- Turmas -->
+<div class="card mb-4">
+  <div class="card-header">
+    <h5><i class="fas fa-door-open"></i> Turmas</h5>
+  </div>
+  <div class="card-body">
+    <% if @classrooms.any? %>
+      <div class="row">
+        <% @classrooms.each do |classroom| %>
+          <div class="col-md-4 mb-3">
+            <div class="card">
+              <div class="card-body">
+                <h6><%= classroom.name %></h6>
+                <p class="text-muted small mb-2">
+                  <%= classroom.level.humanize %> - <%= classroom.shift.humanize %>
+                </p>
+                <p class="mb-0">
+                  <span class="badge bg-secondary"><%= classroom.students.count %> alunos</span>
+                </p>
+                <div class="mt-2">
+                  <%= link_to direction_classroom_path(classroom), class: "btn btn-sm btn-outline-primary" do %>
+                    <i class="fas fa-eye"></i> Ver
+                  <% end %>
+                </div>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="text-center py-4">
+        <i class="fas fa-door-open text-muted" style="font-size: 3rem;"></i>
+        <p class="text-muted mt-3">Este professor ainda não leciona em nenhuma turma.</p>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<!-- Atividades Recentes -->
+<div class="card">
+  <div class="card-header">
+    <h5><i class="fas fa-tasks"></i> Atividades Recentes</h5>
+  </div>
+  <div class="card-body">
+    <% if @activities.any? %>
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>Atividade</th>
+              <th>Disciplina</th>
+              <th>Tipo</th>
+              <th>Data de Criação</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @activities.each do |activity| %>
+              <tr>
+                <td>
+                  <strong><%= activity.title %></strong>
+                  <% if activity.description.present? %>
+                    <br><small class="text-muted"><%= truncate(activity.description, length: 50) %></small>
+                  <% end %>
+                </td>
+                <td>
+                  <%= activity.subject.name %>
+                </td>
+                <td>
+                  <span class="badge bg-primary"><%= activity.activity_type.humanize %></span>
+                </td>
+                <td>
+                  <%= l(activity.created_at.to_date) %>
+                </td>
+                <td>
+                  <%= link_to "#", class: "btn btn-sm btn-outline-primary" do %>
+                    <i class="fas fa-eye"></i> Ver
+                  <% end %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <div class="text-center py-4">
+        <i class="fas fa-tasks text-muted" style="font-size: 3rem;"></i>
+        <p class="text-muted mt-3">Este professor ainda não criou nenhuma atividade.</p>
+      </div>
+    <% end %>
+  </div>
+</div>

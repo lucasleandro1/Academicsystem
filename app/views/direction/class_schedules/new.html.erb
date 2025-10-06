@@ -1,0 +1,280 @@
+<!-- New Class Schedule -->
+<% content_for :title, "Novo Horário" %>
+<% content_for :page_title, "Configurar Novo Horário" %>
+
+<div class="container-fluid">
+  <!-- Breadcrumb -->
+  <div class="row">
+    <div class="col-12">
+      <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+        <h4 class="mb-sm-0">Configurar Novo Horário</h4>
+        <div class="page-title-right">
+          <ol class="breadcrumb m-0">
+            <li class="breadcrumb-item">
+              <%= link_to "Direção", direction_root_path, class: "text-decoration-none" %>
+            </li>
+            <li class="breadcrumb-item">
+              <%= link_to "Grade de Horários", direction_class_schedules_path, class: "text-decoration-none" %>
+            </li>
+            <li class="breadcrumb-item active">Novo Horário</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%= form_with model: [:direction, @class_schedule], local: true, 
+      class: "needs-validation", novalidate: true, 
+      data: { turbo: false } do |form| %>
+    
+    <div class="row">
+      <!-- Form Principal -->
+      <div class="col-xl-8">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title mb-0">
+              <i class="fas fa-calendar-plus me-2"></i>Informações do Horário
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <!-- Seleção de Turma -->
+              <div class="col-md-6 mb-3">
+                <%= form.label :classroom_id, "Turma", class: "form-label" %>
+                <%= form.select :classroom_id, 
+                    options_from_collection_for_select(@classrooms, :id, :name, @class_schedule.classroom_id),
+                    { prompt: "Selecione uma turma" },
+                    { class: "form-select #{'is-invalid' if @class_schedule.errors[:classroom_id].any?}",
+                      required: true,
+                      onchange: "loadClassroomSubjects(this.value)" } %>
+                <div class="invalid-feedback">
+                  <%= @class_schedule.errors[:classroom_id].first if @class_schedule.errors[:classroom_id].any? %>
+                </div>
+              </div>
+
+              <!-- Seleção de Disciplina -->
+              <div class="col-md-6 mb-3">
+                <%= form.label :subject_id, "Disciplina", class: "form-label" %>
+                <%= form.select :subject_id, 
+                    options_from_collection_for_select(@subjects, :id, :name, @class_schedule.subject_id),
+                    { prompt: "Selecione uma disciplina" },
+                    { class: "form-select #{'is-invalid' if @class_schedule.errors[:subject_id].any?}",
+                      required: true,
+                      id: "subject_select" } %>
+                <div class="invalid-feedback">
+                  <%= @class_schedule.errors[:subject_id].first if @class_schedule.errors[:subject_id].any? %>
+                </div>
+              </div>
+
+              <!-- Dia da Semana -->
+              <div class="col-md-6 mb-3">
+                <%= form.label :weekday, "Dia da Semana", class: "form-label" %>
+                <%= form.select :weekday,
+                    options_for_select([
+                      ['Segunda-feira', 1],
+                      ['Terça-feira', 2],
+                      ['Quarta-feira', 3],
+                      ['Quinta-feira', 4],
+                      ['Sexta-feira', 5],
+                      ['Sábado', 6]
+                    ], @class_schedule.weekday),
+                    { prompt: "Selecione o dia" },
+                    { class: "form-select #{'is-invalid' if @class_schedule.errors[:weekday].any?}",
+                      required: true } %>
+                <div class="invalid-feedback">
+                  <%= @class_schedule.errors[:weekday].first if @class_schedule.errors[:weekday].any? %>
+                </div>
+              </div>
+
+              <!-- Horário de Início -->
+              <div class="col-md-6 mb-3">
+                <%= form.label :start_time, "Horário de Início", class: "form-label" %>
+                <%= form.time_field :start_time, 
+                    class: "form-control #{'is-invalid' if @class_schedule.errors[:start_time].any?}",
+                    required: true %>
+                <div class="invalid-feedback">
+                  <%= @class_schedule.errors[:start_time].first if @class_schedule.errors[:start_time].any? %>
+                </div>
+              </div>
+
+              <!-- Horário de Término -->
+              <div class="col-md-6 mb-3">
+                <%= form.label :end_time, "Horário de Término", class: "form-label" %>
+                <%= form.time_field :end_time, 
+                    class: "form-control #{'is-invalid' if @class_schedule.errors[:end_time].any?}",
+                    required: true %>
+                <div class="invalid-feedback">
+                  <%= @class_schedule.errors[:end_time].first if @class_schedule.errors[:end_time].any? %>
+                </div>
+              </div>
+
+              <!-- Observações -->
+              <div class="col-12 mb-3">
+                <%= form.label :notes, "Observações", class: "form-label" %>
+                <%= form.text_area :notes, 
+                    class: "form-control #{'is-invalid' if @class_schedule.errors[:notes].any?}",
+                    rows: 3,
+                    placeholder: "Observações sobre este horário..." %>
+                <div class="invalid-feedback">
+                  <%= @class_schedule.errors[:notes].first if @class_schedule.errors[:notes].any? %>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar com Informações -->
+      <div class="col-xl-4">
+        <!-- Preview do Horário -->
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title mb-0">
+              <i class="fas fa-eye me-2"></i>Preview do Horário
+            </h5>
+          </div>
+          <div class="card-body">
+            <div id="schedule-preview" class="text-center">
+              <div class="border rounded p-3 mb-3">
+                <h6 class="text-primary mb-2">Turma</h6>
+                <p class="mb-0" id="preview-classroom">Selecione uma turma</p>
+              </div>
+              
+              <div class="border rounded p-3 mb-3">
+                <h6 class="text-info mb-2">Disciplina</h6>
+                <p class="mb-0" id="preview-subject">Selecione uma disciplina</p>
+              </div>
+              
+              <div class="border rounded p-3 mb-3">
+                <h6 class="text-warning mb-2">Horário</h6>
+                <p class="mb-0" id="preview-time">--:-- até --:--</p>
+                <small class="text-muted" id="preview-day">Dia não selecionado</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Conflitos de Horário -->
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title mb-0">
+              <i class="fas fa-exclamation-triangle me-2"></i>Verificação de Conflitos
+            </h5>
+          </div>
+          <div class="card-body">
+            <div id="conflict-check">
+              <div class="text-center text-muted">
+                <i class="fas fa-info-circle fs-1 mb-3 d-block"></i>
+                <p>Preencha os dados para verificar conflitos</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Horários Sugeridos -->
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title mb-0">
+              <i class="fas fa-lightbulb me-2"></i>Horários Sugeridos
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="small">
+              <strong>Matutino:</strong> 07:00 - 12:00<br>
+              <strong>Vespertino:</strong> 13:00 - 18:00<br>
+              <strong>Noturno:</strong> 19:00 - 22:30
+            </div>
+            
+            <hr>
+            
+            <div class="small">
+              <strong>Duração sugerida por aula:</strong><br>
+              • 50 minutos (Ensino Fundamental)<br>
+              • 45 minutos (Ensino Médio)<br>
+              • Intervalo: 15-20 minutos
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Form Actions -->
+    <div class="row">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-body text-end">
+            <%= link_to "Cancelar", direction_class_schedules_path, 
+                class: "btn btn-secondary me-2" %>
+            <%= form.submit "Salvar Horário", 
+                class: "btn btn-primary",
+                data: { disable_with: "Salvando..." } %>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Form validation
+  const form = document.querySelector('.needs-validation');
+  if (form) {
+    form.addEventListener('submit', function(event) {
+      if (!form.checkValidity()) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      form.classList.add('was-validated');
+    });
+  }
+
+  // Preview updates
+  const classroomSelect = document.querySelector('#class_schedule_classroom_id');
+  const subjectSelect = document.querySelector('#class_schedule_subject_id');
+  const daySelect = document.querySelector('#class_schedule_weekday');
+  const startTimeInput = document.querySelector('#class_schedule_start_time');
+  const endTimeInput = document.querySelector('#class_schedule_end_time');
+
+  function updatePreview() {
+    // Update classroom preview
+    const classroomText = classroomSelect.options[classroomSelect.selectedIndex]?.text || 'Selecione uma turma';
+    document.querySelector('#preview-classroom').textContent = classroomText;
+
+    // Update subject preview
+    const subjectText = subjectSelect.options[subjectSelect.selectedIndex]?.text || 'Selecione uma disciplina';
+    document.querySelector('#preview-subject').textContent = subjectText;
+
+    // Update day preview
+    const dayText = daySelect.options[daySelect.selectedIndex]?.text || 'Dia não selecionado';
+    document.querySelector('#preview-day').textContent = dayText;
+
+    // Update time preview
+    const startTime = startTimeInput.value || '--:--';
+    const endTime = endTimeInput.value || '--:--';
+    document.querySelector('#preview-time').textContent = `${startTime} até ${endTime}`;
+  }
+
+  // Add event listeners
+  [classroomSelect, subjectSelect, daySelect, startTimeInput, endTimeInput].forEach(element => {
+    if (element) {
+      element.addEventListener('change', updatePreview);
+    }
+  });
+
+  // Initial preview update
+  updatePreview();
+});
+
+// Load subjects for selected classroom
+function loadClassroomSubjects(classroomId) {
+  if (!classroomId) {
+    document.querySelector('#subject_select').innerHTML = '<option value="">Selecione uma disciplina</option>';
+    return;
+  }
+
+  // This would typically make an AJAX call to load subjects
+  // For now, we'll keep the existing options
+  console.log('Loading subjects for classroom:', classroomId);
+}
+</script>

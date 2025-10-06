@@ -1,0 +1,150 @@
+<% content_for :title, "Editar Evento" %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h1><i class="fas fa-edit"></i> Editar Evento</h1>
+    <p class="text-muted mb-0">Atualize as informações do evento</p>
+  </div>
+  <div class="btn-group">
+    <%= link_to direction_event_path(@event), class: "btn btn-outline-secondary" do %>
+      <i class="fas fa-arrow-left"></i> Voltar
+    <% end %>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-8 mx-auto">
+    <div class="card">
+      <div class="card-header">
+        <h5><i class="fas fa-calendar-alt"></i> Informações do Evento</h5>
+      </div>
+      <div class="card-body">
+        <%= form_with model: [:direction, @event], class: "needs-validation", novalidate: true do |form| %>
+          <% if @event.errors.any? %>
+            <div class="alert alert-danger">
+              <h5><i class="fas fa-exclamation-circle"></i> Erro ao salvar o evento:</h5>
+              <ul class="mb-0">
+                <% @event.errors.full_messages.each do |message| %>
+                  <li><%= message %></li>
+                <% end %>
+              </ul>
+            </div>
+          <% end %>
+
+          <div class="row">
+            <div class="col-md-8 mb-3">
+              <%= form.label :title, "Título do Evento", class: "form-label required" %>
+              <%= form.text_field :title, class: "form-control", required: true, 
+                                 placeholder: "Ex: Reunião de Pais, Festa Junina, etc." %>
+              <div class="invalid-feedback">
+                Por favor, informe o título do evento.
+              </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+              <%= form.label :event_type, "Tipo de Evento", class: "form-label" %>
+              <%= form.select :event_type, 
+                              options_for_select([
+                                ['Selecione...', ''],
+                                ['Acadêmico', 'academico'],
+                                ['Cultural', 'cultural'],
+                                ['Esportivo', 'esportivo'],
+                                ['Administrativo', 'administrativo'],
+                                ['Reunião', 'reuniao'],
+                                ['Feriado', 'feriado']
+                              ], @event.event_type),
+                              {}, { class: "form-select" } %>
+            </div>
+
+            <div class="col-12 mb-3">
+              <%= form.label :description, "Descrição", class: "form-label" %>
+              <%= form.text_area :description, class: "form-control", rows: 4,
+                                placeholder: "Descreva os detalhes do evento, objetivos, público-alvo, etc." %>
+              <div class="form-text">
+                Opcional. Forneça mais detalhes sobre o evento para informar melhor os participantes.
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <%= form.label :start_date, "Data de Início", class: "form-label required" %>
+              <%= form.date_field :start_date, class: "form-control", required: true %>
+              <div class="invalid-feedback">
+                Por favor, informe a data de início do evento.
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <%= form.label :end_date, "Data de Término", class: "form-label required" %>
+              <%= form.date_field :end_date, class: "form-control", required: true %>
+              <div class="invalid-feedback">
+                Por favor, informe a data de término do evento.
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <%= form.label :start_time, "Horário de Início", class: "form-label" %>
+              <%= form.time_field :start_time, class: "form-control" %>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <%= form.label :end_time, "Horário de Término", class: "form-label" %>
+              <%= form.time_field :end_time, class: "form-control" %>
+            </div>
+          </div>
+
+          <hr>
+
+          <div class="d-flex justify-content-between">
+            <div>
+              <%= link_to direction_event_path(@event), class: "btn btn-outline-secondary" do %>
+                <i class="fas fa-times"></i> Cancelar
+              <% end %>
+            </div>
+            <div>
+              <%= form.submit "Atualizar Evento", class: "btn btn-primary" do %>
+                <i class="fas fa-save"></i> Atualizar Evento
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Validação de formulário Bootstrap
+(function() {
+  'use strict';
+  window.addEventListener('load', function() {
+    var forms = document.getElementsByClassName('needs-validation');
+    var validation = Array.prototype.filter.call(forms, function(form) {
+      form.addEventListener('submit', function(event) {
+        // Validar se a data de término não é anterior à data de início
+        var startDate = new Date(document.getElementById('event_start_date').value);
+        var endDate = new Date(document.getElementById('event_end_date').value);
+        
+        if (endDate < startDate) {
+          event.preventDefault();
+          event.stopPropagation();
+          alert('A data de término não pode ser anterior à data de início.');
+          return false;
+        }
+        
+        if (form.checkValidity() === false) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+      }, false);
+    });
+  }, false);
+})();
+</script>
+
+<style>
+.required::after {
+  content: " *";
+  color: red;
+}
+</style>

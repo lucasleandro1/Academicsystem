@@ -84,7 +84,13 @@
             <% if @school.logo.present? %>
               <div class="mb-2">
                 <small class="text-muted">Logo atual:</small><br>
-                <%= image_tag @school.logo, class: "img-thumbnail", style: "max-height: 80px;" %>
+                <% begin %>
+                  <%= image_tag @school.logo, class: "img-thumbnail", style: "max-height: 80px;" %>
+                <% rescue %>
+                  <div class="alert alert-warning small">
+                    <i class="fas fa-exclamation-triangle"></i> Logo atual não encontrada: <%= @school.logo %>
+                  </div>
+                <% end %>
               </div>
             <% end %>
             <%= form.file_field :logo, class: "form-control", accept: "image/*" %>

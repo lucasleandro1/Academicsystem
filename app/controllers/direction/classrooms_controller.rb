@@ -1,15 +1,30 @@
 class Direction::ClassroomsController < ApplicationController
   before_action :authenticate_user!
   before_action :ensure_direction!
-  before_action :set_classroom, only: [ :show, :edit, :update, :destroy ]
+  before_action :set_classroom, only: [ :show, :edit, :update, :destroy, :add_student, :remove_student ]
 
   def index
     @classrooms = current_user.school.classrooms.includes(:students, :subjects)
+
+    # Filtros
+    if params[:search].present?
+      @classrooms = @classrooms.where("name ILIKE ?", "%#{params[:search]}%")
+    end
+
+    if params[:level].present?
+      @classrooms = @classrooms.where(level: params[:level])
+    end
+
+    if params[:shift].present?
+      @classrooms = @classrooms.where(shift: params[:shift])
+    end
+
+    @classrooms = @classrooms.order(:name)
   end
 
   def show
-    @enrollments = @classroom.enrollments.includes(:student)
-    @subjects = @classroom.subjects.includes(:teacher)
+    @students = @classroom.students
+    @subjects = @classroom.subjects.includes(:user)
     @class_schedules = @classroom.class_schedules.includes(:subject).by_time
   end
 
@@ -43,13 +58,27 @@ class Direction::ClassroomsController < ApplicationController
     redirect_to direction_classrooms_path, notice: "Turma removida com sucesso."
   end
 
-  private
-
-  def ensure_direction!
-    unless current_user&.direction?
-      redirect_to root_path, alert: "Acesso não autorizado."
+  def add_student
+    @student = User.find(params[:user_id])
+    if @student.update(classroom: @classroom)
+      redirect_to direction_classroom_path(@classroom), notice: "Aluno adicionado à turma com sucesso."
+    else
+      redirect_to direction_classroom_path(@classroom), alert: "Erro ao adicionar aluno à turma."
     end
   end
+
+  def remove_student
+    @student = User.find(params[:student_id])
+    if @student.update(classroom: nil)
+      redirect_to direction_classroom_path(@classroom), notice: "Aluno removido da turma com sucesso."
+    else
+      redirect_to direction_classroom_path(@classroom), alert: "Erro ao remover aluno da turma."
+    end
+  end
+
+
+
+  private
 
   def set_classroom
     @classroom = current_user.school.classrooms.find(params[:id])

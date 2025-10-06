@@ -27,9 +27,7 @@ class Admin::ReportsController < ApplicationController
       schools: School.count,
       students: User.student.count,
       teachers: User.teacher.count,
-      directions: User.direction.count,
-      enrollments: Enrollment.count,
-      active_enrollments: Enrollment.where(status: "approved").count
+      directions: User.direction.count
     }
 
     # Dados para gráficos
@@ -115,25 +113,15 @@ class Admin::ReportsController < ApplicationController
   end
 
   def evasion_report
-    # Relatório de evasão escolar
+    # Relatório de evasão escolar - Removido pois não há mais conceito de ativo/inativo
     @schools = School.includes(:users)
 
     @evasion_data = @schools.map do |school|
-      total_enrollments = Enrollment.joins(:user).where(users: { school_id: school.id }).count
-      active_enrollments = Enrollment.joins(:user)
-                                   .where(users: { school_id: school.id })
-                                   .where(status: "approved")
-                                   .count
-
-      evasion_count = total_enrollments - active_enrollments
-      evasion_rate = total_enrollments > 0 ? (evasion_count.to_f / total_enrollments * 100).round(2) : 0
+      total_students = school.users.student.count
 
       {
         school: school,
-        total_enrollments: total_enrollments,
-        active_enrollments: active_enrollments,
-        evasion_count: evasion_count,
-        evasion_rate: evasion_rate
+        total_students: total_students
       }
     end
   end

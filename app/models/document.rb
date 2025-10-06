@@ -1,6 +1,6 @@
 class Document < ApplicationRecord
   belongs_to :school
-  belongs_to :user, optional: true
+  belongs_to :user
 
   validates :title, presence: true
   validates :document_type, presence: true
@@ -30,6 +30,10 @@ class Document < ApplicationRecord
     file_path.present? && File.exist?(file_path) if file_path.present?
   end
 
+  def uploader
+    user
+  end
+
   def file_size
     return 0 unless file_exists?
     File.size(file_path)
@@ -43,7 +47,6 @@ class Document < ApplicationRecord
     case document_type
     when "boletim" then "Boletim"
     when "historico" then "Histórico Escolar"
-    when "ocorrencia" then "Ocorrência"
     when "comunicado" then "Comunicado"
     when "regulamento" then "Regulamento"
     when "circular" then "Circular"

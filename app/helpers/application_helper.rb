@@ -1,6 +1,6 @@
 module ApplicationHelper
-  def calculate_average(enrollment)
-    grades = enrollment.grades
+  def calculate_average(student, subject = nil)
+    grades = subject ? student.grades.where(subject: subject) : student.grades
     return nil if grades.empty?
 
     total = grades.sum(:value)
@@ -51,19 +51,6 @@ module ApplicationHelper
       "Programado"
     else
       "Em andamento"
-    end
-  end
-
-  def occurrence_type_color(type)
-    case type
-    when "disciplinary"
-      "danger"
-    when "academic"
-      "warning"
-    when "attendance"
-      "info"
-    else
-      "secondary"
     end
   end
 end

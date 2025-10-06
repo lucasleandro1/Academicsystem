@@ -4,11 +4,16 @@ class Direction::SubjectsController < ApplicationController
   before_action :set_subject, only: [ :show, :edit, :update, :destroy ]
 
   def index
-    @subjects = current_user.school.subjects.includes(:classroom, :teacher)
+    @subjects = current_user.school.subjects.includes(:classroom, :user)
+
+    # Aplicar filtros
+    @subjects = @subjects.where("name LIKE ?", "%#{params[:search]}%") if params[:search].present?
+    @subjects = @subjects.where(area: params[:area]) if params[:area].present?
+
+    @subjects = @subjects.order(:name)
   end
 
   def show
-    @activities = @subject.activities.recent
     @grades = @subject.grades.includes(:student)
     @class_schedules = @subject.class_schedules
   end
@@ -16,12 +21,12 @@ class Direction::SubjectsController < ApplicationController
   def new
     @subject = current_user.school.subjects.build
     @classrooms = current_user.school.classrooms
-    @teachers = current_user.school.teachers.active
+    @teachers = current_user.school.teachers
   end
 
   def edit
     @classrooms = current_user.school.classrooms
-    @teachers = current_user.school.teachers.active
+    @teachers = current_user.school.teachers
   end
 
   def create
@@ -31,7 +36,7 @@ class Direction::SubjectsController < ApplicationController
       redirect_to direction_subject_path(@subject), notice: "Disciplina criada com sucesso."
     else
       @classrooms = current_user.school.classrooms
-      @teachers = current_user.school.teachers.active
+      @teachers = current_user.school.teachers
       render :new
     end
   end
@@ -41,7 +46,7 @@ class Direction::SubjectsController < ApplicationController
       redirect_to direction_subject_path(@subject), notice: "Disciplina atualizada com sucesso."
     else
       @classrooms = current_user.school.classrooms
-      @teachers = current_user.school.teachers.active
+      @teachers = current_user.school.teachers
       render :edit
     end
   end
@@ -53,17 +58,11 @@ class Direction::SubjectsController < ApplicationController
 
   private
 
-  def ensure_direction!
-    unless current_user&.direction?
-      redirect_to root_path, alert: "Acesso não autorizado."
-    end
-  end
-
   def set_subject
     @subject = current_user.school.subjects.find(params[:id])
   end
 
   def subject_params
-    params.require(:subject).permit(:name, :classroom_id, :user_id, :workload)
+    params.require(:subject).permit(:name, :code, :area, :description, :classroom_id, :user_id, :workload, :allows_makeup_exams)
   end
 end

@@ -8,15 +8,12 @@ FactoryBot.define do
 
     trait :student do
       user_type { :student }
-      registration_number { "S123" }
       birth_date { Date.new(2010, 5, 10) }
       guardian_name { "Responsável" }
     end
 
     trait :teacher do
       user_type { :teacher }
-      position { "Professor" }
-      specialization { "História" }
     end
 
     trait :direction do

@@ -1,0 +1,265 @@
+<% content_for :title, @subject.name %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1><i class="fas fa-book"></i> <%= @subject.name %></h1>
+  <div>
+    <%= link_to edit_direction_subject_path(@subject), class: "btn btn-outline-primary me-2" do %>
+      <i class="fas fa-edit"></i> Editar
+    <% end %>
+    <%= link_to direction_subjects_path, class: "btn btn-outline-secondary" do %>
+      <i class="fas fa-arrow-left"></i> Voltar
+    <% end %>
+  </div>
+</div>
+
+<!-- Informações Gerais -->
+<div class="row mb-4">
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-info-circle"></i> Informações Gerais</h5>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <strong>Nome:</strong><br>
+            <%= @subject.name %>
+          </div>
+          <div class="col-md-6 mb-3">
+            <strong>Código:</strong><br>
+            <%= @subject.code || 'Não definido' %>
+          </div>
+          <div class="col-md-6 mb-3">
+            <strong>Área do Conhecimento:</strong><br>
+            <span class="badge bg-info">
+              <%= 
+                case @subject.area
+                when 'languages' then 'Linguagens'
+                when 'mathematics' then 'Matemática'
+                when 'natural_sciences' then 'Ciências da Natureza'
+                when 'human_sciences' then 'Ciências Humanas'
+                when 'religious_education' then 'Ensino Religioso'
+                when 'physical_education' then 'Educação Física'
+                when 'arts' then 'Artes'
+                when 'technology' then 'Tecnologia'
+                else 'Não definida'
+                end
+              %>
+            </span>
+          </div>
+          <div class="col-md-6 mb-3">
+            <strong>Carga Horária:</strong><br>
+            <%= @subject.workload %>h/semana
+          </div>
+          <% if @subject.description.present? %>
+            <div class="col-12 mb-3">
+              <strong>Descrição:</strong><br>
+              <p><%= simple_format(@subject.description) %></p>
+            </div>
+          <% end %>
+          <div class="col-md-6 mb-3">
+            <strong>Criada em:</strong><br>
+            <%= @subject.created_at.strftime("%d/%m/%Y às %H:%M") %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <!-- Estatísticas -->
+    <div class="card mb-3">
+      <div class="card-header">
+        <h6 class="mb-0"><i class="fas fa-chart-line"></i> Estatísticas</h6>
+      </div>
+      <div class="card-body">
+        <div class="text-center mb-3">
+          <h3 class="text-primary"><%= @subject.classroom&.students&.count || 0 %></h3>
+          <small class="text-muted">Alunos</small>
+        </div>
+        <div class="text-center mb-3">
+          <h3 class="text-info"><%= @grades.count %></h3>
+          <small class="text-muted">Notas</small>
+        </div>
+        <div class="text-center">
+          <h3 class="text-warning"><%= @class_schedules.count %></h3>
+          <small class="text-muted">Horários</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Professor Responsável -->
+    <div class="card">
+      <div class="card-header">
+        <h6 class="mb-0"><i class="fas fa-user-tie"></i> Professor Responsável</h6>
+      </div>
+      <div class="card-body">
+        <% if @subject.teacher %>
+          <div class="d-flex align-items-center mb-2">
+            <i class="fas fa-user-circle fa-2x text-primary me-3"></i>
+            <div>
+              <strong><%= @subject.teacher.full_name %></strong><br>
+              <small class="text-muted"><%= @subject.teacher.email %></small>
+            </div>
+          </div>
+          <% if @subject.teacher.phone.present? %>
+            <div class="mt-2">
+              <i class="fas fa-phone text-muted"></i>
+              <%= @subject.teacher.phone %>
+            </div>
+          <% end %>
+        <% else %>
+          <div class="text-center text-muted">
+            <i class="fas fa-exclamation-triangle fa-2x mb-2"></i><br>
+            <small>Nenhum professor atribuído</small><br>
+            <button class="btn btn-sm btn-primary mt-2" data-bs-toggle="modal" data-bs-target="#assignTeacherModal">
+              <i class="fas fa-plus"></i> Atribuir Professor
+            </button>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Turma -->
+<% if @subject.classroom.present? %>
+<div class="card mb-4">
+  <div class="card-header">
+    <h5 class="mb-0"><i class="fas fa-users"></i> Turma: <%= @subject.classroom.name %></h5>
+  </div>
+  <div class="card-body">
+    <div class="row">
+      <div class="col-md-6">
+        <strong>Turno:</strong> <%= @subject.classroom.shift == 'morning' ? 'Manhã' : @subject.classroom.shift == 'afternoon' ? 'Tarde' : 'Noite' %><br>
+        <strong>Nível:</strong> <%= 
+          case @subject.classroom.level
+          when 'elementary_1' then 'Fundamental I'
+          when 'elementary_2' then 'Fundamental II'
+          when 'high_school' then 'Ensino Médio'
+          else 'Não definido'
+          end
+        %><br>
+        <strong>Sala:</strong> <%= @subject.classroom.name || 'Não definida' %>
+      </div>
+      <div class="col-md-6">
+        <strong>Total de Alunos:</strong> <%= @subject.classroom.students.count %><br>
+        <strong>Coordenador:</strong> <%= @subject.classroom.coordinator&.full_name || 'Não definido' %>
+      </div>
+    </div>
+  </div>
+</div>
+<% else %>
+<div class="card mb-4">
+  <div class="card-header">
+    <h5 class="mb-0"><i class="fas fa-exclamation-triangle text-warning"></i> Turma não Definida</h5>
+  </div>
+  <div class="card-body">
+    <div class="alert alert-info">
+      <i class="fas fa-info-circle"></i>
+      Esta disciplina ainda não foi associada a uma turma específica. 
+      <%= link_to "Editar disciplina", edit_direction_subject_path(@subject), class: "alert-link" %> 
+      para associar uma turma.
+    </div>
+  </div>
+</div>
+<% end %>
+
+<!-- Horários de Aula -->
+<% if @class_schedules.any? %>
+  <div class="card mb-4">
+    <div class="card-header">
+      <h5 class="mb-0"><i class="fas fa-calendar-alt"></i> Horários de Aula</h5>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-sm">
+          <thead>
+            <tr>
+              <th>Dia da Semana</th>
+              <th>Horário</th>
+              <th>Sala</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @class_schedules.order(:weekday, :start_time).each do |schedule| %>
+              <tr>
+                <td>
+                  <%= 
+                    case schedule.weekday
+                    when 0 then 'Domingo'
+                    when 1 then 'Segunda-feira'
+                    when 2 then 'Terça-feira'
+                    when 3 then 'Quarta-feira'
+                    when 4 then 'Quinta-feira'
+                    when 5 then 'Sexta-feira'
+                    when 6 then 'Sábado'
+                    end
+                  %>
+                </td>
+                <td><%= schedule.start_time.strftime("%H:%M") %> - <%= schedule.end_time.strftime("%H:%M") %></td>
+                <td><%= schedule.classroom.name || 'Não definida' %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<!-- Notas por Bimestre -->
+<% if @grades.any? %>
+  <div class="card">
+    <div class="card-header">
+      <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Desempenho por Bimestre</h5>
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <% (1..4).each do |bimester| %>
+          <div class="col-md-3 text-center">
+            <h4 class="text-primary">
+              <%= @subject.average_grade_by_bimester(bimester) || '-' %>
+            </h4>
+            <small class="text-muted"><%= bimester %>º Bimestre</small>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<!-- Modal Atribuir Professor -->
+<% unless @subject.teacher %>
+  <div class="modal fade" id="assignTeacherModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="fas fa-user-tie"></i> Atribuir Professor
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <%= form_with url: direction_subject_path(@subject), method: :patch, local: true do |form| %>
+            <div class="mb-3">
+              <%= form.label :user_id, "Selecionar Professor", class: "form-label" %>
+              <%= form.select :user_id, 
+                              options_from_collection_for_select(
+                                current_user.school.teachers, 
+                                :id, :full_name
+                              ),
+                              { prompt: "Selecione um professor..." }, 
+                              { class: "form-select" } %>
+            </div>
+            
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+              <%= form.submit "Atribuir Professor", class: "btn btn-primary" %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>

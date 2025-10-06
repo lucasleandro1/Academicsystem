@@ -1,0 +1,197 @@
+<% content_for :title, "Editar Documento" %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h1><i class="fas fa-edit"></i> Editar Documento</h1>
+    <p class="text-muted mb-0">Atualize as informações do documento</p>
+  </div>
+  <div class="btn-group">
+    <%= link_to direction_document_path(@document), class: "btn btn-outline-secondary" do %>
+      <i class="fas fa-arrow-left"></i> Voltar
+    <% end %>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-8 mx-auto">
+    <div class="card">
+      <div class="card-header">
+        <h5><i class="fas fa-file-alt"></i> Informações do Documento</h5>
+      </div>
+      <div class="card-body">
+        <%= form_with model: [:direction, @document], local: true, class: "needs-validation", novalidate: true do |form| %>
+          <% if @document.errors.any? %>
+            <div class="alert alert-danger">
+              <h5><i class="fas fa-exclamation-circle"></i> Erro ao salvar o documento:</h5>
+              <ul class="mb-0">
+                <% @document.errors.full_messages.each do |message| %>
+                  <li><%= message %></li>
+                <% end %>
+              </ul>
+            </div>
+          <% end %>
+
+          <div class="row">
+            <div class="col-12 mb-3">
+              <%= form.label :title, "Título do Documento", class: "form-label required" %>
+              <%= form.text_field :title, class: "form-control", required: true, 
+                                 placeholder: "Ex: Regimento Interno, Manual do Aluno, etc." %>
+              <div class="invalid-feedback">
+                Por favor, informe o título do documento.
+              </div>
+            </div>
+
+            <div class="col-12 mb-3">
+              <%= form.label :description, "Descrição", class: "form-label" %>
+              <%= form.text_area :description, class: "form-control", rows: 4,
+                                placeholder: "Descreva o conteúdo e finalidade do documento..." %>
+              <div class="form-text">
+                Opcional. Forneça mais detalhes sobre o documento para facilitar sua localização.
+              </div>
+            </div>
+
+            <% if @document.respond_to?(:document_type) %>
+            <div class="col-md-6 mb-3">
+              <%= form.label :document_type, "Tipo de Documento", class: "form-label" %>
+              <%= form.select :document_type, 
+                              options_for_select([
+                                ['Selecionar tipo...', ''],
+                                ['Regimento/Normas', 'regulation'],
+                                ['Manual/Instruções', 'manual'],
+                                ['Formulário', 'form'],
+                                ['Relatório', 'report'],
+                                ['Ata/Registro', 'minutes'],
+                                ['Circular/Comunicado', 'circular'],
+                                ['Material Didático', 'educational'],
+                                ['Arquivo Administrativo', 'administrative'],
+                                ['Outros', 'other']
+                              ], @document.document_type),
+                              {}, { class: "form-select" } %>
+              <div class="form-text">
+                Categorize o documento para facilitar a organização.
+              </div>
+            </div>
+            <% end %>
+
+            <% if @document.respond_to?(:file) %>
+            <div class="col-12 mb-3">
+              <%= form.label :file, "Arquivo", class: "form-label" %>
+              
+              <% if @document.file.present? %>
+                <div class="alert alert-info mb-2">
+                  <i class="fas fa-info-circle"></i>
+                  <strong>Arquivo atual:</strong> 
+                  <% if @document.file.respond_to?(:filename) %>
+                    <%= @document.file.filename %>
+                  <% else %>
+                    Arquivo anexado
+                  <% end %>
+                  <% if @document.file.respond_to?(:byte_size) %>
+                    (<%= number_to_human_size(@document.file.byte_size) %>)
+                  <% end %>
+                </div>
+              <% end %>
+              
+              <%= form.file_field :file, class: "form-control", accept: ".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png" %>
+              <div class="form-text">
+                Formatos aceitos: PDF, DOC, DOCX, TXT, JPG, PNG. Tamanho máximo: 10MB.
+                <% if @document.file.present? %>
+                  <br><strong>Nota:</strong> Selecione um novo arquivo apenas se quiser substituir o atual.
+                <% end %>
+              </div>
+            </div>
+            <% end %>
+          </div>
+
+          <hr>
+
+          <div class="d-flex justify-content-between">
+            <div>
+              <%= link_to direction_document_path(@document), class: "btn btn-outline-secondary" do %>
+                <i class="fas fa-times"></i> Cancelar
+              <% end %>
+            </div>
+            <div>
+              <%= form.submit "Atualizar Documento", class: "btn btn-primary" do %>
+                <i class="fas fa-save"></i> Atualizar Documento
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <% if @document.respond_to?(:file) && @document.file.present? %>
+    <div class="card mt-3">
+      <div class="card-header">
+        <h5><i class="fas fa-file"></i> Arquivo Atual</h5>
+      </div>
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <strong>
+              <% if @document.file.respond_to?(:filename) %>
+                <%= @document.file.filename %>
+              <% else %>
+                Arquivo anexado
+              <% end %>
+            </strong><br>
+            <small class="text-muted">
+              <% if @document.file.respond_to?(:byte_size) %>
+                Tamanho: <%= number_to_human_size(@document.file.byte_size) %>
+              <% end %>
+              <br>Anexado em: <%= @document.created_at.strftime("%d/%m/%Y") %>
+            </small>
+          </div>
+          <div>
+            <%= link_to download_direction_document_path(@document), 
+                        class: "btn btn-outline-primary", target: "_blank" do %>
+              <i class="fas fa-download"></i> Baixar
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+    <% end %>
+  </div>
+</div>
+
+<script>
+// Validação de formulário Bootstrap
+(function() {
+  'use strict';
+  window.addEventListener('load', function() {
+    var forms = document.getElementsByClassName('needs-validation');
+    var validation = Array.prototype.filter.call(forms, function(form) {
+      form.addEventListener('submit', function(event) {
+        if (form.checkValidity() === false) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+      }, false);
+    });
+  }, false);
+})();
+
+// Validação de tamanho de arquivo
+document.addEventListener('DOMContentLoaded', function() {
+  const fileInput = document.querySelector('input[type="file"]');
+  if (fileInput) {
+    fileInput.addEventListener('change', function() {
+      const maxSize = 10 * 1024 * 1024; // 10MB
+      if (this.files[0] && this.files[0].size > maxSize) {
+        alert('O arquivo selecionado é muito grande. O tamanho máximo permitido é 10MB.');
+        this.value = '';
+      }
+    });
+  }
+});
+</script>
+
+<style>
+.required::after {
+  content: " *";
+  color: red;
+}
+</style>

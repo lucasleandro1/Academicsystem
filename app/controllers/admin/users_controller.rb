@@ -8,8 +8,8 @@ class Admin::UsersController < ApplicationController
 
     # Aplicar filtros de busca
     if params[:search].present?
-      @users = @users.where("email ILIKE ? OR first_name ILIKE ? OR last_name ILIKE ? OR registration_number ILIKE ?",
-                           "%#{params[:search]}%", "%#{params[:search]}%", "%#{params[:search]}%", "%#{params[:search]}%")
+      @users = @users.where("email ILIKE ? OR first_name ILIKE ? OR last_name ILIKE ?",
+                           "%#{params[:search]}%", "%#{params[:search]}%", "%#{params[:search]}%")
     end
 
     if params[:user_type].present?
@@ -71,8 +71,8 @@ class Admin::UsersController < ApplicationController
   def user_params
     params.require(:user).permit(
       :email, :password, :school_id, :user_type,
-      :registration_number, :birth_date, :guardian_name,
-      :position, :specialization, :first_name, :last_name, :phone
+      :birth_date, :guardian_name,
+      :first_name, :last_name, :phone
     )
   end
 

@@ -19,13 +19,12 @@
         <%= form.select :event_type, 
                         options_for_select([
                           ['Todos os tipos', ''],
-                          ['Reunião', 'meeting'],
-                          ['Evento Acadêmico', 'academic'],
-                          ['Festa/Comemoração', 'celebration'],
-                          ['Palestra', 'lecture'],
-                          ['Formação', 'training'],
-                          ['Avaliação', 'evaluation'],
-                          ['Outros', 'other']
+                          ['Acadêmico', 'academico'],
+                          ['Cultural', 'cultural'],
+                          ['Esportivo', 'esportivo'],
+                          ['Administrativo', 'administrativo'],
+                          ['Reunião', 'reuniao'],
+                          ['Feriado', 'feriado']
                         ], params[:event_type]),
                         {}, { class: "form-select" } %>
       </div>
@@ -86,7 +85,7 @@
   <div class="col-md-3">
     <div class="card text-center">
       <div class="card-body">
-        <h3 class="text-info"><%= @events.where(status: 'ongoing').count %></h3>
+        <h3 class="text-info"><%= @events.where("start_date >= ?", Date.current).count %></h3>
         <small class="text-muted">Em Andamento</small>
       </div>
     </div>
@@ -109,20 +108,20 @@
                 <h6 class="card-title">
                   <i class="fas fa-<%= 
                     case event.event_type
-                    when 'meeting' then 'users'
-                    when 'academic' then 'graduation-cap'
-                    when 'celebration' then 'birthday-cake'
-                    when 'lecture' then 'microphone'
-                    when 'training' then 'chalkboard-teacher'
-                    when 'evaluation' then 'clipboard-check'
+                    when 'academico' then 'graduation-cap'
+                    when 'cultural' then 'theater-masks'
+                    when 'esportivo' then 'futbol'
+                    when 'administrativo' then 'briefcase'
+                    when 'reuniao' then 'users'
+                    when 'feriado' then 'calendar-day'
                     else 'calendar'
                     end
                   %>"></i>
                   <%= event.title %>
                 </h6>
                 <p class="card-text small">
-                  <strong>Data:</strong> <%= event.start_date.strftime("%d/%m/%Y") %><br>
-                  <strong>Horário:</strong> <%= event.start_time&.strftime("%H:%M") || 'Não definido' %>
+                  <strong>Data:</strong> <%= event.formatted_start_date %><br>
+                  <strong>Horário:</strong> <%= event.formatted_start_time %>
                 </p>
                 <%= link_to direction_event_path(event), class: "btn btn-sm btn-outline-warning" do %>
                   Ver Detalhes
@@ -149,12 +148,12 @@
             <h5 class="mb-0">
               <i class="fas fa-<%= 
                 case event.event_type
-                when 'meeting' then 'users'
-                when 'academic' then 'graduation-cap'
-                when 'celebration' then 'birthday-cake'
-                when 'lecture' then 'microphone'
-                when 'training' then 'chalkboard-teacher'
-                when 'evaluation' then 'clipboard-check'
+                when 'academico' then 'graduation-cap'
+                when 'cultural' then 'theater-masks'
+                when 'esportivo' then 'futbol'
+                when 'administrativo' then 'briefcase'
+                when 'reuniao' then 'users'
+                when 'feriado' then 'calendar-day'
                 else 'calendar'
                 end
               %> text-primary"></i>
@@ -224,13 +223,12 @@
                 <span class="badge bg-info">
                   <%= 
                     case event.event_type
-                    when 'meeting' then 'Reunião'
-                    when 'academic' then 'Acadêmico'
-                    when 'celebration' then 'Comemoração'
-                    when 'lecture' then 'Palestra'
-                    when 'training' then 'Formação'
-                    when 'evaluation' then 'Avaliação'
-                    when 'other' then 'Outros'
+                    when 'academico' then 'Acadêmico'
+                    when 'cultural' then 'Cultural'
+                    when 'esportivo' then 'Esportivo'
+                    when 'administrativo' then 'Administrativo'
+                    when 'reuniao' then 'Reunião'
+                    when 'feriado' then 'Feriado'
                     else 'Não definido'
                     end
                   %>
@@ -243,34 +241,24 @@
               <div class="col-6">
                 <small class="text-muted">Data:</small>
                 <br>
-                <strong><%= event.start_date.strftime("%d/%m/%Y") %></strong>
+                <strong><%= event.formatted_start_date %></strong>
                 <% if event.end_date && event.end_date != event.start_date %>
-                  <small class="text-muted">até <%= event.end_date.strftime("%d/%m/%Y") %></small>
+                  <small class="text-muted">até <%= event.formatted_end_date %></small>
                 <% end %>
               </div>
               <div class="col-6">
                 <small class="text-muted">Horário:</small>
                 <br>
                 <% if event.start_time %>
-                  <strong><%= event.start_time.strftime("%H:%M") %></strong>
+                  <strong><%= event.formatted_start_time %></strong>
                   <% if event.end_time %>
-                    <small class="text-muted">às <%= event.end_time.strftime("%H:%M") %></small>
+                    <small class="text-muted">às <%= event.formatted_end_time %></small>
                   <% end %>
                 <% else %>
                   <span class="text-muted">Não definido</span>
                 <% end %>
               </div>
             </div>
-
-            <!-- Local -->
-            <% if event.location.present? %>
-              <div class="mb-3">
-                <small class="text-muted">Local:</small>
-                <br>
-                <i class="fas fa-map-marker-alt text-info"></i>
-                <span><%= event.location %></span>
-              </div>
-            <% end %>
 
             <!-- Descrição -->
             <% if event.description.present? %>
@@ -279,61 +267,13 @@
                 <p class="small"><%= truncate(event.description, length: 120) %></p>
               </div>
             <% end %>
-
-            <!-- Participantes -->
-            <% if event.target_audience.present? %>
-              <div class="mb-3">
-                <small class="text-muted">Público-alvo:</small>
-                <br>
-                <% event.target_audience.each do |audience| %>
-                  <span class="badge bg-light text-dark me-1">
-                    <%= 
-                      case audience
-                      when 'students' then 'Alunos'
-                      when 'teachers' then 'Professores'
-                      when 'parents' then 'Pais'
-                      when 'staff' then 'Funcionários'
-                      when 'community' then 'Comunidade'
-                      else audience.humanize
-                      end
-                    %>
-                  </span>
-                <% end %>
-              </div>
-            <% end %>
-
-            <!-- Organização -->
-            <% if event.organizer.present? %>
-              <div class="mb-2">
-                <small class="text-muted">Organizado por:</small>
-                <br>
-                <span class="small"><%= event.organizer %></span>
-              </div>
-            <% end %>
-
-            <!-- Capacidade -->
-            <% if event.capacity.present? %>
-              <div class="mb-2">
-                <small class="text-muted">Capacidade:</small>
-                <br>
-                <div class="progress" style="height: 6px;">
-                  <% occupancy = event.attendees_count ? (event.attendees_count.to_f / event.capacity * 100).round(1) : 0 %>
-                  <div class="progress-bar bg-<%= occupancy > 90 ? 'danger' : occupancy > 70 ? 'warning' : 'success' %>" 
-                       style="width: <%= occupancy %>%"></div>
-                </div>
-                <small class="text-muted">
-                  <%= event.attendees_count || 0 %>/<%= event.capacity %> pessoas 
-                  (<%= occupancy %>%)
-                </small>
-              </div>
-            <% end %>
           </div>
 
           <div class="card-footer">
             <div class="d-flex justify-content-between align-items-center">
               <small class="text-muted">
                 <i class="fas fa-calendar-plus"></i>
-                Criado em <%= event.created_at.strftime("%d/%m/%Y") %>
+                Criado em <%= event.formatted_created_at %>
               </small>
               <%= link_to direction_event_path(event), class: "btn btn-sm btn-outline-primary" do %>
                 <i class="fas fa-arrow-right"></i> Ver Mais
@@ -350,7 +290,7 @@
           <i class="fas fa-calendar-alt fa-3x text-muted mb-3"></i>
           <h5 class="text-muted">Nenhum evento encontrado</h5>
           <p class="text-muted">
-            <% if params.any? %>
+            <% if params[:search].present? || params[:event_type].present? || params[:status].present? || params[:start_date].present? || params[:end_date].present? %>
               Não há eventos que correspondam aos filtros selecionados.
             <% else %>
               Nenhum evento foi criado ainda.
@@ -365,54 +305,3 @@
   <% end %>
 </div>
 
-<!-- Calendário Resumido -->
-<% if @events.any? %>
-  <div class="card mt-4">
-    <div class="card-header d-flex justify-content-between align-items-center">
-      <h5><i class="fas fa-calendar"></i> Calendário do Mês</h5>
-      <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#calendarModal">
-        <i class="fas fa-expand"></i> Ver Calendário Completo
-      </button>
-    </div>
-    <div class="card-body">
-      <div class="row">
-        <% events_this_month = @events.where(start_date: Date.current.beginning_of_month..Date.current.end_of_month) %>
-        <% events_by_day = events_this_month.group_by(&:start_date) %>
-        
-        <% (1..Date.current.end_of_month.day).each do |day| %>
-          <% current_date = Date.new(Date.current.year, Date.current.month, day) %>
-          <% day_events = events_by_day[current_date] || [] %>
-          
-          <div class="col-1 p-1">
-            <div class="border rounded p-2 text-center 
-                        <%= 'bg-primary text-white' if current_date == Date.current %>
-                        <%= 'bg-light' if day_events.any? && current_date != Date.current %>">
-              <small><%= day %></small>
-              <% if day_events.any? %>
-                <br><span class="badge bg-success" style="font-size: 8px;"><%= day_events.count %></span>
-              <% end %>
-            </div>
-          </div>
-        <% end %>
-      </div>
-    </div>
-  </div>
-<% end %>
-
-<!-- Modal Calendário Completo -->
-<div class="modal fade" id="calendarModal" tabindex="-1">
-  <div class="modal-dialog modal-xl">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title"><i class="fas fa-calendar"></i> Calendário de Eventos</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <div id="calendar-container">
-          <!-- Aqui seria integrado um calendário completo como FullCalendar.js -->
-          <p class="text-center text-muted">Calendário completo será implementado aqui</p>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>

@@ -3,9 +3,9 @@ class Students::ProfileController < ApplicationController
   before_action :ensure_student!
 
   def show
-    @student = current_user
+    @user = current_user
+    @classroom = @user.classroom
     @school = current_user.school
-    @enrollments = current_user.enrollments.includes(:classroom)
   end
 
   def edit

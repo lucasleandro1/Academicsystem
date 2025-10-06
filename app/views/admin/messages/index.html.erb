@@ -1,0 +1,298 @@
+<% content_for :title, "Mensagens - Administrador" %>
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <div>
+    <h1 class="h2">
+      <i class="fas fa-envelope text-primary me-2"></i>
+      Sistema de Mensagens Municipal
+    </h1>
+    <p class="text-muted mb-0">
+      Envie comunicados para escolas, diretores, professores e alunos
+    </p>
+  </div>
+  <div class="btn-toolbar mb-2 mb-md-0">
+    <div class="btn-group me-2">
+      <%= link_to new_admin_message_path, class: "btn btn-sm btn-primary" do %>
+        <i class="fas fa-plus"></i> Nova Mensagem
+      <% end %>
+    </div>
+    <div class="btn-group">
+      <button type="button" class="btn btn-sm btn-outline-info dropdown-toggle" data-bs-toggle="dropdown">
+        <i class="fas fa-broadcast-tower"></i> Comunicados
+      </button>
+      <ul class="dropdown-menu">
+        <li>
+          <%= link_to new_admin_message_path(broadcast_type: 'all_directors'), class: "dropdown-item" do %>
+            <i class="fas fa-users"></i> Todos os Diretores
+          <% end %>
+        </li>
+        <li>
+          <%= link_to new_admin_message_path(broadcast_type: 'all_teachers'), class: "dropdown-item" do %>
+            <i class="fas fa-chalkboard-teacher"></i> Todos os Professores
+          <% end %>
+        </li>
+        <li>
+          <%= link_to new_admin_message_path(broadcast_type: 'all_students'), class: "dropdown-item" do %>
+            <i class="fas fa-user-graduate"></i> Todos os Alunos
+          <% end %>
+        </li>
+        <li><hr class="dropdown-divider"></li>
+        <li>
+          <%= link_to new_admin_message_path(broadcast_type: 'all_schools'), class: "dropdown-item" do %>
+            <i class="fas fa-school"></i> Todas as Escolas
+          <% end %>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- Statistics -->
+<div class="row mb-4">
+  <div class="col-md-3">
+    <div class="card card-stat border-left-primary shadow h-100 py-2">
+      <div class="card-body">
+        <div class="row no-gutters align-items-center">
+          <div class="col mr-2">
+            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+              Mensagens Enviadas
+            </div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800">
+              <%= @sent_messages.count %>
+            </div>
+          </div>
+          <div class="col-auto">
+            <i class="fas fa-paper-plane fa-2x text-gray-300"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-md-3">
+    <div class="card card-stat border-left-success shadow h-100 py-2">
+      <div class="card-body">
+        <div class="row no-gutters align-items-center">
+          <div class="col mr-2">
+            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+              Mensagens Recebidas
+            </div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800">
+              <%= @received_messages.count %>
+            </div>
+          </div>
+          <div class="col-auto">
+            <i class="fas fa-inbox fa-2x text-gray-300"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-md-3">
+    <div class="card card-stat border-left-warning shadow h-100 py-2">
+      <div class="card-body">
+        <div class="row no-gutters align-items-center">
+          <div class="col mr-2">
+            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+              Não Lidas
+            </div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800">
+              <%= @unread_count %>
+            </div>
+          </div>
+          <div class="col-auto">
+            <i class="fas fa-envelope fa-2x text-gray-300"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-md-3">
+    <div class="card card-stat border-left-info shadow h-100 py-2">
+      <div class="card-body">
+        <div class="row no-gutters align-items-center">
+          <div class="col mr-2">
+            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+              Total de Usuários
+            </div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800">
+              <%= User.count %>
+            </div>
+          </div>
+          <div class="col-auto">
+            <i class="fas fa-users fa-2x text-gray-300"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Messages Tabs -->
+<div class="row">
+  <div class="col-12">
+    <div class="card shadow">
+      <div class="card-header">
+        <ul class="nav nav-tabs card-header-tabs" id="messagesTabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="sent-tab" data-bs-toggle="tab" data-bs-target="#sent" type="button" role="tab">
+              <i class="fas fa-paper-plane"></i> Enviadas (<%= @sent_messages.count %>)
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="received-tab" data-bs-toggle="tab" data-bs-target="#received" type="button" role="tab">
+              <i class="fas fa-inbox"></i> Recebidas (<%= @received_messages.count %>)
+            </button>
+          </li>
+        </ul>
+      </div>
+      
+      <div class="card-body">
+        <div class="tab-content" id="messagesTabContent">
+          <!-- Sent Messages -->
+          <div class="tab-pane fade show active" id="sent" role="tabpanel">
+            <% if @sent_messages.any? %>
+              <div class="table-responsive">
+                <table class="table table-hover">
+                  <thead>
+                    <tr>
+                      <th>Destinatário</th>
+                      <th>Assunto</th>
+                      <th>Escola</th>
+                      <th>Data</th>
+                      <th>Status</th>
+                      <th>Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% @sent_messages.each do |message| %>
+                      <tr>
+                        <td>
+                          <div class="d-flex align-items-center">
+                            <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center me-2" style="width: 30px; height: 30px;">
+                              <%= message.recipient.full_name.first.upcase %>
+                            </div>
+                            <div>
+                              <div class="font-weight-medium"><%= message.recipient.full_name %></div>
+                              <small class="text-muted"><%= message.recipient.user_type.humanize %></small>
+                            </div>
+                          </div>
+                        </td>
+                        <td>
+                          <div class="font-weight-medium"><%= truncate(message.subject, length: 40) %></div>
+                          <small class="text-muted"><%= truncate(message.body, length: 60) %></small>
+                        </td>
+                        <td>
+                          <% if message.school %>
+                            <span class="badge badge-primary"><%= message.school.name %></span>
+                          <% else %>
+                            <span class="badge badge-secondary">Municipal</span>
+                          <% end %>
+                        </td>
+                        <td>
+                          <small><%= message.created_at.strftime("%d/%m/%Y %H:%M") %></small>
+                        </td>
+                        <td>
+                          <% if message.read? %>
+                            <span class="badge badge-success">Lida</span>
+                          <% else %>
+                            <span class="badge badge-warning">Não lida</span>
+                          <% end %>
+                        </td>
+                        <td>
+                          <%= link_to admin_message_path(message), class: "btn btn-sm btn-outline-primary" do %>
+                            <i class="fas fa-eye"></i>
+                          <% end %>
+                        </td>
+                      </tr>
+                    <% end %>
+                  </tbody>
+                </table>
+              </div>
+            <% else %>
+              <div class="text-center text-muted py-4">
+                <i class="fas fa-paper-plane fa-3x mb-3"></i>
+                <h5>Nenhuma mensagem enviada</h5>
+                <p>Comece enviando seu primeiro comunicado municipal.</p>
+                <%= link_to new_admin_message_path, class: "btn btn-primary" do %>
+                  <i class="fas fa-plus"></i> Enviar Primeira Mensagem
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+
+          <!-- Received Messages -->
+          <div class="tab-pane fade" id="received" role="tabpanel">
+            <% if @received_messages.any? %>
+              <div class="table-responsive">
+                <table class="table table-hover">
+                  <thead>
+                    <tr>
+                      <th>Remetente</th>
+                      <th>Assunto</th>
+                      <th>Escola</th>
+                      <th>Data</th>
+                      <th>Status</th>
+                      <th>Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% @received_messages.each do |message| %>
+                      <tr class="<%= 'table-warning' unless message.read? %>">
+                        <td>
+                          <div class="d-flex align-items-center">
+                            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-2" style="width: 30px; height: 30px;">
+                              <%= message.sender.full_name.first.upcase %>
+                            </div>
+                            <div>
+                              <div class="font-weight-medium"><%= message.sender.full_name %></div>
+                              <small class="text-muted"><%= message.sender.user_type.humanize %></small>
+                            </div>
+                          </div>
+                        </td>
+                        <td>
+                          <div class="font-weight-medium"><%= truncate(message.subject, length: 40) %></div>
+                          <small class="text-muted"><%= truncate(message.body, length: 60) %></small>
+                        </td>
+                        <td>
+                          <% if message.school %>
+                            <span class="badge badge-primary"><%= message.school.name %></span>
+                          <% else %>
+                            <span class="badge badge-secondary">Municipal</span>
+                          <% end %>
+                        </td>
+                        <td>
+                          <small><%= message.created_at.strftime("%d/%m/%Y %H:%M") %></small>
+                        </td>
+                        <td>
+                          <% if message.read? %>
+                            <span class="badge badge-success">Lida</span>
+                          <% else %>
+                            <span class="badge badge-warning">Nova</span>
+                          <% end %>
+                        </td>
+                        <td>
+                          <%= link_to admin_message_path(message), class: "btn btn-sm btn-outline-primary" do %>
+                            <i class="fas fa-eye"></i>
+                          <% end %>
+                        </td>
+                      </tr>
+                    <% end %>
+                  </tbody>
+                </table>
+              </div>
+            <% else %>
+              <div class="text-center text-muted py-4">
+                <i class="fas fa-inbox fa-3x mb-3"></i>
+                <h5>Nenhuma mensagem recebida</h5>
+                <p>Você não tem mensagens recebidas ainda.</p>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
