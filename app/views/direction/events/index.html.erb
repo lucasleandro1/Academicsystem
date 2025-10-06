@@ -19,13 +19,12 @@
         <%= form.select :event_type, 
                         options_for_select([
                           ['Todos os tipos', ''],
-                          ['Reunião', 'meeting'],
-                          ['Evento Acadêmico', 'academic'],
-                          ['Festa/Comemoração', 'celebration'],
-                          ['Palestra', 'lecture'],
-                          ['Formação', 'training'],
-                          ['Avaliação', 'evaluation'],
-                          ['Outros', 'other']
+                          ['Acadêmico', 'academico'],
+                          ['Cultural', 'cultural'],
+                          ['Esportivo', 'esportivo'],
+                          ['Administrativo', 'administrativo'],
+                          ['Reunião', 'reuniao'],
+                          ['Feriado', 'feriado']
                         ], params[:event_type]),
                         {}, { class: "form-select" } %>
       </div>
@@ -109,12 +108,12 @@
                 <h6 class="card-title">
                   <i class="fas fa-<%= 
                     case event.event_type
-                    when 'meeting' then 'users'
-                    when 'academic' then 'graduation-cap'
-                    when 'celebration' then 'birthday-cake'
-                    when 'lecture' then 'microphone'
-                    when 'training' then 'chalkboard-teacher'
-                    when 'evaluation' then 'clipboard-check'
+                    when 'academico' then 'graduation-cap'
+                    when 'cultural' then 'theater-masks'
+                    when 'esportivo' then 'futbol'
+                    when 'administrativo' then 'briefcase'
+                    when 'reuniao' then 'users'
+                    when 'feriado' then 'calendar-day'
                     else 'calendar'
                     end
                   %>"></i>
@@ -149,12 +148,12 @@
             <h5 class="mb-0">
               <i class="fas fa-<%= 
                 case event.event_type
-                when 'meeting' then 'users'
-                when 'academic' then 'graduation-cap'
-                when 'celebration' then 'birthday-cake'
-                when 'lecture' then 'microphone'
-                when 'training' then 'chalkboard-teacher'
-                when 'evaluation' then 'clipboard-check'
+                when 'academico' then 'graduation-cap'
+                when 'cultural' then 'theater-masks'
+                when 'esportivo' then 'futbol'
+                when 'administrativo' then 'briefcase'
+                when 'reuniao' then 'users'
+                when 'feriado' then 'calendar-day'
                 else 'calendar'
                 end
               %> text-primary"></i>
@@ -224,13 +223,12 @@
                 <span class="badge bg-info">
                   <%= 
                     case event.event_type
-                    when 'meeting' then 'Reunião'
-                    when 'academic' then 'Acadêmico'
-                    when 'celebration' then 'Comemoração'
-                    when 'lecture' then 'Palestra'
-                    when 'training' then 'Formação'
-                    when 'evaluation' then 'Avaliação'
-                    when 'other' then 'Outros'
+                    when 'academico' then 'Acadêmico'
+                    when 'cultural' then 'Cultural'
+                    when 'esportivo' then 'Esportivo'
+                    when 'administrativo' then 'Administrativo'
+                    when 'reuniao' then 'Reunião'
+                    when 'feriado' then 'Feriado'
                     else 'Não definido'
                     end
                   %>
@@ -292,7 +290,7 @@
           <i class="fas fa-calendar-alt fa-3x text-muted mb-3"></i>
           <h5 class="text-muted">Nenhum evento encontrado</h5>
           <p class="text-muted">
-            <% if params.any? %>
+            <% if params[:search].present? || params[:event_type].present? || params[:status].present? || params[:start_date].present? || params[:end_date].present? %>
               Não há eventos que correspondam aos filtros selecionados.
             <% else %>
               Nenhum evento foi criado ainda.
@@ -307,54 +305,3 @@
   <% end %>
 </div>
 
-<!-- Calendário Resumido -->
-<% if @events.any? %>
-  <div class="card mt-4">
-    <div class="card-header d-flex justify-content-between align-items-center">
-      <h5><i class="fas fa-calendar"></i> Calendário do Mês</h5>
-      <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#calendarModal">
-        <i class="fas fa-expand"></i> Ver Calendário Completo
-      </button>
-    </div>
-    <div class="card-body">
-      <div class="row">
-        <% events_this_month = @events.where(start_date: Date.current.beginning_of_month..Date.current.end_of_month) %>
-        <% events_by_day = events_this_month.group_by(&:start_date) %>
-        
-        <% (1..Date.current.end_of_month.day).each do |day| %>
-          <% current_date = Date.new(Date.current.year, Date.current.month, day) %>
-          <% day_events = events_by_day[current_date] || [] %>
-          
-          <div class="col-1 p-1">
-            <div class="border rounded p-2 text-center 
-                        <%= 'bg-primary text-white' if current_date == Date.current %>
-                        <%= 'bg-light' if day_events.any? && current_date != Date.current %>">
-              <small><%= day %></small>
-              <% if day_events.any? %>
-                <br><span class="badge bg-success" style="font-size: 8px;"><%= day_events.count %></span>
-              <% end %>
-            </div>
-          </div>
-        <% end %>
-      </div>
-    </div>
-  </div>
-<% end %>
-
-<!-- Modal Calendário Completo -->
-<div class="modal fade" id="calendarModal" tabindex="-1">
-  <div class="modal-dialog modal-xl">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title"><i class="fas fa-calendar"></i> Calendário de Eventos</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <div id="calendar-container">
-          <!-- Aqui seria integrado um calendário completo como FullCalendar.js -->
-          <p class="text-center text-muted">Calendário completo será implementado aqui</p>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>

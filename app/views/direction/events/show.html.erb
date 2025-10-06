@@ -88,28 +88,6 @@
           </div>
         </div>
 
-        <% if @event.respond_to?(:visible_to) && @event.visible_to.present? %>
-        <div class="row mb-3">
-          <div class="col-sm-3">
-            <strong>Visível para:</strong>
-          </div>
-          <div class="col-sm-9">
-            <% case @event.visible_to %>
-            <% when 'all' %>
-              <span class="badge bg-success">Toda a escola</span>
-            <% when 'teachers' %>
-              <span class="badge bg-info">Apenas professores</span>
-            <% when 'students' %>
-              <span class="badge bg-warning">Apenas alunos</span>
-            <% when 'direction' %>
-              <span class="badge bg-danger">Apenas direção</span>
-            <% else %>
-              <span class="badge bg-secondary"><%= @event.visible_to.humanize %></span>
-            <% end %>
-          </div>
-        </div>
-        <% end %>
-
         <div class="row mb-3">
           <div class="col-sm-3">
             <strong>Criado em:</strong>

@@ -24,7 +24,8 @@
   </div>
 
   <%= form_with model: [:direction, @class_schedule], local: true, 
-      class: "needs-validation", novalidate: true do |form| %>
+      class: "needs-validation", novalidate: true, 
+      data: { turbo: false } do |form| %>
     
     <div class="row">
       <!-- Form Principal -->

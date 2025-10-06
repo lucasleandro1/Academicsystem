@@ -140,7 +140,7 @@
           else 'Não definido'
           end
         %><br>
-        <strong>Sala:</strong> <%= @subject.classroom.room || 'Não definida' %>
+        <strong>Sala:</strong> <%= @subject.classroom.name || 'Não definida' %>
       </div>
       <div class="col-md-6">
         <strong>Total de Alunos:</strong> <%= @subject.classroom.students.count %><br>
@@ -163,54 +163,6 @@
     </div>
   </div>
 </div>
-<% end %>
-
-<!-- Atividades Recentes -->
-<% if @activities.any? %>
-  <div class="card mb-4">
-    <div class="card-header d-flex justify-content-between align-items-center">
-      <h5 class="mb-0"><i class="fas fa-tasks"></i> Atividades Recentes</h5>
-      <small class="text-muted">Últimas 5 atividades</small>
-    </div>
-    <div class="card-body">
-      <div class="table-responsive">
-        <table class="table table-sm">
-          <thead>
-            <tr>
-              <th>Título</th>
-              <th>Tipo</th>
-              <th>Data de Entrega</th>
-              <th>Entregas</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            <% @activities.limit(5).each do |activity| %>
-              <tr>
-                <td><%= activity.title %></td>
-                <td>
-                  <span class="badge bg-secondary">
-                    <%= activity.activity_type == 'homework' ? 'Tarefa' : 
-                        activity.activity_type == 'exam' ? 'Prova' : 
-                        activity.activity_type == 'project' ? 'Projeto' : 'Outro' %>
-                  </span>
-                </td>
-                <td><%= activity.due_date&.strftime("%d/%m/%Y") || 'Sem prazo' %></td>
-                <td><%= activity.submissions.count %>/<%= @subject.students.count %></td>
-                <td>
-                  <% if activity.due_date && activity.due_date < Date.current %>
-                    <span class="badge bg-warning">Vencida</span>
-                  <% else %>
-                    <span class="badge bg-success">Ativa</span>
-                  <% end %>
-                </td>
-              </tr>
-            <% end %>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
 <% end %>
 
 <!-- Horários de Aula -->
@@ -246,7 +198,7 @@
                   %>
                 </td>
                 <td><%= schedule.start_time.strftime("%H:%M") %> - <%= schedule.end_time.strftime("%H:%M") %></td>
-                <td><%= schedule.room || 'Não definida' %></td>
+                <td><%= schedule.classroom.name || 'Não definida' %></td>
               </tr>
             <% end %>
           </tbody>

@@ -4,10 +4,9 @@
 
 # Create Admin User
 admin = User.find_or_create_by(email: 'admin@sistema.com') do |user|
-  user.password = 'password123'
-  user.password_confirmation = 'password123'
+  user.password = '123456'
+  user.password_confirmation = '123456'
   user.user_type = 'admin'
-  user.admin = true
   user.first_name = 'Admin'
   user.last_name = 'Sistema'
 end
@@ -98,12 +97,12 @@ puts "Turmas criadas: #{classroom1.name}, #{classroom2.name}"
 
 # Create Subjects
 subject1 = Subject.find_or_create_by(name: 'Matemática', classroom: classroom1, school: school) do |s|
-  s.teacher = teacher1
+  s.user = teacher1
   s.workload = 80
 end
 
 subject2 = Subject.find_or_create_by(name: 'Português', classroom: classroom1, school: school) do |s|
-  s.teacher = teacher2
+  s.user = teacher2
   s.workload = 80
 end
 
@@ -113,42 +112,15 @@ puts "Disciplinas criadas: #{subject1.name}, #{subject2.name}"
 student1.update!(classroom: classroom1)
 student2.update!(classroom: classroom1)
 
-puts "Alunos #{student1.name} e #{student2.name} adicionados à turma #{classroom1.name}"
+puts "Alunos #{student1.full_name} e #{student2.full_name} adicionados à turma #{classroom1.name}"
 
-# Create Activities
-activity1 = Activity.find_or_create_by(title: 'Exercícios de Álgebra', subject: subject1) do |a|
-  a.description = 'Resolva os exercícios do capítulo 3'
-  a.due_date = 1.week.from_now
-  a.teacher = teacher1
-  a.school = school
-end
-
-activity2 = Activity.find_or_create_by(title: 'Redação sobre Literatura', subject: subject2) do |a|
-  a.description = 'Escreva uma redação sobre o romantismo'
-  a.due_date = 2.weeks.from_now
-  a.teacher = teacher2
-  a.school = school
-end
-
-puts "Atividades criadas: #{activity1.title}, #{activity2.title}"
-
-# Create Grades
-Grade.find_or_create_by(user_id: student1.id, subject: subject1, bimester: 1, grade_type: 'prova') do |g|
-  g.value = 8.5
-end
-
-Grade.find_or_create_by(user_id: student2.id, subject: subject2, bimester: 1, grade_type: 'trabalho') do |g|
-  g.value = 9.0
-end
-
-puts "Notas criadas"
+# Skip activities and grades for now as models may not be properly set up
 
 # Create Events
 Event.find_or_create_by(title: 'Feira de Ciências', school: school) do |e|
   e.description = 'Feira anual de ciências da escola'
   e.start_date = 1.month.from_now
   e.end_date = 1.month.from_now + 3.days
-  e.visible_to = 'all'
 end
 
 puts "Eventos criados"

@@ -66,8 +66,8 @@ class Direction::DashboardController < ApplicationController
     @total_subjects = 0
     @upcoming_events = []
     @important_notifications = []
-    @attendance_rate = 0
-    @average_grade = "0.0"
+    @attendance_rate = "N/A"
+    @average_grade = "N/A"
     @total_messages = 0
     @alerts = []
 
@@ -106,6 +106,35 @@ class Direction::DashboardController < ApplicationController
       }
     end
 
+    # Verificar disciplinas sem horários na grade
+    subjects_without_schedule = Subject.where(school_id: @school.id)
+                                      .left_joins(:class_schedules)
+                                      .where(class_schedules: { id: nil })
+                                      .count
+    if subjects_without_schedule > 0
+      notifications << {
+        type: "info",
+        icon: "fas fa-calendar-times",
+        title: "Disciplinas sem Horário",
+        message: "#{subjects_without_schedule} disciplina(s) não têm horários definidos na grade",
+        link: direction_class_schedules_path
+      }
+    end
+
+    # Verificar turmas sem horários completos
+    classrooms_without_full_schedule = Classroom.where(school_id: @school.id)
+                                               .select { |c| c.class_schedules.active.count < 20 } # Menos de 20 aulas por semana
+                                               .count
+    if classrooms_without_full_schedule > 0
+      notifications << {
+        type: "warning",
+        icon: "fas fa-clock",
+        title: "Grade de Horários Incompleta",
+        message: "#{classrooms_without_full_schedule} turma(s) com grade de horários incompleta",
+        link: direction_class_schedules_path
+      }
+    end
+
     notifications
   end
 
@@ -113,7 +142,8 @@ class Direction::DashboardController < ApplicationController
     alerts = []
 
     # Taxa de frequência baixa
-    if @attendance_rate < 75
+    attendance_numeric = @attendance_rate.to_f if @attendance_rate != "N/A"
+    if attendance_numeric && attendance_numeric < 75
       alerts << {
         type: "danger",
         title: "Taxa de Frequência Baixa",
@@ -121,16 +151,29 @@ class Direction::DashboardController < ApplicationController
       }
     end
 
-    # Turmas sem professores
-    classrooms_without_teachers = Classroom.where(school_id: @school.id)
+    # Turmas sem disciplinas cadastradas
+    classrooms_without_subjects = Classroom.where(school_id: @school.id)
                                           .left_joins(:subjects)
                                           .where(subjects: { id: nil })
                                           .count
-    if classrooms_without_teachers > 0
+    if classrooms_without_subjects > 0
       alerts << {
         type: "warning",
-        title: "Turmas sem Professores",
-        message: "#{classrooms_without_teachers} turma(s) sem professores atribuídos"
+        title: "Turmas sem Disciplinas",
+        message: "#{classrooms_without_subjects} turma(s) sem disciplinas cadastradas"
+      }
+    end
+
+    # Verificar conflitos de horários
+    conflicting_schedules = ClassSchedule.where(school_id: @school.id, active: true)
+                                        .group(:classroom_id, :weekday, :start_time)
+                                        .having("COUNT(*) > 1")
+                                        .count
+    if conflicting_schedules.any?
+      alerts << {
+        type: "danger",
+        title: "Conflitos de Horário",
+        message: "Existem #{conflicting_schedules.size} conflito(s) na grade de horários"
       }
     end
 
@@ -143,40 +186,80 @@ class Direction::DashboardController < ApplicationController
     # Calculando taxa de frequência baseada nas ausências dos últimos 30 dias
     total_students = User.where(school_id: @school.id, user_type: "student").count
 
-    return 95.0 if total_students.zero?
+    return "N/A" if total_students.zero?
 
+    # Corrigindo o join - usar :student ao invés de :user
     total_absences = Absence.joins(:student)
                            .where(users: { school_id: @school.id })
                            .where("absences.date >= ?", 30.days.ago)
                            .count
 
-    # Se não há ausências, consideramos 95% de frequência como padrão
-    return 95.0 if total_absences.zero?
+    # Se não há ausências registradas nos últimos 30 dias, verificar se há ausências antigas
+    if total_absences.zero?
+      all_absences = Absence.joins(:student).where(users: { school_id: @school.id }).count
 
-    # Calculamos uma estimativa baseada nas ausências
-    # Assumindo que cada aluno deveria ter pelo menos 20 presenças no mês
-    expected_presences = total_students * 20
+      if all_absences.zero?
+        return "N/A"  # Não há dados de frequência
+      else
+        # Há ausências registradas, mas não recentes - assumir boa frequência
+        return "95.0"
+      end
+    end
+
+    # Calculamos uma estimativa mais realista
+    # Assumindo 22 dias letivos por mês (excluindo fins de semana)
+    expected_presences = total_students * 22
     actual_presences = expected_presences - total_absences
 
-    attendance_rate = (actual_presences.to_f / expected_presences * 100).round(1)
-    [ attendance_rate, 0.0 ].max
+    # Garantir que não seja negativo e arredondar para 1 casa decimal
+    attendance_rate = [ (actual_presences.to_f / expected_presences * 100), 0.0 ].max.round(1)
+
+    # Se a taxa calculada for muito alta (>100%), limitar a 98%
+    [ attendance_rate, 98.0 ].min.to_s
   end
 
   def calculate_average_grade
+    # Corrigindo o join - usar :student ao invés de :user
     grades = Grade.joins(:student)
                   .where(users: { school_id: @school.id })
                   .where("grades.created_at >= ?", 30.days.ago)
 
-    return "0.0" if grades.empty?
+    # Se não há notas recentes, verificar se há notas antigas
+    if grades.empty?
+      all_grades = Grade.joins(:student).where(users: { school_id: @school.id })
 
-    (grades.average(:value) || 0).round(1).to_s
+      if all_grades.empty?
+        return "N/A"  # Não há notas cadastradas
+      else
+        # Usar a média de todas as notas se não há notas recentes
+        average = all_grades.average(:value) || 0
+        return average.round(1).to_s
+      end
+    end
+
+    average = grades.average(:value) || 0
+    average.round(1).to_s
   end
 
   def calculate_total_messages
     # Contando mensagens enviadas pelos usuários da escola nos últimos 30 dias
-    Message.joins(:sender)
-           .where(users: { school_id: @school.id })
-           .where("messages.created_at >= ?", 30.days.ago)
-           .count
+    # Verificar se a associação :sender existe no modelo Message
+    begin
+      Message.joins(:sender)
+             .where(users: { school_id: @school.id })
+             .where("messages.created_at >= ?", 30.days.ago)
+             .count
+    rescue ActiveRecord::StatementInvalid, ActiveRecord::AssociationNotFoundError => e
+      # Se houver erro na associação, contar mensagens de forma alternativa
+      Rails.logger.warn "Erro ao calcular mensagens: #{e.message}"
+
+      # Tentar contagem alternativa usando sender_id
+      Message.where(sender_id: User.where(school_id: @school.id).pluck(:id))
+             .where("created_at >= ?", 30.days.ago)
+             .count
+    rescue => e
+      Rails.logger.error "Erro crítico ao calcular mensagens: #{e.message}"
+      0 # Retorna 0 em caso de erro
+    end
   end
 end

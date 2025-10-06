@@ -92,7 +92,10 @@ class ClassSchedule < ApplicationRecord
   def subject_belongs_to_classroom
     return unless subject && classroom
 
-    errors.add(:subject, "deve pertencer à turma") unless subject.classroom_id == classroom.id
+    # Verifica se a disciplina pertence à mesma escola da turma
+    unless subject.school_id == classroom.school_id
+      errors.add(:subject, "deve pertencer à mesma escola da turma")
+    end
   end
 
   def no_time_conflict

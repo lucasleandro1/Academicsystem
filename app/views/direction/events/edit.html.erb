@@ -19,7 +19,7 @@
         <h5><i class="fas fa-calendar-alt"></i> Informações do Evento</h5>
       </div>
       <div class="card-body">
-        <%= form_with model: [:direction, @event], local: true, class: "needs-validation", novalidate: true do |form| %>
+        <%= form_with model: [:direction, @event], class: "needs-validation", novalidate: true do |form| %>
           <% if @event.errors.any? %>
             <div class="alert alert-danger">
               <h5><i class="fas fa-exclamation-circle"></i> Erro ao salvar o evento:</h5>
@@ -46,13 +46,12 @@
               <%= form.select :event_type, 
                               options_for_select([
                                 ['Selecione...', ''],
-                                ['Reunião', 'meeting'],
-                                ['Evento Acadêmico', 'academic'],
-                                ['Festa/Comemoração', 'celebration'],
-                                ['Palestra', 'lecture'],
-                                ['Formação', 'training'],
-                                ['Avaliação', 'evaluation'],
-                                ['Outros', 'other']
+                                ['Acadêmico', 'academico'],
+                                ['Cultural', 'cultural'],
+                                ['Esportivo', 'esportivo'],
+                                ['Administrativo', 'administrativo'],
+                                ['Reunião', 'reuniao'],
+                                ['Feriado', 'feriado']
                               ], @event.event_type),
                               {}, { class: "form-select" } %>
             </div>
@@ -91,23 +90,6 @@
               <%= form.label :end_time, "Horário de Término", class: "form-label" %>
               <%= form.time_field :end_time, class: "form-control" %>
             </div>
-
-            <% if @event.respond_to?(:visible_to) %>
-            <div class="col-12 mb-3">
-              <%= form.label :visible_to, "Visibilidade", class: "form-label" %>
-              <%= form.select :visible_to, 
-                              options_for_select([
-                                ['Toda a escola', 'all'],
-                                ['Apenas professores', 'teachers'],
-                                ['Apenas alunos', 'students'],
-                                ['Apenas direção', 'direction']
-                              ], @event.visible_to),
-                              {}, { class: "form-select" } %>
-              <div class="form-text">
-                Escolha quem poderá visualizar este evento na escola.
-              </div>
-            </div>
-            <% end %>
           </div>
 
           <hr>

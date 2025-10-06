@@ -23,7 +23,7 @@ class Direction::EventsController < ApplicationController
     if @event.save
       redirect_to direction_event_path(@event), notice: "Evento criado com sucesso."
     else
-      render :new
+      render :new, status: :unprocessable_entity
     end
   end
 
@@ -31,7 +31,7 @@ class Direction::EventsController < ApplicationController
     if @event.update(event_params)
       redirect_to direction_event_path(@event), notice: "Evento atualizado com sucesso."
     else
-      render :edit
+      render :edit, status: :unprocessable_entity
     end
   end
 
@@ -48,6 +48,6 @@ class Direction::EventsController < ApplicationController
   end
 
   def event_params
-    params.require(:event).permit(:title, :description, :start_date, :end_date, :start_time, :end_time, :event_type, :visible_to)
+    params.require(:event).permit(:title, :description, :start_date, :end_date, :start_time, :end_time, :event_type)
   end
 end

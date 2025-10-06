@@ -52,18 +52,24 @@ class Direction::ClassSchedulesController < ApplicationController
   def new
     @class_schedule = ClassSchedule.new
     @classrooms = Classroom.where(school: current_user.school)
-    @subjects = Subject.joins(:classroom).where(classrooms: { school: current_user.school }).distinct
+    @subjects = Subject.where(school: current_user.school)
   end
 
   def create
     @class_schedule = ClassSchedule.new(class_schedule_params)
     @class_schedule.school = current_user.school
 
+    Rails.logger.info "=== ClassSchedule Create Debug ==="
+    Rails.logger.info "Params: #{class_schedule_params}"
+    Rails.logger.info "School: #{current_user.school.id}"
+    Rails.logger.info "Valid?: #{@class_schedule.valid?}"
+    Rails.logger.info "Errors: #{@class_schedule.errors.full_messages}" unless @class_schedule.valid?
+
     if @class_schedule.save
       redirect_to direction_class_schedules_path, notice: "Horário criado com sucesso."
     else
       @classrooms = Classroom.where(school: current_user.school)
-      @subjects = Subject.joins(:classroom).where(classrooms: { school: current_user.school }).distinct
+      @subjects = Subject.where(school: current_user.school)
       render :new
     end
   end
@@ -78,7 +84,7 @@ class Direction::ClassSchedulesController < ApplicationController
     end
 
     @classrooms = Classroom.where(school: current_user.school)
-    @subjects = Subject.joins(:classroom).where(classrooms: { school: current_user.school }).distinct
+    @subjects = Subject.where(school: current_user.school)
   end
 
   def update
@@ -94,7 +100,7 @@ class Direction::ClassSchedulesController < ApplicationController
       redirect_to direction_class_schedules_path, notice: "Horário atualizado com sucesso."
     else
       @classrooms = Classroom.where(school: current_user.school)
-      @subjects = Subject.joins(:classroom).where(classrooms: { school: current_user.school }).distinct
+      @subjects = Subject.where(school: current_user.school)
       render :edit
     end
   end

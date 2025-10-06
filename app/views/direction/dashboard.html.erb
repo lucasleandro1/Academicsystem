@@ -158,6 +158,11 @@
             <strong>Eventos Escolares</strong><br>
             <small class="text-muted">Gerenciar calendário e eventos</small>
           <% end %>
+          <%= link_to direction_class_schedules_path, class: "btn btn-outline-warning" do %>
+            <i class="fas fa-clock"></i>
+            <strong>Grade de Horários</strong><br>
+            <small class="text-muted">Gerenciar horários das turmas</small>
+          <% end %>
           <%= link_to direction_documents_path, class: "btn btn-outline-info" do %>
             <i class="fas fa-folder-open"></i>
             <strong>GED - Gestão de Documentos</strong><br>
@@ -174,6 +179,57 @@
   </div>
 </div>
 
+<!-- Resumo da Grade de Horários -->
+<div class="row mb-4">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5><i class="fas fa-clock"></i> Resumo da Grade de Horários</h5>
+        <%= link_to direction_class_schedules_path, class: "btn btn-sm btn-outline-primary" do %>
+          <i class="fas fa-eye"></i> Ver grade completa
+        <% end %>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-3 text-center mb-3">
+            <h4 class="text-primary">
+              <%= ClassSchedule.joins(:classroom).where(classrooms: { school_id: current_user.school.id }).active.count %>
+            </h4>
+            <small class="text-muted">Aulas por semana</small>
+          </div>
+          <div class="col-md-3 text-center mb-3">
+            <h4 class="text-success">
+              <%= ClassSchedule.joins(:classroom).where(classrooms: { school_id: current_user.school.id }).active.distinct.count(:subject_id) %>
+            </h4>
+            <small class="text-muted">Disciplinas ativas</small>
+          </div>
+          <div class="col-md-3 text-center mb-3">
+            <h4 class="text-info">
+              <%= ClassSchedule.joins(:subject).where(subjects: { school_id: current_user.school.id }).active.distinct.count(:user_id) %>
+            </h4>
+            <small class="text-muted">Professores lecionando</small>
+          </div>
+          <div class="col-md-3 text-center mb-3">
+            <h4 class="text-warning">
+              <%= ClassSchedule.joins(:classroom).where(classrooms: { school_id: current_user.school.id }).active.distinct.count(:classroom_id) %>
+            </h4>
+            <small class="text-muted">Turmas com horários</small>
+          </div>
+        </div>
+        
+        <% if @total_classrooms > 0 %>
+          <div class="mt-3">
+            <small class="text-muted">
+              <i class="fas fa-info-circle"></i>
+              Sistema baseado em grade de horários: cada disciplina tem professores específicos distribuídos ao longo da semana
+            </small>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Seção de Módulos Principais -->
 <div class="row mb-4">
   <div class="col-12">
@@ -184,6 +240,9 @@
     <div class="btn-group mb-3" role="group">
       <%= link_to direction_events_path, class: "btn btn-outline-primary btn-sm" do %>
         <i class="fas fa-calendar-alt"></i> Testar Eventos
+      <% end %>
+      <%= link_to direction_class_schedules_path, class: "btn btn-outline-warning btn-sm" do %>
+        <i class="fas fa-clock"></i> Testar Grade
       <% end %>
       <%= link_to direction_documents_path, class: "btn btn-outline-info btn-sm" do %>
         <i class="fas fa-folder-open"></i> Testar Documentos
@@ -306,7 +365,7 @@
         </div>
         <div class="mt-2">
           <small class="text-muted">
-            <strong>Frequência:</strong> <%= @attendance_rate %>% | 
+            <strong>Frequência:</strong> <%= @attendance_rate == 'N/A' ? 'N/A' : "#{@attendance_rate}%" %> | 
             <strong>Média:</strong> <%= @average_grade %>
           </small>
         </div>
@@ -336,9 +395,9 @@
                 <strong><%= event.title %></strong>
                 <br>
                 <small class="text-muted">
-                  <%= event.formatted_start_date %>
+                  <%= event.start_date.strftime("%d/%m/%Y") %>
                   <% if event.end_date != event.start_date %>
-                    até <%= event.formatted_end_date %>
+                    até <%= event.end_date.strftime("%d/%m/%Y") %>
                   <% end %>
                 </small>
               </div>
@@ -346,6 +405,59 @@
           <% end %>
         <% else %>
           <p class="text-muted text-center">Nenhum evento próximo</p>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Aulas de Hoje -->
+  <div class="col-md-6 mb-4">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between">
+        <h5><i class="fas fa-clock"></i> Aulas de Hoje</h5>
+        <%= link_to direction_class_schedules_path, class: "btn btn-sm btn-outline-warning" do %>
+          <i class="fas fa-eye"></i> Ver grade
+        <% end %>
+      </div>
+      <div class="card-body">
+        <% today_weekday = Date.current.wday == 0 ? 7 : Date.current.wday # Converter domingo de 0 para 7 %>
+        <% if today_weekday <= 5 %> <!-- Segunda a sexta -->
+          <% today_classes = ClassSchedule.joins(:classroom, :subject)
+                                         .where(classrooms: { school_id: current_user.school.id })
+                                         .where(weekday: today_weekday)
+                                         .active
+                                         .order(:start_time)
+                                         .limit(5) %>
+          <% if today_classes.any? %>
+            <% today_classes.each do |schedule| %>
+              <div class="d-flex align-items-center mb-2">
+                <div class="bg-warning rounded me-2 p-2" style="min-width: 60px;">
+                  <small class="fw-bold text-dark text-center d-block">
+                    <%= schedule.start_time.strftime("%H:%M") %>
+                  </small>
+                </div>
+                <div class="flex-grow-1">
+                  <strong><%= schedule.subject.name %></strong>
+                  <br>
+                  <small class="text-muted">
+                    <%= schedule.classroom.name %> • 
+                    <% if schedule.subject.teacher %>
+                      Prof. <%= schedule.subject.teacher.full_name %>
+                    <% else %>
+                      <span class="text-danger">Professor não definido</span>
+                    <% end %>
+                  </small>
+                </div>
+              </div>
+            <% end %>
+          <% else %>
+            <p class="text-muted text-center">Nenhuma aula programada para hoje</p>
+          <% end %>
+        <% else %>
+          <p class="text-muted text-center">
+            <i class="fas fa-calendar-times"></i><br>
+            Final de semana - Sem aulas programadas
+          </p>
         <% end %>
       </div>
     </div>
@@ -366,20 +478,35 @@
         <div class="row text-center">
           <div class="col-md-3">
             <div class="border-end">
-              <h4 class="text-primary"><%= @attendance_rate %>%</h4>
+              <h4 class="<%= @attendance_rate == 'N/A' ? 'text-muted' : 'text-primary' %>">
+                <%= @attendance_rate == 'N/A' ? 'N/A' : "#{@attendance_rate}%" %>
+              </h4>
               <small class="text-muted">Taxa de Frequência</small>
+              <% if @attendance_rate == 'N/A' %>
+                <br><small class="text-info">Sem dados de frequência</small>
+              <% end %>
             </div>
           </div>
           <div class="col-md-4">
             <div class="border-end">
-              <h4 class="text-success"><%= @average_grade %></h4>
+              <h4 class="<%= @average_grade == 'N/A' ? 'text-muted' : 'text-success' %>">
+                <%= @average_grade %>
+              </h4>
               <small class="text-muted">Média Geral</small>
+              <% if @average_grade == 'N/A' %>
+                <br><small class="text-info">Sem notas cadastradas</small>
+              <% end %>
             </div>
           </div>
           <div class="col-md-4">
             <div class="border-end">
-              <h4 class="text-warning"><%= @total_messages %></h4>
+              <h4 class="<%= @total_messages == 0 ? 'text-muted' : 'text-warning' %>">
+                <%= @total_messages %>
+              </h4>
               <small class="text-muted">Mensagens Enviadas</small>
+              <% if @total_messages == 0 %>
+                <br><small class="text-info">Últimos 30 dias</small>
+              <% end %>
             </div>
           </div>
         </div>
