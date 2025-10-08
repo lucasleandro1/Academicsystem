@@ -1,0 +1,243 @@
+<% content_for :title, "Registrar Nova Falta" %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1><i class="fas fa-plus"></i> Registrar Nova Falta</h1>
+  <%= link_to teachers_absences_path(subject_id: params[:subject_id]), class: "btn btn-secondary" do %>
+    <i class="fas fa-arrow-left"></i> Voltar
+  <% end %>
+</div>
+
+<div class="row">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header">
+        <h5><i class="fas fa-user-clock"></i> Dados da Falta</h5>
+      </div>
+      <div class="card-body">
+        <%= form_with model: [@absence], url: teachers_absences_path, local: true do |form| %>
+          <% if @absence.errors.any? %>
+            <div class="alert alert-danger">
+              <h6><i class="fas fa-exclamation-triangle"></i> Erro ao registrar falta:</h6>
+              <ul class="mb-0">
+                <% @absence.errors.full_messages.each do |message| %>
+                  <li><%= message %></li>
+                <% end %>
+              </ul>
+            </div>
+          <% end %>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <%= form.label :subject_id, "Disciplina", class: "form-label" %>
+              <%= form.select :subject_id, 
+                  options_from_collection_for_select(@subjects, :id, :name, @subject&.id),
+                  { prompt: "Selecione a disciplina" }, 
+                  { class: "form-select", required: true, id: "subject_select" } %>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <%= form.label :date, "Data da Falta", class: "form-label" %>
+              <%= form.date_field :date, class: "form-control", required: true, max: Date.current %>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-12 mb-3">
+              <%= label_tag "absence[classroom_id]", "Turma", class: "form-label" %>
+              <%= select_tag "absence[classroom_id]", 
+                  @classrooms.any? ? options_from_collection_for_select(@classrooms, :id, :name, @selected_classroom&.id) : "",
+                  { prompt: @subject ? "Selecione a turma" : "Primeiro selecione uma disciplina", 
+                    class: "form-select", required: true, id: "classroom_select", disabled: @classrooms.empty? } %>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <%= form.label :user_id, "Aluno", class: "form-label" %>
+            <%= form.select :user_id, 
+                @students.any? ? options_from_collection_for_select(@students, :id, :full_name) : "",
+                { prompt: @selected_classroom ? "Selecione o aluno" : (@subject ? "Primeiro selecione uma turma" : "Primeiro selecione uma disciplina") }, 
+                { class: "form-select", required: true, id: "student_select", disabled: @students.empty? } %>
+          </div>
+
+          <% if @subject&.students&.any? %>
+
+            <div class="mb-4">
+              <div class="form-check">
+                <%= form.check_box :justified, class: "form-check-input" %>
+                <%= form.label :justified, "Falta justificada", class: "form-check-label" %>
+              </div>
+              <small class="text-muted">Marque esta opção se a falta possui justificativa válida.</small>
+            </div>
+
+            <div class="d-flex gap-2">
+              <%= form.submit "Registrar Falta", class: "btn btn-primary" %>
+              <%= link_to teachers_absences_path(subject_id: @subject&.id), class: "btn btn-outline-secondary" do %>
+                Cancelar
+              <% end %>
+            </div>
+            <div class="alert alert-info">
+              <i class="fas fa-info-circle"></i>
+              <% if @selected_classroom && @students.empty? %>
+                <strong>Nenhum aluno encontrado</strong><br>
+                A turma "<%= @selected_classroom.name %>" não possui alunos matriculados.
+              <% elsif @subject && @classrooms.empty? %>
+                <strong>Nenhuma turma encontrada</strong><br>
+                A disciplina "<%= @subject.name %>" não possui turmas associadas.
+              <% elsif @subject %>
+                <strong>Selecione uma turma</strong><br>
+                Escolha uma turma acima para ver os alunos disponíveis.
+              <% else %>
+                <strong>Preencha o formulário</strong><br>
+                1. Selecione a disciplina<br>
+                2. Escolha a turma<br>
+                3. Defina a data da falta<br> 
+                4. Selecione o aluno<br>
+                5. Clique em "Registrar Falta"
+              <% end %>
+            </div>
+          <% else %>
+            <div class="d-flex gap-2">
+              <%= form.submit "Registrar Falta", class: "btn btn-primary" %>
+              <%= link_to teachers_absences_path(subject_id: @subject&.id), class: "btn btn-outline-secondary" do %>
+                Cancelar
+              <% end %>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <% if @subject %>
+      <!-- Subject Info -->
+      <div class="card">
+        <div class="card-header">
+          <h6><i class="fas fa-book"></i> Seleções</h6>
+        </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <strong>Disciplina:</strong><br>
+            <span class="text-muted"><%= @subject.name %></span>
+          </div>
+          
+          <% if @selected_classroom %>
+            <div class="mb-3">
+              <strong>Turma:</strong><br>
+              <span class="text-muted"><%= @selected_classroom.name %></span>
+            </div>
+            
+            <div class="mb-0">
+              <strong>Alunos disponíveis:</strong><br>
+              <span class="text-muted"><%= @students.count %> alunos</span>
+            </div>
+          <% else %>
+            <div class="alert alert-info alert-sm">
+              <small>Selecione uma turma para ver os alunos</small>
+            </div>
+          <% end %>
+        </div>
+      </div>
+
+      <% if @students.any? %>
+        <!-- Students List -->
+        <div class="card mt-3">
+          <div class="card-header">
+            <h6><i class="fas fa-list"></i> Alunos da Turma</h6>
+          </div>
+          <div class="card-body">
+            <div class="list-group list-group-flush">
+              <% @students.limit(5).each do |student| %>
+                <div class="list-group-item px-0 py-2">
+                  <div class="d-flex align-items-center">
+                    <div class="avatar-xs bg-secondary rounded-circle me-2 d-flex align-items-center justify-content-center">
+                      <i class="fas fa-user text-white"></i>
+                    </div>
+                    <div>
+                      <small class="fw-medium"><%= student.full_name %></small>
+                    </div>
+                  </div>
+                </div>
+              <% end %>
+              <% if @students.count > 5 %>
+                <div class="list-group-item px-0 py-2 text-center">
+                  <small class="text-muted">e mais <%= @students.count - 5 %> alunos...</small>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    <% else %>
+      <!-- Instructions -->
+      <div class="card">
+        <div class="card-header">
+          <h6><i class="fas fa-info"></i> Como registrar uma falta</h6>
+        </div>
+        <div class="card-body">
+          <ol class="mb-0">
+            <li class="mb-2">Selecione a disciplina</li>
+            <li class="mb-2">Escolha a turma</li>
+            <li class="mb-2">Defina a data da falta</li>
+            <li class="mb-2">Selecione o aluno</li>
+            <li class="mb-2">Marque se é justificada (opcional)</li>
+            <li>Clique em "Registrar Falta"</li>
+          </ol>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<style>
+.avatar-xs {
+  width: 25px;
+  height: 25px;
+  font-size: 10px;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const subjectSelect = document.getElementById('subject_select');
+  const classroomSelect = document.getElementById('classroom_select');
+  const studentSelect = document.getElementById('student_select');
+  
+  if (subjectSelect && classroomSelect) {
+    subjectSelect.addEventListener('change', function() {
+      const subjectId = this.value;
+      
+      if (subjectId) {
+        // Recarregar página com disciplina selecionada
+        const url = new URL(window.location);
+        url.searchParams.set('subject_id', subjectId);
+        url.searchParams.delete('classroom_id'); // Limpar turma selecionada
+        window.location.href = url.toString();
+      } else {
+        classroomSelect.innerHTML = '<option value="">Primeiro selecione uma disciplina</option>';
+        classroomSelect.disabled = true;
+        studentSelect.innerHTML = '<option value="">Primeiro selecione uma disciplina</option>';
+        studentSelect.disabled = true;
+      }
+    });
+  }
+  
+  if (classroomSelect && studentSelect) {
+    classroomSelect.addEventListener('change', function() {
+      const classroomId = this.value;
+      const subjectId = document.getElementById('subject_select').value;
+      
+      if (classroomId && subjectId) {
+        // Recarregar página com turma selecionada
+        const url = new URL(window.location);
+        url.searchParams.set('subject_id', subjectId);
+        url.searchParams.set('classroom_id', classroomId);
+        window.location.href = url.toString();
+      } else {
+        studentSelect.innerHTML = '<option value="">Primeiro selecione uma turma</option>';
+        studentSelect.disabled = true;
+      }
+    });
+  }
+});
+</script>

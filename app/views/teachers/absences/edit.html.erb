@@ -1,0 +1,177 @@
+<% content_for :title, "Editar Falta" %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1><i class="fas fa-edit"></i> Editar Falta</h1>
+  <div>
+    <%= link_to teachers_absence_path(@absence), class: "btn btn-outline-info me-2" do %>
+      <i class="fas fa-eye"></i> Ver Detalhes
+    <% end %>
+    <%= link_to teachers_absences_path(subject_id: @absence.subject_id), class: "btn btn-secondary" do %>
+      <i class="fas fa-arrow-left"></i> Voltar
+    <% end %>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header">
+        <h5><i class="fas fa-user-clock"></i> Editar Dados da Falta</h5>
+      </div>
+      <div class="card-body">
+        <%= form_with model: [@absence], url: teachers_absence_path(@absence), method: :patch, local: true do |form| %>
+          <% if @absence.errors.any? %>
+            <div class="alert alert-danger">
+              <h6><i class="fas fa-exclamation-triangle"></i> Erro ao atualizar falta:</h6>
+              <ul class="mb-0">
+                <% @absence.errors.full_messages.each do |message| %>
+                  <li><%= message %></li>
+                <% end %>
+              </ul>
+            </div>
+          <% end %>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <%= form.label :subject_id, "Disciplina", class: "form-label" %>
+              <%= form.select :subject_id, 
+                  options_from_collection_for_select(@subjects, :id, ->(subject) { "#{subject.name} - #{subject.classroom_name}" }, @absence.subject_id),
+                  {}, 
+                  { class: "form-select", required: true } %>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <%= form.label :date, "Data da Falta", class: "form-label" %>
+              <%= form.date_field :date, class: "form-control", required: true, max: Date.current %>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <%= form.label :user_id, "Aluno", class: "form-label" %>
+            <%= form.select :user_id, 
+                options_from_collection_for_select(@students, :id, :full_name, @absence.user_id),
+                {}, 
+                { class: "form-select", required: true } %>
+          </div>
+
+          <div class="mb-4">
+            <div class="form-check">
+              <%= form.check_box :justified, class: "form-check-input" %>
+              <%= form.label :justified, "Falta justificada", class: "form-check-label" %>
+            </div>
+            <small class="text-muted">Marque esta opção se a falta possui justificativa válida.</small>
+          </div>
+
+          <div class="d-flex gap-2">
+            <%= form.submit "Atualizar Falta", class: "btn btn-primary" %>
+            <%= link_to teachers_absence_path(@absence), class: "btn btn-outline-info" do %>
+              Ver Detalhes
+            <% end %>
+            <%= link_to teachers_absences_path(subject_id: @absence.subject_id), class: "btn btn-outline-secondary" do %>
+              Cancelar
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <!-- Current Info -->
+    <div class="card">
+      <div class="card-header">
+        <h6><i class="fas fa-info-circle"></i> Informações Atuais</h6>
+      </div>
+      <div class="card-body">
+        <div class="mb-3">
+          <strong>Data:</strong><br>
+          <span class="text-muted"><%= @absence.date.strftime("%d/%m/%Y") %></span>
+        </div>
+        
+        <div class="mb-3">
+          <strong>Aluno:</strong><br>
+          <span class="text-muted"><%= @absence.student.full_name %></span>
+        </div>
+        
+        <div class="mb-3">
+          <strong>Disciplina:</strong><br>
+          <span class="text-muted"><%= @absence.subject.name %></span>
+        </div>
+        
+        <div class="mb-3">
+          <strong>Status:</strong><br>
+          <% if @absence.justified? %>
+            <span class="badge bg-success">
+              <i class="fas fa-check"></i> Justificada
+            </span>
+          <% else %>
+            <span class="badge bg-warning">
+              <i class="fas fa-exclamation"></i> Injustificada
+            </span>
+          <% end %>
+        </div>
+        
+        <div class="mb-0">
+          <strong>Registrado em:</strong><br>
+          <small class="text-muted"><%= @absence.created_at.strftime("%d/%m/%Y às %H:%M") %></small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Student Frequency -->
+    <div class="card mt-3">
+      <div class="card-header">
+        <h6><i class="fas fa-chart-pie"></i> Frequência do Aluno</h6>
+      </div>
+      <div class="card-body">
+        <% student_absences = @absence.subject.absences.where(user_id: @absence.student.id).count %>
+        <% # Calcula total de aulas baseado nos horários semanais desde o início do ano letivo %>
+        <% weeks_passed = ((Date.current - Date.new(2025, 2, 1)) / 7).ceil %>
+        <% total_classes = @absence.subject.class_schedules.count * [weeks_passed, 0].max %>
+        <% attendance_rate = total_classes > 0 ? ((total_classes - student_absences).to_f / total_classes * 100).round(1) : 100 %>
+        
+        <div class="text-center mb-3">
+          <h5 class="text-<%= attendance_rate >= 75 ? 'success' : attendance_rate >= 50 ? 'warning' : 'danger' %>">
+            <%= attendance_rate %>%
+          </h5>
+          <small class="text-muted">Taxa de Frequência</small>
+        </div>
+        
+        <div class="progress mb-2" style="height: 8px;">
+          <div class="progress-bar bg-<%= attendance_rate >= 75 ? 'success' : attendance_rate >= 50 ? 'warning' : 'danger' %>" 
+               style="width: <%= attendance_rate %>%"></div>
+        </div>
+        
+        <div class="text-center">
+          <small class="text-muted">
+            <%= student_absences %> faltas de <%= total_classes %> aulas
+          </small>
+          
+          <% if attendance_rate < 75 %>
+            <br>
+            <small class="text-danger">
+              <i class="fas fa-exclamation-triangle"></i>
+              Abaixo do mínimo exigido
+            </small>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="card mt-3">
+      <div class="card-header">
+        <h6><i class="fas fa-cog"></i> Ações</h6>
+      </div>
+      <div class="card-body">
+        <div class="d-grid gap-2">
+          <%= link_to teachers_absence_path(@absence), method: :delete, 
+              confirm: "Tem certeza que deseja remover esta falta?", 
+              class: "btn btn-outline-danger btn-sm" do %>
+            <i class="fas fa-trash"></i> Remover Falta
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

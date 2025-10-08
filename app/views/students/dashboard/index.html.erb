@@ -2,15 +2,7 @@
 <% content_for :title, "Dashboard - Estudante" %>
 
 <!-- Welcome Header -->
-<% if current_user.classroom %>
-  <% upcoming_activities = Activity.joins(subject: :classroom)
-                                  .where(classrooms: { id: current_user.classroom_id })
-                                  .where('due_date >= ?', Date.current)
-                                  .order(:due_date)
-                                  .limit(5) %>
-<% else %>
-  <% upcoming_activities = [] %>
-<% end %>
+<% upcoming_activities = [] %>
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
   <div>
     <h1 class="h2">
@@ -77,26 +69,7 @@
     </div>
   </div>
 
-  <div class="col-xl-3 col-md-6 mb-4">
-    <div class="card card-stat border-left-info shadow h-100 py-2">
-      <div class="card-body">
-        <div class="row no-gutters align-items-center">
-          <div class="col mr-2">
-            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-              Atividades Pendentes
-            </div>
-            <div class="h5 mb-0 font-weight-bold text-gray-800">
-              <% pending_activities = @upcoming_activities %>
-              <%= pending_activities.count %>
-            </div>
-          </div>
-          <div class="col-auto">
-            <i class="fas fa-tasks fa-2x text-gray-300"></i>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+
 
   <div class="col-xl-3 col-md-6 mb-4">
     <div class="card card-stat border-left-warning shadow h-100 py-2">
@@ -245,45 +218,7 @@
 
 <!-- Upcoming Activities and Recent Events -->
 <div class="row">
-  <div class="col-lg-6 mb-4">
-    <div class="card shadow mb-4">
-      <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-primary">
-          <i class="fas fa-calendar-alt me-2"></i>
-          Próximas Atividades
-        </h6>
-      </div>
-      <div class="card-body">
-        <% upcoming_activities = @upcoming_activities %>
-        <% if upcoming_activities.any? %>
-          <% upcoming_activities.each do |activity| %>
-            <div class="d-flex align-items-center mb-3 p-2 border rounded">
-              <div class="me-3">
-                <div class="rounded-circle bg-<%= activity.due_date <= Date.current + 3.days ? 'danger' : activity.due_date <= Date.current + 1.week ? 'warning' : 'success' %> text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
-                  <i class="fas fa-tasks"></i>
-                </div>
-              </div>
-              <div class="flex-grow-1">
-                <h6 class="mb-0"><%= truncate(activity.title, length: 35) %></h6>
-                <small class="text-muted">
-                  <%= activity.subject.name %>
-                  <br>
-                  Entrega: <%= activity.due_date.strftime("%d/%m/%Y") %>
-                  (<%= time_ago_in_words(activity.due_date) %>)
-                </small>
-              </div>
-            </div>
-          <% end %>
-        <% else %>
-          <div class="text-center text-muted py-4">
-            <i class="fas fa-tasks fa-2x mb-3"></i>
-            <p>Nenhuma atividade próxima</p>
-            <small>Parabéns! Você está em dia</small>
-          </div>
-        <% end %>
-      </div>
-    </div>
-  </div>
+
 
   <div class="col-lg-6 mb-4">
     <div class="card shadow mb-4">

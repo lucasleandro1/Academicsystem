@@ -6,7 +6,7 @@ FactoryBot.define do
     workload { 40 }
     classroom
     school
-    association :teacher, factory: [ :user, :teacher ]
+    association :user, factory: [ :user, :teacher ]
 
     trait :with_high_workload do
       workload { 80 }

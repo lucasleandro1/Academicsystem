@@ -1,0 +1,284 @@
+<% content_for :title, "Fazer Chamada" %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1><i class="fas fa-clipboard-check"></i> Fazer Chamada</h1>
+  <%= link_to teachers_absences_path, class: "btn btn-secondary" do %>
+    <i class="fas fa-arrow-left"></i> Voltar
+  <% end %>
+</div>
+
+<div class="row">
+  <div class="col-md-8">
+    <!-- Seleção de Disciplina, Turma e Data -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5><i class="fas fa-filter"></i> Configurações da Chamada</h5>
+      </div>
+      <div class="card-body">
+        <%= form_tag attendance_teachers_absences_path, method: :get, local: true do %>
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <%= label_tag :subject_id, "Disciplina", class: "form-label" %>
+              <%= select_tag :subject_id, 
+                  options_from_collection_for_select(@subjects, :id, :name, @subject&.id),
+                  { prompt: "Selecione a disciplina", class: "form-select", required: true, id: "subject_select" } %>
+            </div>
+
+            <div class="col-md-4 mb-3">
+              <%= label_tag :classroom_id, "Turma", class: "form-label" %>
+              <%= select_tag :classroom_id, 
+                  @classrooms.any? ? options_from_collection_for_select(@classrooms, :id, :name, @selected_classroom&.id) : "",
+                  { prompt: @subject ? "Selecione a turma" : "Primeiro selecione uma disciplina", 
+                    class: "form-select", required: true, id: "classroom_select", disabled: @classrooms.empty? } %>
+            </div>
+
+            <div class="col-md-4 mb-3">
+              <%= label_tag :date, "Data da Aula", class: "form-label" %>
+              <%= date_field_tag :date, @date, class: "form-control", required: true, max: Date.current %>
+            </div>
+          </div>
+
+          <div class="d-flex gap-2">
+            <%= submit_tag "Carregar Turma", class: "btn btn-primary" %>
+            <% if @subject && @selected_classroom && @date %>
+              <%= link_to "Nova Falta Individual", new_teachers_absence_path(subject_id: @subject.id), class: "btn btn-outline-secondary" %>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Lista de Alunos para Chamada -->
+    <% if @subject && @selected_classroom && @students.any? %>
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5><i class="fas fa-users"></i> Lista de Chamada - <%= @selected_classroom.name %></h5>
+          <small class="text-muted"><%= @date.strftime("%d/%m/%Y") %></small>
+        </div>
+        <div class="card-body">
+          <%= form_tag bulk_create_teachers_absences_path, local: true do %>
+            <%= hidden_field_tag :subject_id, @subject.id %>
+            <%= hidden_field_tag :classroom_id, @selected_classroom.id %>
+            <%= hidden_field_tag :date, @date %>
+
+            <div class="mb-3 d-flex gap-2">
+              <button type="button" class="btn btn-outline-success btn-sm" onclick="markAllPresent()">
+                <i class="fas fa-check-double"></i> Marcar Todos Presentes
+              </button>
+              <button type="button" class="btn btn-outline-danger btn-sm" onclick="markAllAbsent()">
+                <i class="fas fa-times-circle"></i> Marcar Todos Ausentes
+              </button>
+            </div>
+
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead class="table-light">
+                  <tr>
+                    <th width="50">#</th>
+                    <th>Aluno</th>
+                    <th width="100" class="text-center">Presente</th>
+                    <th width="100" class="text-center">Ausente</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% @students.order(:first_name, :last_name).each_with_index do |student, index| %>
+                    <tr>
+                      <td class="text-muted"><%= index + 1 %></td>
+                      <td>
+                        <div class="d-flex align-items-center">
+                          <div class="avatar-xs bg-secondary rounded-circle me-2 d-flex align-items-center justify-content-center">
+                            <i class="fas fa-user text-white"></i>
+                          </div>
+                          <div>
+                            <strong><%= student.full_name %></strong>
+                            <br>
+                            <small class="text-muted"><%= student.email %></small>
+                          </div>
+                        </div>
+                      </td>
+                      <td class="text-center">
+                        <%= radio_button_tag "attendance_#{student.id}", "present", 
+                            !@absent_student_ids.include?(student.id), 
+                            { class: "form-check-input", id: "present_#{student.id}" } %>
+                        <%= label_tag "present_#{student.id}", "", class: "form-check-label" %>
+                      </td>
+                      <td class="text-center">
+                        <%= radio_button_tag "attendance_#{student.id}", "absent", 
+                            @absent_student_ids.include?(student.id), 
+                            { class: "form-check-input", id: "absent_#{student.id}" } %>
+                        <%= label_tag "absent_#{student.id}", "", class: "form-check-label" %>
+                        <%= hidden_field_tag "absent_students[]", student.id, 
+                            { id: "hidden_absent_#{student.id}", disabled: !@absent_student_ids.include?(student.id) } %>
+                      </td>
+                    </tr>
+                  <% end %>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mt-4">
+              <div>
+                <span class="badge bg-success" id="present-count"><%= @students.count - @absent_student_ids.count %></span> Presentes
+                <span class="badge bg-danger ms-2" id="absent-count"><%= @absent_student_ids.count %></span> Ausentes
+              </div>
+              <%= submit_tag "Salvar Chamada", class: "btn btn-primary" %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    <% elsif @subject && @selected_classroom %>
+      <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i>
+        <strong>Nenhum aluno encontrado</strong><br>
+        A turma "<%= @selected_classroom.name %>" não possui alunos matriculados.
+      </div>
+    <% end %>
+  </div>
+
+  <div class="col-md-4">
+    <% if @subject && @selected_classroom %>
+      <!-- Informações da Turma -->
+      <div class="card">
+        <div class="card-header">
+          <h6><i class="fas fa-info"></i> Informações</h6>
+        </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <strong>Disciplina:</strong><br>
+            <span class="text-muted"><%= @subject.name %></span>
+          </div>
+          
+          <div class="mb-3">
+            <strong>Turma:</strong><br>
+            <span class="text-muted"><%= @selected_classroom.name %></span>
+          </div>
+          
+          <div class="mb-3">
+            <strong>Data:</strong><br>
+            <span class="text-muted"><%= @date.strftime("%d/%m/%Y") %></span>
+          </div>
+          
+          <div class="mb-0">
+            <strong>Total de Alunos:</strong><br>
+            <span class="text-muted"><%= @students.count %> alunos</span>
+          </div>
+        </div>
+      </div>
+
+      <% if @absent_student_ids.any? %>
+        <!-- Faltas Já Registradas -->
+        <div class="card mt-3">
+          <div class="card-header">
+            <h6><i class="fas fa-exclamation-triangle text-warning"></i> Faltas Registradas</h6>
+          </div>
+          <div class="card-body">
+            <small class="text-muted">Esta data já possui faltas registradas. A chamada atual substituirá os registros anteriores.</small>
+          </div>
+        </div>
+      <% end %>
+    <% else %>
+      <!-- Instruções -->
+      <div class="card">
+        <div class="card-header">
+          <h6><i class="fas fa-info"></i> Como fazer a chamada</h6>
+        </div>
+        <div class="card-body">
+          <ol class="mb-0">
+            <li class="mb-2">Selecione a disciplina</li>
+            <li class="mb-2">Escolha a turma</li>
+            <li class="mb-2">Defina a data da aula</li>
+            <li class="mb-2">Clique em "Carregar Turma"</li>
+            <li class="mb-2">Marque presença/falta para cada aluno</li>
+            <li>Clique em "Salvar Chamada"</li>
+          </ol>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<style>
+.avatar-xs {
+  width: 25px;
+  height: 25px;
+  font-size: 10px;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const subjectSelect = document.getElementById('subject_select');
+  const classroomSelect = document.getElementById('classroom_select');
+  
+  if (subjectSelect && classroomSelect) {
+    subjectSelect.addEventListener('change', function() {
+      const subjectId = this.value;
+      
+      if (subjectId) {
+        const url = new URL(window.location);
+        url.searchParams.set('subject_id', subjectId);
+        url.searchParams.delete('classroom_id');
+        window.location.href = url.toString();
+      }
+    });
+    
+    classroomSelect.addEventListener('change', function() {
+      const classroomId = this.value;
+      const subjectId = document.getElementById('subject_select').value;
+      
+      if (classroomId && subjectId) {
+        const url = new URL(window.location);
+        url.searchParams.set('subject_id', subjectId);
+        url.searchParams.set('classroom_id', classroomId);
+        window.location.href = url.toString();
+      }
+    });
+  }
+  
+  // Adicionar listeners para os radio buttons
+  const radioButtons = document.querySelectorAll('input[type="radio"][name^="attendance_"]');
+  radioButtons.forEach(function(radio) {
+    radio.addEventListener('change', function() {
+      const studentId = this.name.replace('attendance_', '');
+      const hiddenField = document.getElementById('hidden_absent_' + studentId);
+      
+      if (this.value === 'absent') {
+        hiddenField.disabled = false;
+      } else {
+        hiddenField.disabled = true;
+      }
+      
+      updateCounts();
+    });
+  });
+  
+  updateCounts();
+});
+
+function markAllPresent() {
+  const presentRadios = document.querySelectorAll('input[type="radio"][value="present"]');
+  presentRadios.forEach(function(radio) {
+    radio.checked = true;
+    radio.dispatchEvent(new Event('change'));
+  });
+}
+
+function markAllAbsent() {
+  const absentRadios = document.querySelectorAll('input[type="radio"][value="absent"]');
+  absentRadios.forEach(function(radio) {
+    radio.checked = true;
+    radio.dispatchEvent(new Event('change'));
+  });
+}
+
+function updateCounts() {
+  const presentCount = document.querySelectorAll('input[type="radio"][value="present"]:checked').length;
+  const absentCount = document.querySelectorAll('input[type="radio"][value="absent"]:checked').length;
+  
+  const presentBadge = document.getElementById('present-count');
+  const absentBadge = document.getElementById('absent-count');
+  
+  if (presentBadge) presentBadge.textContent = presentCount;
+  if (absentBadge) absentBadge.textContent = absentCount;
+}
+</script>

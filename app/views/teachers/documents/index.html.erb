@@ -100,7 +100,7 @@
                       <% if document.subject %>
                         <%= document.subject.name %>
                         <br>
-                        <small class="text-muted"><%= document.subject.classroom.name %></small>
+                        <small class="text-muted"><%= document.subject.classroom_name %></small>
                       <% else %>
                         <span class="text-muted">Geral</span>
                       <% end %>
@@ -178,7 +178,7 @@
                     <td>
                       <%= document.subject.name %>
                       <br>
-                      <small class="text-muted"><%= document.subject.classroom.name %></small>
+                      <small class="text-muted"><%= document.subject.classroom_name %></small>
                     </td>
                     <td>
                       <%= document.user.full_name %>

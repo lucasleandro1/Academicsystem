@@ -17,32 +17,21 @@ class Teachers::DashboardController < ApplicationController
     @attendance_rate = calculate_attendance_rate
 
     # Missing variables that the view expects
-    @active_activities = get_active_activities
-    @pending_submissions = get_pending_submissions
-    @upcoming_activities = get_upcoming_activities
-    @submitted_activities = get_submitted_activities_count
   end
 
   private
 
-  def ensure_teacher!
-    unless current_user&.teacher?
-      redirect_to root_path, alert: "Acesso não autorizado."
-    end
-  end
-
 
   def total_students_count
-    classroom_ids = @teacher.teacher_subjects.pluck(:classroom_id).uniq
+    classroom_ids = @teacher.teacher_classrooms.pluck(:id)
     User.where(classroom_id: classroom_ids, user_type: "student").count
   end
 
   def classes_today
     today_weekday = Date.current.wday
-    @teacher.teacher_subjects
-            .joins(:class_schedules)
-            .where(class_schedules: { weekday: today_weekday })
-            .includes(:classroom, :class_schedules)
+    @teacher.class_schedules
+            .where(weekday: today_weekday)
+            .includes(:classroom, :subject)
   end
 
   def calculate_average_grade
@@ -54,7 +43,7 @@ class Teachers::DashboardController < ApplicationController
 
   def calculate_attendance_rate
     # Calculate attendance rate across all teacher's students
-    classroom_ids = @teacher.teacher_subjects.pluck(:classroom_id).uniq
+    classroom_ids = @teacher.teacher_classrooms.pluck(:id)
     total_students = User.where(classroom_id: classroom_ids, user_type: "student").count
     return nil if total_students.zero?
 
@@ -63,48 +52,5 @@ class Teachers::DashboardController < ApplicationController
     return nil if total_possible_classes.zero?
 
     ((total_possible_classes - total_absences).to_f / total_possible_classes * 100).round(2)
-  end
-
-  def get_active_activities
-    # Get active activities for the teacher's subjects
-    Activity.joins(:subject).where(subjects: { user_id: @teacher.id })
-            .where("due_date >= ?", Date.current)
-            .where(active: true)
-  rescue
-    # If Activity model doesn't exist or has issues, return empty relation
-    Activity.none rescue []
-  end
-
-  def get_pending_submissions
-    # Get submissions that need grading
-    Submission.joins(activity: :subject)
-              .where(subjects: { user_id: @teacher.id })
-              .where(graded: false)
-              .includes(:user, :activity)
-  rescue
-    # If Submission model doesn't exist, return empty array
-    []
-  end
-
-  def get_upcoming_activities
-    # Get upcoming activities for the teacher's subjects
-    Activity.joins(:subject).where(subjects: { user_id: @teacher.id })
-            .where("due_date BETWEEN ? AND ?", Date.current, 1.week.from_now)
-            .where(active: true)
-            .order(:due_date)
-  rescue
-    # If Activity model doesn't exist, return empty array
-    []
-  end
-
-  def get_submitted_activities_count
-    # Count submitted activities that have been graded
-    Submission.joins(activity: :subject)
-              .where(subjects: { user_id: @teacher.id })
-              .where(graded: true)
-              .count
-  rescue
-    # If models don't exist, return 0
-    0
   end
 end

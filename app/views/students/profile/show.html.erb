@@ -166,12 +166,7 @@
           </div>
         </div>
         <hr>
-        <div class="row text-center">
-          <div class="col-6">
-            <h4 class="text-warning"><%= @submitted_activities %></h4>
-            <small class="text-muted">Atividades Entregues</small>
-          </div>
-        </div>
+
       </div>
     </div>
 
@@ -224,17 +219,7 @@
             </div>
           <% end %>
           
-          <% if @recent_activities.any? %>
-            <div class="timeline-item">
-              <i class="fas fa-tasks text-info"></i>
-              <div class="timeline-content">
-                <small class="text-muted">
-                  <%= @recent_activities.first.created_at.strftime("%d/%m às %H:%M") %>
-                </small>
-                <p class="mb-0">Nova atividade: <%= @recent_activities.first.title %></p>
-              </div>
-            </div>
-          <% end %>
+
 
           <div class="timeline-item">
             <i class="fas fa-user text-primary"></i>

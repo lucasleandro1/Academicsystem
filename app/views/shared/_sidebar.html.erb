@@ -183,7 +183,7 @@
     <li class="nav-item">
       <%= link_to teachers_classrooms_path, class: "nav-link #{'active' if controller_name == 'classrooms' && controller.class.module_parent.name.downcase == 'teachers'}" do %>
         <i class="fas fa-users"></i> Turmas
-        <span class="badge bg-primary ms-auto"><%= current_user.teacher_subjects.joins(:classroom).distinct.count %></span>
+        <span class="badge bg-primary ms-auto"><%= current_user.teacher_classrooms.count %></span>
       <% end %>
     </li>
     
@@ -201,18 +201,6 @@
     </li>
     
     <li class="nav-item">
-      <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
-        <span>Atividades Acadêmicas</span>
-      </h6>
-    </li>
-    
-    <li class="nav-item">
-      <%= link_to teachers_activities_path, class: "nav-link #{'active' if controller_name == 'activities' && controller.class.module_parent.name.downcase == 'teachers'}" do %>
-        <i class="fas fa-tasks"></i> Atividades
-      <% end %>
-    </li>
-    
-    <li class="nav-item">
       <%= link_to teachers_grades_path, class: "nav-link #{'active' if controller_name == 'grades' && controller.class.module_parent.name.downcase == 'teachers'}" do %>
         <i class="fas fa-star"></i> Notas
       <% end %>
@@ -224,7 +212,6 @@
       <% end %>
     </li>
     
-
     
     <li class="nav-item">
       <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
@@ -284,11 +271,7 @@
       <% end %>
     </li>
     
-    <li class="nav-item">
-      <%= link_to students_activities_path, class: "nav-link #{'active' if controller_name == 'activities' && controller.class.module_parent.name.downcase == 'students'}" do %>
-        <i class="fas fa-tasks"></i> Atividades
-      <% end %>
-    </li>
+
     
     <li class="nav-item">
       <%= link_to students_events_path, class: "nav-link #{'active' if controller_name == 'events' && controller.class.module_parent.name.downcase == 'students'}" do %>

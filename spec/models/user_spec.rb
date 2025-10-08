@@ -74,10 +74,12 @@ RSpec.describe User, type: :model do
     end
 
     describe "#teacher_classrooms" do
-      it "returns classrooms for teacher through subjects" do
-        teacher = create(:user, :teacher)
-        classroom = create(:classroom)
-        create(:subject, teacher: teacher, classroom: classroom)
+      it "returns classrooms for teacher through subjects and schedules" do
+        school = create(:school)
+        teacher = create(:user, :teacher, school: school)
+        classroom = create(:classroom, school: school)
+        subject = create(:subject, user: teacher, classroom: classroom, school: school)
+        create(:class_schedule, subject: subject, classroom: classroom, school: school)
 
         expect(teacher.teacher_classrooms).to include(classroom)
       end

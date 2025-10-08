@@ -60,8 +60,14 @@ class ClassSchedule < ApplicationRecord
     ((end_time - start_time) / 1.minute).to_i
   end
 
+  alias_method :duration, :duration_in_minutes
+
   def teacher
     subject.teacher
+  end
+
+  def classroom_location
+    classroom&.name
   end
 
   def self.grid_for_classroom(classroom)

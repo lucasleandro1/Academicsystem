@@ -2,9 +2,6 @@
 
 <div class="d-flex justify-content-between align-items-center mb-4">
   <h1><i class="fas fa-users"></i> Minhas Turmas</h1>
-  <div class="text-muted">
-    <small>Ano letivo: <%= Date.current.year %></small>
-  </div>
 </div>
 
 <!-- Filtros -->
@@ -79,23 +76,18 @@
             <!-- Estatísticas da turma -->
             <div class="row text-center mb-3">
               <div class="col-4">
-                <h5 class="text-primary mb-0"><%= classroom.students.where(active: true).count %></h5>
+                <h5 class="text-primary mb-0"><%= classroom.students.count %></h5>
                 <small class="text-muted">Alunos</small>
               </div>
               <div class="col-4">
                 <h5 class="text-success mb-0"><%= classroom.subjects.count %></h5>
                 <small class="text-muted">Disciplinas</small>
               </div>
-              <div class="col-4">
-                <h5 class="text-info mb-0">
-                  <%= Activity.joins(:subject).where(subjects: { classroom: classroom, teacher: current_user }).count %>
-                </h5>
-                <small class="text-muted">Atividades</small>
-              </div>
+
             </div>
 
             <!-- Próxima aula -->
-            <% next_class = classroom.class_schedules.joins(:subject).where(subjects: { teacher: current_user }).where('weekday = ? AND start_time > ?', Date.current.wday, Time.current.strftime("%H:%M")).first %>
+            <% next_class = classroom.class_schedules.joins(:subject).where(subjects: { user_id: current_user.id }).where('weekday = ? AND start_time > ?', Date.current.wday, Time.current.strftime("%H:%M")).first %>
             <% if next_class %>
               <div class="alert alert-info mb-3">
                 <small><strong>Próxima aula:</strong></small>
@@ -110,27 +102,23 @@
           <div class="card-footer">
             <div class="row g-1">
               <div class="col-6">
-                <%= link_to teachers_classroom_students_path(classroom), class: "btn btn-sm btn-outline-primary w-100" do %>
-                  <i class="fas fa-users"></i> Alunos
+                <%= link_to teachers_classroom_path(classroom), class: "btn btn-sm btn-outline-primary w-100" do %>
+                  <i class="fas fa-users"></i> Ver Turma
                 <% end %>
               </div>
               <div class="col-6">
-                <%= link_to teachers_classroom_schedule_path(classroom), class: "btn btn-sm btn-outline-success w-100" do %>
+                <%= link_to teachers_class_schedules_path, class: "btn btn-sm btn-outline-success w-100" do %>
                   <i class="fas fa-calendar"></i> Horários
                 <% end %>
               </div>
             </div>
             <div class="row g-1 mt-1">
               <div class="col-6">
-                <%= link_to teachers_classroom_grades_path(classroom), class: "btn btn-sm btn-outline-warning w-100" do %>
+                <%= link_to teachers_grades_path, class: "btn btn-sm btn-outline-warning w-100" do %>
                   <i class="fas fa-star"></i> Notas
                 <% end %>
               </div>
-              <div class="col-6">
-                <%= link_to teachers_classroom_activities_path(classroom), class: "btn btn-sm btn-outline-info w-100" do %>
-                  <i class="fas fa-tasks"></i> Atividades
-                <% end %>
-              </div>
+
             </div>
           </div>
         </div>
@@ -170,7 +158,7 @@
             </div>
             <div class="col-md-3">
               <h4 class="text-success">
-                <%= @classrooms.joins(:students).where(users: { active: true }).count %>
+                <%= @classrooms.joins(:students).count %>
               </h4>
               <small class="text-muted">Total de Alunos</small>
             </div>
@@ -178,12 +166,7 @@
               <h4 class="text-info"><%= current_user.teacher_subjects.count %></h4>
               <small class="text-muted">Disciplinas Ministradas</small>
             </div>
-            <div class="col-md-3">
-              <h4 class="text-warning">
-                <%= Activity.joins(:subject).where(subjects: { teacher: current_user }).count %>
-              </h4>
-              <small class="text-muted">Atividades Criadas</small>
-            </div>
+
           </div>
         </div>
       </div>

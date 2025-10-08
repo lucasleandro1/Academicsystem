@@ -64,6 +64,12 @@ class ApplicationController < ActionController::Base
     end
   end
 
+  def ensure_teacher!
+    unless current_user&.teacher?
+      redirect_to root_path, alert: "Acesso não autorizado."
+    end
+  end
+
   def configure_permitted_parameters
     devise_parameter_sanitizer.permit(:sign_up, keys: [ :first_name, :last_name, :user_type, :school_id ])
     devise_parameter_sanitizer.permit(:account_update, keys: [ :first_name, :last_name, :phone, :birth_date, :address ])

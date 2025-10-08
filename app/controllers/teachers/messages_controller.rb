@@ -16,7 +16,7 @@ class Teachers::MessagesController < ApplicationController
   end
 
   def show
-    @message.update(read: true) unless @message.read?
+    @message.mark_as_read! unless @message.read?
   end
 
   def new
@@ -83,12 +83,6 @@ class Teachers::MessagesController < ApplicationController
   end
 
   private
-
-  def ensure_teacher!
-    unless current_user&.teacher?
-      redirect_to root_path, alert: "Acesso não autorizado."
-    end
-  end
 
   def set_message
     @message = current_user.received_messages

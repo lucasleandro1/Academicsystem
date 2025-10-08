@@ -247,7 +247,7 @@
                             </span>
                           </td>
                           <td><%= grade.created_at.strftime("%d/%m/%Y") %></td>
-                          <td><%= grade.activity_type&.humanize || "Avaliação" %></td>
+                          <td><%= grade.grade_type&.humanize || "Avaliação" %></td>
                         </tr>
                       <% end %>
                     </tbody>

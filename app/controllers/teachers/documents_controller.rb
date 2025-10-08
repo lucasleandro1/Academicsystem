@@ -4,12 +4,12 @@ class Teachers::DocumentsController < ApplicationController
   before_action :set_document, only: [ :show, :edit, :update, :destroy, :download ]
 
   def index
-    @documents = Document.joins(:subject)
-                        .where(subjects: { user_id: current_user.id })
-                        .includes(:subject, :user)
+    # Get all documents from the teacher's school
+    @documents = Document.where(school: current_user.school)
+                        .includes(:user)
                         .order(created_at: :desc)
 
-    @my_documents = current_user.authored_documents
+    @my_documents = current_user.teacher_documents
                                .where(school: current_user.school)
                                .order(created_at: :desc)
   end
@@ -65,12 +65,6 @@ class Teachers::DocumentsController < ApplicationController
   end
 
   private
-
-  def ensure_teacher!
-    unless current_user&.teacher?
-      redirect_to root_path, alert: "Acesso não autorizado."
-    end
-  end
 
   def set_document
     @document = Document.joins(:subject)

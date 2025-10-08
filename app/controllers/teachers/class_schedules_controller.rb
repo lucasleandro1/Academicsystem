@@ -23,10 +23,4 @@ class Teachers::ClassSchedulesController < ApplicationController
   end
 
   private
-
-  def ensure_teacher!
-    unless current_user&.teacher?
-      redirect_to root_path, alert: "Acesso não autorizado."
-    end
-  end
 end

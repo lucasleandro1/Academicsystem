@@ -21,7 +21,7 @@
       <div class="col-md-4">
         <%= form.label :subject_id, "Disciplina", class: "form-label" %>
         <%= form.select :subject_id, 
-                       (@selected_classroom ? options_from_collection_for_select(@selected_classroom.subjects, :id, :name, params[:subject_id]) : []), 
+                       (@selected_classroom ? options_from_collection_for_select(@selected_classroom.subjects, :id, :name, params[:subject_id]) : ""), 
                        { prompt: "Todas as disciplinas" }, 
                        { class: "form-select" } %>
       </div>

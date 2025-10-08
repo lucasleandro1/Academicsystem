@@ -74,7 +74,7 @@
           </div>
           <div class="col-md-2">
             <h4 class="text-info">
-              <%= current_user.teacher_subjects.joins(:classroom).joins(:students).distinct.count('users.id') %>
+              <%= current_user.teacher_subjects.joins(classroom: :students).distinct.count('users.id') %>
             </h4>
             <small class="text-muted">Alunos Total</small>
           </div>
@@ -90,12 +90,7 @@
             </h4>
             <small class="text-muted">Faltas Registradas</small>
           </div>
-          <div class="col-md-2">
-            <h4 class="text-secondary">
-              <%= current_user.activities.count %>
-            </h4>
-            <small class="text-muted">Atividades Criadas</small>
-          </div>
+
         </div>
       </div>
     </div>
@@ -129,7 +124,7 @@
             <select name="subject_id" class="form-select">
               <option value="">Selecione uma disciplina</option>
               <% @subjects.each do |subject| %>
-                <option value="<%= subject.id %>"><%= subject.name %> - <%= subject.classroom.name %></option>
+                <option value="<%= subject.id %>"><%= subject.name %> - <%= subject.classroom_name %></option>
               <% end %>
             </select>
           </div>
@@ -195,7 +190,7 @@
             <select name="subject_id" class="form-select">
               <option value="">Selecione uma disciplina</option>
               <% @subjects.each do |subject| %>
-                <option value="<%= subject.id %>"><%= subject.name %> - <%= subject.classroom.name %></option>
+                <option value="<%= subject.id %>"><%= subject.name %> - <%= subject.classroom_name %></option>
               <% end %>
             </select>
           </div>
@@ -246,7 +241,7 @@
             <select name="subject_id" class="form-select">
               <option value="">Selecione uma disciplina</option>
               <% @subjects.each do |subject| %>
-                <option value="<%= subject.id %>"><%= subject.name %> - <%= subject.classroom.name %></option>
+                <option value="<%= subject.id %>"><%= subject.name %> - <%= subject.classroom_name %></option>
               <% end %>
             </select>
           </div>
