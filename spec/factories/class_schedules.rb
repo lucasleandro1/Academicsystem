@@ -2,7 +2,7 @@
 
 FactoryBot.define do
   factory :class_schedule do
-    weekday { "monday" }
+    weekday { 1 } # Monday
     start_time { "08:00" }
     end_time { "08:50" }
     classroom
@@ -16,23 +16,23 @@ FactoryBot.define do
     end
 
     trait :monday do
-      weekday { "monday" }
+      weekday { 1 }
     end
 
     trait :tuesday do
-      weekday { "tuesday" }
+      weekday { 2 }
     end
 
     trait :wednesday do
-      weekday { "wednesday" }
+      weekday { 3 }
     end
 
     trait :thursday do
-      weekday { "thursday" }
+      weekday { 4 }
     end
 
     trait :friday do
-      weekday { "friday" }
+      weekday { 5 }
     end
 
     trait :morning_schedule do

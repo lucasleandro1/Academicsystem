@@ -213,12 +213,7 @@
               <small class="text-muted">Média Geral</small>
             </div>
           </div>
-          <div class="col-md-3 mb-3">
-            <div class="border-left-warning p-3">
-              <h4 class="text-warning" id="total-activities"><%= @total_activities %></h4>
-              <small class="text-muted">Atividades Totais</small>
-            </div>
-          </div>
+
           <div class="col-md-3 mb-3">
             <div class="border-left-primary p-3">
               <h4 class="text-primary" id="total-messages"><%= @total_messages %></h4>
@@ -288,7 +283,7 @@ document.addEventListener('DOMContentLoaded', function() {
       document.getElementById('total-subjects').textContent = data.total_subjects;
       document.getElementById('attendance-rate').textContent = data.attendance_rate + '%';
       document.getElementById('average-grade').textContent = data.average_grade;
-      document.getElementById('total-activities').textContent = data.total_activities;
+
       document.getElementById('total-messages').textContent = data.total_messages;
       
       // Mostrar mensagem de sucesso

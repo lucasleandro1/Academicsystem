@@ -202,16 +202,7 @@
           <% end %>
         </div>
       </div>
-      <div class="stats-row">
-        <div class="stats-cell">Atividades Totais</div>
-        <div class="stats-cell">
-          <div class="number"><%= @academic_report[:total_activities] %></div>
-        </div>
-        <div class="stats-cell">
-          <% completion_rate = @academic_report[:total_activities] > 0 ? (@academic_report[:completed_activities].to_f / @academic_report[:total_activities] * 100).round(1) : 0 %>
-          <%= completion_rate %>% concluídas
-        </div>
-      </div>
+
     </div>
   </div>
 

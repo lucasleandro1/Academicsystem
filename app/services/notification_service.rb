@@ -1,6 +1,6 @@
 class NotificationService
   def self.create_system_announcement(title, content, target_users = nil)
-    target_users ||= User.active
+    target_users ||= User.all
 
     target_users.find_each do |user|
       Notification.create!(
@@ -17,10 +17,10 @@ class NotificationService
     case event.scope
     when "municipal"
       # Notificar todos os usuários
-      target_users = User.active
+      target_users = User.all
     when "school"
       # Notificar apenas usuários da escola
-      target_users = event.school.users.active
+      target_users = event.school.users
     else
       target_users = User.none
     end
@@ -124,7 +124,7 @@ class NotificationService
   end
 
   def self.notify_system_maintenance(title, content, scheduled_time = nil)
-    User.active.find_each do |user|
+    User.all.find_each do |user|
       Notification.create!(
         user: user,
         sender: User.admins.first,

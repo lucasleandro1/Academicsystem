@@ -3,7 +3,7 @@ class Students::DocumentsController < ApplicationController
   before_action :ensure_student
 
   def index
-    @documents = Document.where(user: current_user)
+    @documents = Document.where(user_id: current_user.id)
                         .order(created_at: :desc)
 
     # Agrupamento por tipo de documento

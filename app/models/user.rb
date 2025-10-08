@@ -17,7 +17,8 @@ class User < ApplicationRecord
   # Associações como professor
   has_many :teacher_subjects, class_name: "Subject", foreign_key: "user_id", dependent: :destroy
   has_many :teacher_documents, class_name: "Document", foreign_key: "user_id", dependent: :destroy
-  has_many :teacher_classrooms, through: :teacher_subjects, source: :classroom
+  has_many :class_schedules, through: :teacher_subjects
+  has_many :teacher_classrooms, -> { distinct }, through: :class_schedules, source: :classroom
 
   # Mensagens
   has_many :sent_messages, class_name: "Message", foreign_key: "sender_id", dependent: :destroy

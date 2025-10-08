@@ -144,7 +144,7 @@
   <div class="col-md-3">
     <div class="card text-center">
       <div class="card-body">
-        <h4 class="text-warning"><%= @documents.where(user: current_user).count %></h4>
+        <h4 class="text-warning"><%= @documents.where(user_id: current_user.id).count %></h4>
         <small class="text-muted">Meus Documentos</small>
       </div>
     </div>

@@ -1,0 +1,210 @@
+<% content_for :title, "Gerenciar Faltas" %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1><i class="fas fa-user-clock"></i> Gerenciar Faltas</h1>
+  <div class="d-flex gap-2">
+    <%= link_to attendance_teachers_absences_path, class: "btn btn-success" do %>
+      <i class="fas fa-clipboard-check"></i> Fazer Chamada
+    <% end %>
+    <% if @selected_subject %>
+      <%= link_to new_teachers_absence_path(subject_id: @selected_subject.id), class: "btn btn-primary" do %>
+        <i class="fas fa-plus"></i> Registrar Falta Individual
+      <% end %>
+    <% end %>
+  </div>
+</div>
+
+<!-- Subject Filter -->
+<% if @subjects.any? %>
+  <div class="row mb-4">
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-body">
+          <h6 class="card-title">Selecionar Disciplina</h6>
+          <%= form_tag teachers_absences_path, method: :get, local: true, class: "d-flex" do %>
+            <%= select_tag :subject_id, 
+                options_from_collection_for_select(@subjects, :id, ->(subject) { "#{subject.name} - #{subject.classroom_name}" }, params[:subject_id]), 
+                { prompt: "Selecione uma disciplina", class: "form-select me-2" } %>
+            <%= submit_tag "Filtrar", class: "btn btn-outline-primary" %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+    <% if @selected_subject %>
+      <div class="col-md-4">
+        <div class="card text-center bg-info text-white">
+          <div class="card-body">
+            <h5><%= @absences.count %></h5>
+            <small>Total de Faltas</small>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <% if @selected_subject %>
+    <!-- Resumo de Frequência por Aluno -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5><i class="fas fa-chart-bar"></i> Resumo de Frequência - <%= @selected_subject.name %></h5>
+      </div>
+      <div class="card-body">
+        <% if @students.any? %>
+          <div class="row">
+            <% @students.each do |student| %>
+              <% student_absences = @absences.where(user_id: student.id).count %>
+              <% # Calcula total de aulas baseado nos horários semanais desde o início do ano letivo %>
+              <% weeks_passed = ((Date.current - Date.new(2025, 2, 1)) / 7).ceil %>
+              <% total_classes = @selected_subject.class_schedules.count * [weeks_passed, 0].max %>
+              <% attendance_rate = total_classes > 0 ? ((total_classes - student_absences).to_f / total_classes * 100).round(1) : 100 %>
+              
+              <div class="col-md-6 mb-3">
+                <div class="card">
+                  <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                      <h6 class="mb-0"><%= student.full_name %></h6>
+                      <span class="badge bg-<%= attendance_rate >= 75 ? 'success' : attendance_rate >= 50 ? 'warning' : 'danger' %>">
+                        <%= attendance_rate %>%
+                      </span>
+                    </div>
+                    <div class="progress mb-2" style="height: 8px;">
+                      <div class="progress-bar bg-<%= attendance_rate >= 75 ? 'success' : attendance_rate >= 50 ? 'warning' : 'danger' %>" 
+                           style="width: <%= attendance_rate %>%"></div>
+                    </div>
+                    <small class="text-muted">
+                      <%= student_absences %> faltas de <%= total_classes %> aulas
+                      <% if attendance_rate < 75 %>
+                        <br><span class="text-danger"><i class="fas fa-exclamation-triangle"></i> Abaixo do mínimo</span>
+                      <% end %>
+                    </small>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        <% else %>
+          <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i>
+            Nenhum aluno encontrado para esta disciplina.
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Lista de Faltas -->
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+          <i class="fas fa-list"></i> Registro de Faltas
+        </h5>
+        <span class="badge bg-primary"><%= @absences.count %> registros</span>
+      </div>
+      <div class="card-body">
+        <% if @absences.any? %>
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead class="table-light">
+                <tr>
+                  <th>Data</th>
+                  <th>Aluno</th>
+                  <th>Status</th>
+                  <th>Registrado em</th>
+                  <th width="150">Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% @absences.includes(:student).order(date: :desc).each do |absence| %>
+                  <tr>
+                    <td>
+                      <strong><%= absence.date.strftime("%d/%m/%Y") %></strong>
+                      <br>
+                      <small class="text-muted">
+                        <%= I18n.l(absence.date, format: :long) %>
+                      </small>
+                    </td>
+                    <td>
+                      <div class="d-flex align-items-center">
+                        <div class="avatar-sm bg-secondary rounded-circle me-2 d-flex align-items-center justify-content-center">
+                          <i class="fas fa-user text-white"></i>
+                        </div>
+                        <div>
+                          <strong><%= absence.student.full_name %></strong>
+                          <br>
+                          <small class="text-muted"><%= absence.student.email %></small>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <% if absence.justified? %>
+                        <span class="badge bg-success">
+                          <i class="fas fa-check"></i> Justificada
+                        </span>
+                      <% else %>
+                        <span class="badge bg-warning">
+                          <i class="fas fa-exclamation"></i> Injustificada
+                        </span>
+                      <% end %>
+                    </td>
+                    <td>
+                      <small class="text-muted">
+                        <%= absence.created_at.strftime("%d/%m/%Y às %H:%M") %>
+                      </small>
+                    </td>
+                    <td>
+                      <div class="btn-group btn-group-sm" role="group">
+                        <%= link_to teachers_absence_path(absence), class: "btn btn-outline-primary", title: "Ver detalhes" do %>
+                          <i class="fas fa-eye"></i>
+                        <% end %>
+                        <%= link_to edit_teachers_absence_path(absence), class: "btn btn-outline-secondary", title: "Editar" do %>
+                          <i class="fas fa-edit"></i>
+                        <% end %>
+                        <%= link_to teachers_absence_path(absence), method: :delete, 
+                            confirm: "Tem certeza que deseja remover esta falta?", 
+                            class: "btn btn-outline-danger", title: "Remover" do %>
+                          <i class="fas fa-trash"></i>
+                        <% end %>
+                      </div>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        <% else %>
+          <div class="alert alert-info text-center">
+            <i class="fas fa-info-circle fa-2x mb-3"></i>
+            <h5>Nenhuma falta registrada</h5>
+            <p class="mb-3">Ainda não há faltas registradas para esta disciplina.</p>
+            <%= link_to new_teachers_absence_path(subject_id: @selected_subject.id), class: "btn btn-primary" do %>
+              <i class="fas fa-plus"></i> Registrar Primeira Falta
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% else %>
+    <div class="card">
+      <div class="card-body text-center py-5">
+        <i class="fas fa-book fa-3x text-muted mb-3"></i>
+        <h5 class="text-muted">Selecione uma disciplina</h5>
+        <p class="text-muted">Escolha uma disciplina acima para gerenciar as faltas dos alunos.</p>
+      </div>
+    </div>
+  <% end %>
+<% else %>
+  <div class="card">
+    <div class="card-body text-center py-5">
+      <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+      <h5 class="text-muted">Nenhuma disciplina encontrada</h5>
+      <p class="text-muted">Você ainda não tem disciplinas atribuídas para gerenciar faltas.</p>
+    </div>
+  </div>
+<% end %>
+
+<style>
+.avatar-sm {
+  width: 35px;
+  height: 35px;
+  font-size: 14px;
+}
+</style>

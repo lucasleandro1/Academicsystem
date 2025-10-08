@@ -21,7 +21,7 @@ class Direction::TeachersController < ApplicationController
   end
 
   def show
-    @subjects = Subject.where(teacher: @teacher)
+    @subjects = Subject.where(user_id: @teacher.id)
     @classrooms = Classroom.joins(:subjects).where(subjects: { user_id: @teacher.id }).distinct
   end
 

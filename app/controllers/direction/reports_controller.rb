@@ -236,8 +236,8 @@ class Direction::ReportsController < ApplicationController
     }
 
     subjects.each do |subject|
-      student_grades = subject.grades.where(user: student)
-      student_absences = subject.absences.where(user: student).count
+      student_grades = subject.grades.where(user_id: student.id)
+      student_absences = subject.absences.where(user_id: student.id).count
 
       average_grade = student_grades.any? ? student_grades.average(:value).round(1) : 0
 

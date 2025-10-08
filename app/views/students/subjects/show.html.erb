@@ -63,36 +63,7 @@
       </div>
     </div>
 
-    <!-- Atividades -->
-    <div class="card mb-4">
-      <div class="card-header">
-        <h5>Atividades</h5>
-      </div>
-      <div class="card-body">
-        <% if @subject.activities.any? %>
-          <div class="list-group">
-            <% @subject.activities.order(due_date: :asc).each do |activity| %>
-              <div class="list-group-item">
-                <div class="d-flex justify-content-between align-items-start">
-                  <div>
-                    <h6 class="mb-1"><%= activity.title %></h6>
-                    <p class="mb-1"><%= truncate(activity.description, length: 100) %></p>
-                    <small class="text-muted">
-                      Entrega: <%= activity.due_date.strftime("%d/%m/%Y") %>
-                    </small>
-                  </div>
-                  <span class="badge bg-<%= activity.due_date < Date.current ? 'danger' : 'primary' %>">
-                    <%= activity.activity_type.humanize %>
-                  </span>
-                </div>
-              </div>
-            <% end %>
-          </div>
-        <% else %>
-          <p class="text-muted">Nenhuma atividade cadastrada.</p>
-        <% end %>
-      </div>
-    </div>
+
   </div>
 
   <div class="col-md-4">
@@ -104,7 +75,7 @@
       <div class="card-body">
         <% if current_user.classroom && current_user.classroom.subjects.include?(@subject) %>
           <% Grade.grade_types.each_key do |grade_type| %>
-            <% grade = @subject.grades.where(user: current_user, grade_type: grade_type).first %>
+            <% grade = @subject.grades.where(user_id: current_user.id, grade_type: grade_type).first %>
             <div class="d-flex justify-content-between align-items-center mb-2">
               <span><%= grade_type.humanize %>:</span>
               <% if grade %>
@@ -119,7 +90,7 @@
           
           <hr>
           
-          <% user_grades = @subject.grades.where(user: current_user) %>
+          <% user_grades = @subject.grades.where(user_id: current_user.id) %>
           <% average = user_grades.any? ? user_grades.average(:value) : nil %>
           <div class="d-flex justify-content-between align-items-center">
             <strong>Média:</strong>
@@ -143,12 +114,7 @@
         <h5>Estatísticas</h5>
       </div>
       <div class="card-body">
-        <div class="mb-3">
-          <div class="d-flex justify-content-between">
-            <span>Atividades:</span>
-            <span><%= @subject.activities.count %></span>
-          </div>
-        </div>
+
         <div class="mb-3">
           <div class="d-flex justify-content-between">
             <span>Alunos Matriculados:</span>

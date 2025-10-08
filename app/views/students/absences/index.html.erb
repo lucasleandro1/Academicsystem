@@ -91,7 +91,9 @@
   <div class="card-body">
     <% @subjects.each do |subject| %>
       <% subject_absences = @absences.where(subject: subject).count %>
-      <% total_classes = subject.class_schedules.where('date <= ?', Date.current).count %>
+      <% # Calcula total de aulas baseado nos horários semanais desde o início do ano letivo %>
+      <% weeks_passed = ((Date.current - Date.new(2025, 2, 1)) / 7).ceil %>
+      <% total_classes = subject.class_schedules.count * [weeks_passed, 0].max %>
       <% attendance_rate = total_classes > 0 ? ((total_classes - subject_absences).to_f / total_classes * 100).round(1) : 100 %>
       
       <div class="mb-3">
@@ -232,7 +234,8 @@
 
 <!-- Alertas de Frequência -->
 <% subjects_with_low_attendance = @subjects.select { |s| 
-     total = s.class_schedules.where('date <= ?', Date.current).count
+     weeks_passed = ((Date.current - Date.new(2025, 2, 1)) / 7).ceil
+     total = s.class_schedules.count * [weeks_passed, 0].max
      absences = @absences.where(subject: s).count
      total > 0 && ((total - absences).to_f / total * 100) < 75
    } %>
@@ -243,7 +246,8 @@
     <p class="mb-2">As seguintes disciplinas estão com frequência abaixo do mínimo (75%):</p>
     <ul class="mb-0">
       <% subjects_with_low_attendance.each do |subject| %>
-        <% total = subject.class_schedules.where('date <= ?', Date.current).count %>
+        <% weeks_passed = ((Date.current - Date.new(2025, 2, 1)) / 7).ceil %>
+        <% total = subject.class_schedules.count * [weeks_passed, 0].max %>
         <% absences = @absences.where(subject: subject).count %>
         <% rate = ((total - absences).to_f / total * 100).round(1) %>
         <li><strong><%= subject.name %></strong> - <%= rate %>% de presença</li>

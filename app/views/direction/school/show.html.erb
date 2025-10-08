@@ -50,12 +50,12 @@
       <div class="card-body">
         <div class="row text-center">
           <div class="col-6 mb-3">
-            <div class="h4 text-primary"><%= @school.users.student.active.count %></div>
-            <small class="text-muted">Alunos Ativos</small>
+            <div class="h4 text-primary"><%= @school.users.student.count %></div>
+            <small class="text-muted">Alunos</small>
           </div>
           <div class="col-6 mb-3">
-            <div class="h4 text-success"><%= @school.users.teacher.active.count %></div>
-            <small class="text-muted">Professores Ativos</small>
+            <div class="h4 text-success"><%= @school.users.teacher.count %></div>
+            <small class="text-muted">Professores</small>
           </div>
           <div class="col-6 mb-3">
             <div class="h4 text-info"><%= @school.classrooms.count %></div>

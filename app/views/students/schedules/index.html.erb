@@ -266,7 +266,7 @@ const scheduleData = [
     {
       id: <%= schedule.id %>,
       subject: '<%= j schedule.subject.name %>',
-      teacher: '<%= j (schedule.subject.teacher&.name || "Professor") %>',
+      teacher: '<%= j (schedule.subject.user&.full_name || "Professor") %>',
       classroom: '<%= j (schedule.classroom&.name || "Sala TBD") %>',
       weekday: <%= schedule.weekday %>,
       start_time: '<%= schedule.start_time.strftime("%H:%M") %>',

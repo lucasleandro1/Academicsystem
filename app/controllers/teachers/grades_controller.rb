@@ -55,12 +55,6 @@ class Teachers::GradesController < ApplicationController
 
   private
 
-  def ensure_teacher!
-    unless current_user&.teacher?
-      redirect_to root_path, alert: "Acesso não autorizado."
-    end
-  end
-
   def set_grade
     @grade = Grade.joins(:subject).where(subjects: { user_id: current_user.id }).find(params[:id])
   end

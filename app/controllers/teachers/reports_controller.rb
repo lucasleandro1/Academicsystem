@@ -71,12 +71,6 @@ class Teachers::ReportsController < ApplicationController
 
   private
 
-  def ensure_teacher!
-    unless current_user&.teacher?
-      redirect_to root_path, alert: "Acesso não autorizado."
-    end
-  end
-
   def available_classrooms
     classroom_ids = current_user.teacher_subjects.pluck(:classroom_id).uniq
     Classroom.where(id: classroom_ids)

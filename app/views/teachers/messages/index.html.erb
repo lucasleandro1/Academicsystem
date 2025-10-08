@@ -28,7 +28,7 @@
   <div class="col-md-3">
     <div class="card text-center">
       <div class="card-body">
-        <h4 class="text-warning"><%= @received_messages.where(read: false).count %></h4>
+        <h4 class="text-warning"><%= @received_messages.unread.count %></h4>
         <small class="text-muted">Não Lidas</small>
       </div>
     </div>
@@ -48,8 +48,8 @@
   <li class="nav-item" role="presentation">
     <button class="nav-link active" id="received-tab" data-bs-toggle="tab" data-bs-target="#received" type="button" role="tab">
       <i class="fas fa-inbox"></i> Recebidas 
-      <% if @received_messages.where(read: false).any? %>
-        <span class="badge bg-danger"><%= @received_messages.where(read: false).count %></span>
+      <% if @received_messages.unread.any? %>
+        <span class="badge bg-danger"><%= @received_messages.unread.count %></span>
       <% end %>
     </button>
   </li>
