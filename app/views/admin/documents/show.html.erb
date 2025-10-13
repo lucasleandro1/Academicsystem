@@ -1,0 +1,144 @@
+<div class="container-fluid py-4">
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h4 class="mb-0">
+            <i class="fas fa-file me-2"></i>
+            <%= @document.title %>
+          </h4>
+          <div>
+            <%= link_to admin_documents_path, class: "btn btn-outline-secondary me-2" do %>
+              <i class="fas fa-arrow-left"></i> Voltar
+            <% end %>
+            <%= link_to edit_admin_document_path(@document), class: "btn btn-primary" do %>
+              <i class="fas fa-edit"></i> Editar
+            <% end %>
+          </div>
+        </div>
+        
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-8">
+              <div class="mb-4">
+                <h5><i class="fas fa-info-circle me-2"></i>Informações do Documento</h5>
+                <table class="table table-borderless">
+                  <tbody>
+                    <tr>
+                      <th style="width: 150px;">Título:</th>
+                      <td><%= @document.title %></td>
+                    </tr>
+                    <tr>
+                      <th>Descrição:</th>
+                      <td><%= simple_format(@document.description) if @document.description %></td>
+                    </tr>
+                    <tr>
+                      <th>Tipo:</th>
+                      <td>
+                        <span class="badge bg-info">
+                          <%= @document.document_type.humanize if @document.respond_to?(:document_type) %>
+                        </span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th>Escola:</th>
+                      <td>
+                        <i class="fas fa-school me-1"></i>
+                        <%= @document.school.name if @document.school %>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th>Arquivo:</th>
+                      <td>
+                        <% if @document.respond_to?(:file) && @document.file.present? %>
+                          <%= link_to download_admin_document_path(@document), 
+                                      class: "btn btn-outline-primary btn-sm" do %>
+                            <i class="fas fa-download me-1"></i>
+                            Baixar Arquivo
+                          <% end %>
+                        <% else %>
+                          <span class="text-muted">Nenhum arquivo anexado</span>
+                        <% end %>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th>Status:</th>
+                      <td>
+                        <% if @document.respond_to?(:active?) %>
+                          <% if @document.active? %>
+                            <span class="badge bg-success">Ativo</span>
+                          <% else %>
+                            <span class="badge bg-secondary">Inativo</span>
+                          <% end %>
+                        <% else %>
+                          <span class="badge bg-success">Ativo</span>
+                        <% end %>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            
+            <div class="col-md-4">
+              <div class="card bg-light">
+                <div class="card-header">
+                  <h6 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Informações</h6>
+                </div>
+                <div class="card-body">
+                  <div class="mb-2">
+                    <small class="text-muted">Criado por:</small><br>
+                    <%= @document.user.full_name if @document.respond_to?(:user) && @document.user %>
+                  </div>
+                  
+                  <div class="mb-2">
+                    <small class="text-muted">Criado em:</small><br>
+                    <%= @document.created_at.strftime("%d/%m/%Y às %H:%M") if @document.created_at %>
+                  </div>
+                  
+                  <div class="mb-2">
+                    <small class="text-muted">Última atualização:</small><br>
+                    <%= @document.updated_at.strftime("%d/%m/%Y às %H:%M") if @document.updated_at %>
+                  </div>
+
+                  <% if @document.respond_to?(:file_size) && @document.file_size %>
+                    <div class="mb-2">
+                      <small class="text-muted">Tamanho do arquivo:</small><br>
+                      <%= number_to_human_size(@document.file_size) %>
+                    </div>
+                  <% end %>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-footer">
+          <div class="d-flex justify-content-between">
+            <div>
+              <%= link_to admin_documents_path, class: "btn btn-outline-secondary" do %>
+                <i class="fas fa-list"></i> Lista de Documentos
+              <% end %>
+            </div>
+            <div>
+              <% if @document.respond_to?(:file) && @document.file.present? %>
+                <%= link_to download_admin_document_path(@document), 
+                            class: "btn btn-success me-2" do %>
+                  <i class="fas fa-download"></i> Baixar
+                <% end %>
+              <% end %>
+              <%= link_to edit_admin_document_path(@document), class: "btn btn-primary me-2" do %>
+                <i class="fas fa-edit"></i> Editar
+              <% end %>
+              <%= link_to admin_document_path(@document), method: :delete, 
+                          class: "btn btn-danger", 
+                          confirm: "Tem certeza que deseja excluir este documento?" do %>
+                <i class="fas fa-trash"></i> Excluir
+              <% end %>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

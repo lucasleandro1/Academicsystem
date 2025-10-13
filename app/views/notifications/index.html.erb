@@ -1,0 +1,92 @@
+<div class="container-fluid py-4">
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h4 class="mb-0">
+            <i class="fas fa-bell me-2"></i>
+            Notificações
+          </h4>
+          <div>
+            <% if @notifications.unread.any? %>
+              <%= link_to mark_all_as_read_notifications_path, method: :patch, 
+                          class: "btn btn-outline-primary btn-sm me-2" do %>
+                <i class="fas fa-check-double"></i> Marcar todas como lidas
+              <% end %>
+            <% end %>
+            <% if @notifications.any? %>
+              <%= link_to clear_all_notifications_path, method: :delete, 
+                          class: "btn btn-outline-danger btn-sm",
+                          confirm: "Tem certeza que deseja limpar todas as notificações?" do %>
+                <i class="fas fa-trash"></i> Limpar todas
+              <% end %>
+            <% end %>
+          </div>
+        </div>
+        
+        <div class="card-body p-0">
+          <% if @notifications.any? %>
+            <div class="list-group list-group-flush">
+              <% @notifications.each do |notification| %>
+                <div class="list-group-item <%= 'bg-light' unless notification.read? %>">
+                  <div class="d-flex justify-content-between align-items-start">
+                    <div class="flex-grow-1">
+                      <h6 class="mb-1 <%= 'fw-bold' unless notification.read? %>">
+                        <%= notification.title if notification.respond_to?(:title) %>
+                      </h6>
+                      <p class="mb-1 <%= 'fw-normal' unless notification.read? %>">
+                        <%= notification.message %>
+                      </p>
+                      <small class="text-muted">
+                        <i class="fas fa-clock me-1"></i>
+                        <%= time_ago_in_words(notification.created_at) %> atrás
+                      </small>
+                    </div>
+                    <div class="ms-3">
+                      <% unless notification.read? %>
+                        <span class="badge bg-primary">Nova</span>
+                      <% end %>
+                      <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                          <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                          <% unless notification.read? %>
+                            <li>
+                              <%= link_to mark_as_read_notification_path(notification), method: :patch, class: "dropdown-item" do %>
+                                <i class="fas fa-check"></i> Marcar como lida
+                              <% end %>
+                            </li>
+                          <% end %>
+                          <li>
+                            <%= link_to notification_path(notification), method: :delete, 
+                                        class: "dropdown-item text-danger",
+                                        confirm: "Tem certeza que deseja excluir esta notificação?" do %>
+                              <i class="fas fa-trash"></i> Excluir
+                            <% end %>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+            
+            <% if @notifications.respond_to?(:total_pages) %>
+              <div class="card-footer">
+                <%= paginate @notifications if respond_to?(:paginate) %>
+              </div>
+            <% end %>
+          <% else %>
+            <div class="text-center py-5">
+              <i class="fas fa-bell-slash fa-3x text-muted mb-3"></i>
+              <h5 class="text-muted">Nenhuma notificação encontrada</h5>
+              <p class="text-muted">Suas notificações aparecerão aqui quando houver atualizações importantes.</p>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

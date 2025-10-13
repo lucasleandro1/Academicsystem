@@ -1,0 +1,150 @@
+<div class="container-fluid py-4">
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="mb-0">
+            <i class="fas fa-user-edit me-2"></i>
+            Editar Perfil
+          </h4>
+        </div>
+        
+        <div class="card-body">
+          <%= form_with model: current_user, url: teachers_profile_path, method: :patch, local: true, multipart: true, class: "row g-3" do |form| %>
+            <% if current_user.errors.any? %>
+              <div class="col-12">
+                <div class="alert alert-danger">
+                  <h5><i class="fas fa-exclamation-triangle me-2"></i>Erro ao atualizar perfil:</h5>
+                  <ul class="mb-0">
+                    <% current_user.errors.full_messages.each do |message| %>
+                      <li><%= message %></li>
+                    <% end %>
+                  </ul>
+                </div>
+              </div>
+            <% end %>
+
+            <!-- Foto do Perfil -->
+            <div class="col-12 mb-4">
+              <div class="text-center">
+                <div class="mb-3">
+                  <% if current_user.respond_to?(:avatar) && current_user.avatar.present? %>
+                    <%= image_tag current_user.avatar, class: "rounded-circle", style: "width: 120px; height: 120px; object-fit: cover;" %>
+                  <% else %>
+                    <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center mx-auto" style="width: 120px; height: 120px;">
+                      <i class="fas fa-user fa-3x text-white"></i>
+                    </div>
+                  <% end %>
+                </div>
+                <%= form.label :avatar, "Foto do Perfil", class: "form-label" %>
+                <%= form.file_field :avatar, class: "form-control", accept: "image/*" %>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <%= form.label :first_name, "Nome *", class: "form-label" %>
+              <%= form.text_field :first_name, class: "form-control", required: true %>
+            </div>
+
+            <div class="col-md-6">
+              <%= form.label :last_name, "Sobrenome *", class: "form-label" %>
+              <%= form.text_field :last_name, class: "form-control", required: true %>
+            </div>
+
+            <div class="col-md-6">
+              <%= form.label :email, "Email *", class: "form-label" %>
+              <%= form.email_field :email, class: "form-control", required: true %>
+            </div>
+
+            <div class="col-md-6">
+              <%= form.label :phone, "Telefone", class: "form-label" %>
+              <%= form.telephone_field :phone, class: "form-control" %>
+            </div>
+
+            <div class="col-md-6">
+              <%= form.label :birth_date, "Data de Nascimento", class: "form-label" %>
+              <%= form.date_field :birth_date, class: "form-control" %>
+            </div>
+
+            <div class="col-md-6">
+              <%= form.label :cpf, "CPF", class: "form-label" %>
+              <%= form.text_field :cpf, class: "form-control" %>
+            </div>
+
+            <div class="col-md-6">
+              <%= form.label :specialization, "Especialização", class: "form-label" %>
+              <%= form.text_field :specialization, class: "form-control" %>
+            </div>
+
+            <div class="col-md-6">
+              <%= form.label :academic_degree, "Formação Acadêmica", class: "form-label" %>
+              <%= form.select :academic_degree, 
+                              options_for_select([
+                                ['Ensino Médio', 'ensino_medio'],
+                                ['Graduação', 'graduacao'],
+                                ['Especialização', 'especializacao'],
+                                ['Mestrado', 'mestrado'],
+                                ['Doutorado', 'doutorado']
+                              ], current_user.academic_degree), 
+                              { prompt: "Selecione..." }, 
+                              { class: "form-select" } %>
+            </div>
+
+            <div class="col-12">
+              <%= form.label :address, "Endereço", class: "form-label" %>
+              <%= form.text_area :address, class: "form-control", rows: 2 %>
+            </div>
+
+            <div class="col-12">
+              <%= form.label :bio, "Biografia/Apresentação", class: "form-label" %>
+              <%= form.text_area :bio, class: "form-control", rows: 4, placeholder: "Conte um pouco sobre você, sua experiência e metodologias de ensino..." %>
+            </div>
+
+            <!-- Preferências -->
+            <div class="col-12">
+              <h6 class="border-bottom pb-2 mb-3">
+                <i class="fas fa-cog me-2"></i>Preferências
+              </h6>
+            </div>
+
+            <div class="col-md-4">
+              <div class="form-check form-switch">
+                <%= form.check_box :email_notifications, class: "form-check-input", checked: true %>
+                <%= form.label :email_notifications, "Receber notificações por email", class: "form-check-label" %>
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="form-check form-switch">
+                <%= form.check_box :sms_notifications, class: "form-check-input" %>
+                <%= form.label :sms_notifications, "Receber notificações por SMS", class: "form-check-label" %>
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="form-check form-switch">
+                <%= form.check_box :public_profile, class: "form-check-input" %>
+                <%= form.label :public_profile, "Perfil público", class: "form-check-label" %>
+              </div>
+            </div>
+
+            <!-- Botões -->
+            <div class="col-12">
+              <div class="d-flex justify-content-between">
+                <%= link_to teachers_profile_path, class: "btn btn-outline-secondary" do %>
+                  <i class="fas fa-times"></i> Cancelar
+                <% end %>
+                
+                <div>
+                  <%= button_tag type: "submit", class: "btn btn-primary" do %>
+                    <i class="fas fa-save"></i> Atualizar Perfil
+                  <% end %>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

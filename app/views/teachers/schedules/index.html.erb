@@ -1,0 +1,232 @@
+<div class="container-fluid py-4">
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h4 class="mb-0">
+            <i class="fas fa-calendar-alt me-2"></i>
+            Meus Horários
+          </h4>
+          <div>
+            <%= link_to teachers_path, class: "btn btn-outline-primary" do %>
+              <i class="fas fa-arrow-left"></i> Voltar ao Dashboard
+            <% end %>
+          </div>
+        </div>
+        
+        <div class="card-body">
+          <!-- Filtros -->
+          <div class="row mb-4">
+            <div class="col-md-4">
+              <%= form_tag teachers_schedules_path, method: :get, local: true do %>
+                <%= select_tag :semester, 
+                               options_for_select([
+                                 ['1º Semestre', 1],
+                                 ['2º Semestre', 2]
+                               ], params[:semester]), 
+                               { prompt: "Todos os semestres", class: "form-select", onchange: "this.form.submit();" } %>
+              <% end %>
+            </div>
+            <div class="col-md-8 text-end">
+              <div class="btn-group" role="group">
+                <input type="radio" class="btn-check" name="view-type" id="week-view" checked>
+                <label class="btn btn-outline-primary" for="week-view">
+                  <i class="fas fa-calendar-week"></i> Semana
+                </label>
+                
+                <input type="radio" class="btn-check" name="view-type" id="list-view">
+                <label class="btn btn-outline-primary" for="list-view">
+                  <i class="fas fa-list"></i> Lista
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Visualização de Grade Semanal -->
+          <div id="schedule-grid" class="schedule-view">
+            <div class="table-responsive">
+              <table class="table table-bordered schedule-table">
+                <thead class="table-dark">
+                  <tr>
+                    <th style="width: 120px;">Horário</th>
+                    <th>Segunda</th>
+                    <th>Terça</th>
+                    <th>Quarta</th>
+                    <th>Quinta</th>
+                    <th>Sexta</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% (1..6).each do |period| %>
+                    <tr>
+                      <td class="text-center fw-bold bg-light">
+                        <%= "#{6 + period}:00 - #{7 + period}:00" %>
+                      </td>
+                      <% (1..5).each do |day| %>
+                        <td class="schedule-cell">
+                          <% if current_user.respond_to?(:class_schedules) %>
+                            <% schedule = current_user.class_schedules.find_by(day_of_week: day, period: period) %>
+                            <% if schedule %>
+                              <div class="schedule-item bg-primary text-white rounded p-2">
+                                <div class="fw-bold"><%= schedule.subject.name if schedule.subject %></div>
+                                <small><%= schedule.classroom.name if schedule.classroom %></small>
+                              </div>
+                            <% end %>
+                          <% end %>
+                        </td>
+                      <% end %>
+                    </tr>
+                  <% end %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Visualização em Lista -->
+          <div id="schedule-list" class="schedule-view d-none">
+            <div class="row">
+              <% %w[Segunda Terça Quarta Quinta Sexta].each_with_index do |day_name, index| %>
+                <div class="col-md-6 col-lg-4 mb-4">
+                  <div class="card">
+                    <div class="card-header bg-primary text-white">
+                      <h6 class="mb-0">
+                        <i class="fas fa-calendar-day me-2"></i>
+                        <%= day_name %>-feira
+                      </h6>
+                    </div>
+                    <div class="card-body p-0">
+                      <% if current_user.respond_to?(:class_schedules) %>
+                        <% day_schedules = current_user.class_schedules.where(day_of_week: index + 1).order(:period) %>
+                        <% if day_schedules.any? %>
+                          <% day_schedules.each do |schedule| %>
+                            <div class="list-group-item border-0">
+                              <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                  <h6 class="mb-1"><%= schedule.subject.name if schedule.subject %></h6>
+                                  <p class="mb-1 text-muted">
+                                    <%= schedule.classroom.name if schedule.classroom %>
+                                  </p>
+                                  <small class="text-muted">
+                                    <%= "#{6 + schedule.period}:00 - #{7 + schedule.period}:00" if schedule.period %>
+                                  </small>
+                                </div>
+                                <span class="badge bg-primary"><%= schedule.period %>º</span>
+                              </div>
+                            </div>
+                          <% end %>
+                        <% else %>
+                          <div class="p-3 text-center text-muted">
+                            <i class="fas fa-calendar-times fa-2x mb-2"></i>
+                            <p class="mb-0">Nenhuma aula</p>
+                          </div>
+                        <% end %>
+                      <% end %>
+                    </div>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          </div>
+
+          <!-- Legenda -->
+          <div class="row mt-4">
+            <div class="col-12">
+              <div class="card bg-light">
+                <div class="card-body">
+                  <h6 class="mb-3">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Informações
+                  </h6>
+                  <div class="row">
+                    <div class="col-md-4">
+                      <div class="d-flex align-items-center mb-2">
+                        <div class="bg-primary rounded p-2 me-3" style="width: 20px; height: 20px;"></div>
+                        <span>Aulas regulares</span>
+                      </div>
+                    </div>
+                    <div class="col-md-4">
+                      <small class="text-muted">
+                        <i class="fas fa-clock me-1"></i>
+                        Horários: 7h às 12h (Manhã) | 13h às 18h (Tarde)
+                      </small>
+                    </div>
+                    <div class="col-md-4">
+                      <small class="text-muted">
+                        <i class="fas fa-calendar me-1"></i>
+                        Ano letivo: <%= Date.current.year %>
+                      </small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Resumo de Carga Horária -->
+          <div class="row mt-3">
+            <div class="col-md-6">
+              <div class="card border-primary">
+                <div class="card-body text-center">
+                  <h4 class="text-primary">
+                    <%= current_user.subjects.sum(:workload) if current_user.respond_to?(:subjects) %>h
+                  </h4>
+                  <p class="mb-0">Carga Horária Semanal Total</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="card border-success">
+                <div class="card-body text-center">
+                  <h4 class="text-success">
+                    <%= current_user.class_schedules.count if current_user.respond_to?(:class_schedules) %>
+                  </h4>
+                  <p class="mb-0">Aulas por Semana</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.schedule-table td {
+  height: 80px;
+  vertical-align: top;
+  position: relative;
+}
+
+.schedule-item {
+  font-size: 0.85rem;
+  line-height: 1.2;
+}
+
+.schedule-cell {
+  padding: 8px;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const weekViewBtn = document.getElementById('week-view');
+  const listViewBtn = document.getElementById('list-view');
+  const scheduleGrid = document.getElementById('schedule-grid');
+  const scheduleList = document.getElementById('schedule-list');
+
+  weekViewBtn.addEventListener('change', function() {
+    if (this.checked) {
+      scheduleGrid.classList.remove('d-none');
+      scheduleList.classList.add('d-none');
+    }
+  });
+
+  listViewBtn.addEventListener('change', function() {
+    if (this.checked) {
+      scheduleGrid.classList.add('d-none');
+      scheduleList.classList.remove('d-none');
+    }
+  });
+});
+</script>

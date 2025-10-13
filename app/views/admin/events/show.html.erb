@@ -1,0 +1,125 @@
+<div class="container-fluid py-4">
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h4 class="mb-0">
+            <i class="fas fa-calendar me-2"></i>
+            <%= @event.title %>
+          </h4>
+          <div>
+            <%= link_to admin_events_path, class: "btn btn-outline-secondary me-2" do %>
+              <i class="fas fa-arrow-left"></i> Voltar
+            <% end %>
+            <%= link_to edit_admin_event_path(@event), class: "btn btn-primary" do %>
+              <i class="fas fa-edit"></i> Editar
+            <% end %>
+          </div>
+        </div>
+        
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-8">
+              <div class="mb-4">
+                <h5><i class="fas fa-info-circle me-2"></i>Informações do Evento</h5>
+                <table class="table table-borderless">
+                  <tbody>
+                    <tr>
+                      <th style="width: 150px;">Título:</th>
+                      <td><%= @event.title %></td>
+                    </tr>
+                    <tr>
+                      <th>Descrição:</th>
+                      <td><%= simple_format(@event.description) if @event.description %></td>
+                    </tr>
+                    <tr>
+                      <th>Data de Início:</th>
+                      <td>
+                        <i class="fas fa-calendar-alt me-1"></i>
+                        <%= @event.start_date.strftime("%d/%m/%Y às %H:%M") if @event.start_date %>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th>Data de Fim:</th>
+                      <td>
+                        <i class="fas fa-calendar-check me-1"></i>
+                        <%= @event.end_date.strftime("%d/%m/%Y às %H:%M") if @event.end_date %>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th>Escola:</th>
+                      <td>
+                        <i class="fas fa-school me-1"></i>
+                        <%= @event.school.name if @event.school %>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th>Status:</th>
+                      <td>
+                        <% if @event.start_date && @event.start_date > Date.current %>
+                          <span class="badge bg-info">Agendado</span>
+                        <% elsif @event.start_date && @event.end_date && Date.current.between?(@event.start_date, @event.end_date) %>
+                          <span class="badge bg-success">Em andamento</span>
+                        <% else %>
+                          <span class="badge bg-secondary">Finalizado</span>
+                        <% end %>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            
+            <div class="col-md-4">
+              <div class="card bg-light">
+                <div class="card-header">
+                  <h6 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Estatísticas</h6>
+                </div>
+                <div class="card-body">
+                  <div class="mb-2">
+                    <small class="text-muted">Duração:</small><br>
+                    <% if @event.start_date && @event.end_date %>
+                      <%= distance_of_time_in_words(@event.start_date, @event.end_date) %>
+                    <% else %>
+                      <span class="text-muted">Não definida</span>
+                    <% end %>
+                  </div>
+                  
+                  <div class="mb-2">
+                    <small class="text-muted">Criado em:</small><br>
+                    <%= @event.created_at.strftime("%d/%m/%Y às %H:%M") if @event.created_at %>
+                  </div>
+                  
+                  <div class="mb-2">
+                    <small class="text-muted">Última atualização:</small><br>
+                    <%= @event.updated_at.strftime("%d/%m/%Y às %H:%M") if @event.updated_at %>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-footer">
+          <div class="d-flex justify-content-between">
+            <div>
+              <%= link_to admin_events_path, class: "btn btn-outline-secondary" do %>
+                <i class="fas fa-list"></i> Lista de Eventos
+              <% end %>
+            </div>
+            <div>
+              <%= link_to edit_admin_event_path(@event), class: "btn btn-primary me-2" do %>
+                <i class="fas fa-edit"></i> Editar
+              <% end %>
+              <%= link_to admin_event_path(@event), method: :delete, 
+                          class: "btn btn-danger", 
+                          confirm: "Tem certeza que deseja excluir este evento?" do %>
+                <i class="fas fa-trash"></i> Excluir
+              <% end %>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

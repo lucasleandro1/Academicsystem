@@ -1,0 +1,346 @@
+<div class="container-fluid py-4">
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h4 class="mb-0">
+            <i class="fas fa-calendar-check me-2"></i>
+            Minha Frequência
+          </h4>
+          <div>
+            <%= link_to students_path, class: "btn btn-outline-primary" do %>
+              <i class="fas fa-arrow-left"></i> Voltar ao Dashboard
+            <% end %>
+          </div>
+        </div>
+        
+        <div class="card-body">
+          <!-- Filtros -->
+          <div class="row mb-4">
+            <div class="col-md-3">
+              <%= form_tag students_attendance_index_path, method: :get, local: true do %>
+                <%= select_tag :month, 
+                               options_for_select((1..12).map { |m| [Date::MONTHNAMES[m], m] }, params[:month] || Date.current.month), 
+                               { class: "form-select", onchange: "this.form.submit();" } %>
+              <% end %>
+            </div>
+            <div class="col-md-3">
+              <%= form_tag students_attendance_index_path, method: :get, local: true do %>
+                <%= select_tag :year, 
+                               options_for_select((Date.current.year - 2..Date.current.year).map { |y| [y, y] }, params[:year] || Date.current.year), 
+                               { class: "form-select", onchange: "this.form.submit();" } %>
+              <% end %>
+            </div>
+            <div class="col-md-6 text-end">
+              <div class="btn-group" role="group">
+                <input type="radio" class="btn-check" name="view-type" id="monthly-view" checked>
+                <label class="btn btn-outline-primary" for="monthly-view">
+                  <i class="fas fa-calendar"></i> Mensal
+                </label>
+                
+                <input type="radio" class="btn-check" name="view-type" id="summary-view">
+                <label class="btn btn-outline-primary" for="summary-view">
+                  <i class="fas fa-chart-pie"></i> Resumo
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cards de Resumo -->
+          <div class="row mb-4">
+            <div class="col-md-3">
+              <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                  <h3 id="present-days">85%</h3>
+                  <p class="mb-0"><i class="fas fa-check-circle me-1"></i>Frequência Geral</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                  <h3 id="total-classes">120</h3>
+                  <p class="mb-0"><i class="fas fa-calendar-day me-1"></i>Total de Aulas</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="card bg-warning text-white">
+                <div class="card-body text-center">
+                  <h3 id="absences">18</h3>
+                  <p class="mb-0"><i class="fas fa-times-circle me-1"></i>Faltas</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                  <h3 id="justified-absences">3</h3>
+                  <p class="mb-0"><i class="fas fa-file-medical me-1"></i>Faltas Justificadas</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Visualização Mensal -->
+          <div id="monthly-attendance" class="attendance-view">
+            <div class="row">
+              <!-- Calendário de Frequência -->
+              <div class="col-md-8">
+                <div class="card">
+                  <div class="card-header">
+                    <h6 class="mb-0">
+                      <i class="fas fa-calendar-alt me-2"></i>
+                      Calendário de Frequência - <%= Date::MONTHNAMES[params[:month]&.to_i || Date.current.month] %> <%= params[:year] || Date.current.year %>
+                    </h6>
+                  </div>
+                  <div class="card-body">
+                    <div class="attendance-calendar">
+                      <div class="row text-center fw-bold mb-2">
+                        <div class="col">Dom</div>
+                        <div class="col">Seg</div>
+                        <div class="col">Ter</div>
+                        <div class="col">Qua</div>
+                        <div class="col">Qui</div>
+                        <div class="col">Sex</div>
+                        <div class="col">Sáb</div>
+                      </div>
+                      
+                      <% month = (params[:month] || Date.current.month).to_i %>
+                      <% year = (params[:year] || Date.current.year).to_i %>
+                      <% first_day = Date.new(year, month, 1) %>
+                      <% last_day = first_day.end_of_month %>
+                      <% start_date = first_day.beginning_of_week %>
+                      
+                      <% (0..5).each do |week| %>
+                        <div class="row mb-1">
+                          <% (0..6).each do |day| %>
+                            <% current_date = start_date + (week * 7 + day) %>
+                            <div class="col p-1">
+                              <% if current_date.month == month %>
+                                <% attendance_status = ['present', 'absent', 'justified', 'weekend'].sample %>
+                                <div class="attendance-day <%= attendance_status %> text-center p-2 rounded">
+                                  <%= current_date.day %>
+                                  <% case attendance_status %>
+                                  <% when 'present' %>
+                                    <i class="fas fa-check-circle text-success"></i>
+                                  <% when 'absent' %>
+                                    <i class="fas fa-times-circle text-danger"></i>
+                                  <% when 'justified' %>
+                                    <i class="fas fa-exclamation-circle text-warning"></i>
+                                  <% end %>
+                                </div>
+                              <% else %>
+                                <div class="attendance-day other-month text-center p-2">
+                                  <%= current_date.day %>
+                                </div>
+                              <% end %>
+                            </div>
+                          <% end %>
+                        </div>
+                      <% end %>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Legenda e Detalhes -->
+              <div class="col-md-4">
+                <div class="card">
+                  <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>Legenda</h6>
+                  </div>
+                  <div class="card-body">
+                    <div class="mb-3">
+                      <div class="d-flex align-items-center mb-2">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        <span>Presente</span>
+                      </div>
+                      <div class="d-flex align-items-center mb-2">
+                        <i class="fas fa-times-circle text-danger me-2"></i>
+                        <span>Ausente</span>
+                      </div>
+                      <div class="d-flex align-items-center mb-2">
+                        <i class="fas fa-exclamation-circle text-warning me-2"></i>
+                        <span>Falta Justificada</span>
+                      </div>
+                      <div class="d-flex align-items-center">
+                        <i class="fas fa-calendar-times text-muted me-2"></i>
+                        <span>Sem aula</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="card mt-3">
+                  <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Atenção</h6>
+                  </div>
+                  <div class="card-body">
+                    <div class="alert alert-warning">
+                      <small>
+                        <strong>Limite de faltas:</strong> 25% das aulas por disciplina.<br>
+                        Frequência atual: <strong>85%</strong><br>
+                        Status: <span class="badge bg-success">Regular</span>
+                      </small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Visualização de Resumo por Disciplina -->
+          <div id="summary-attendance" class="attendance-view d-none">
+            <div class="row">
+              <% if current_user.respond_to?(:subjects) %>
+                <% subjects = current_user.classroom&.subjects || [] %>
+                <% subjects.each do |subject| %>
+                  <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card">
+                      <div class="card-header">
+                        <h6 class="mb-0">
+                          <i class="fas fa-book me-2"></i>
+                          <%= subject.name %>
+                        </h6>
+                      </div>
+                      <div class="card-body">
+                        <div class="row text-center mb-3">
+                          <div class="col-6">
+                            <h4 class="text-success">88%</h4>
+                            <small class="text-muted">Frequência</small>
+                          </div>
+                          <div class="col-6">
+                            <h4 class="text-primary">40</h4>
+                            <small class="text-muted">Total Aulas</small>
+                          </div>
+                        </div>
+                        
+                        <div class="progress mb-2" style="height: 10px;">
+                          <div class="progress-bar bg-success" style="width: 88%"></div>
+                        </div>
+                        
+                        <div class="row text-center">
+                          <div class="col-4">
+                            <small class="text-success">35 <i class="fas fa-check"></i></small>
+                          </div>
+                          <div class="col-4">
+                            <small class="text-danger">4 <i class="fas fa-times"></i></small>
+                          </div>
+                          <div class="col-4">
+                            <small class="text-warning">1 <i class="fas fa-exclamation"></i></small>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                <% end %>
+              <% end %>
+            </div>
+          </div>
+
+          <!-- Histórico de Faltas -->
+          <div class="card mt-4">
+            <div class="card-header">
+              <h6 class="mb-0"><i class="fas fa-history me-2"></i>Histórico de Faltas Recentes</h6>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="table table-sm">
+                  <thead>
+                    <tr>
+                      <th>Data</th>
+                      <th>Disciplina</th>
+                      <th>Status</th>
+                      <th>Justificativa</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>15/10/2024</td>
+                      <td>Matemática</td>
+                      <td><span class="badge bg-danger">Falta</span></td>
+                      <td>-</td>
+                    </tr>
+                    <tr>
+                      <td>10/10/2024</td>
+                      <td>Português</td>
+                      <td><span class="badge bg-warning">Justificada</span></td>
+                      <td>Atestado médico</td>
+                    </tr>
+                    <tr>
+                      <td>08/10/2024</td>
+                      <td>História</td>
+                      <td><span class="badge bg-danger">Falta</span></td>
+                      <td>-</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.attendance-day {
+  border: 1px solid #dee2e6;
+  min-height: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-size: 0.9rem;
+}
+
+.attendance-day.present {
+  background-color: #d4edda;
+  border-color: #c3e6cb;
+}
+
+.attendance-day.absent {
+  background-color: #f8d7da;
+  border-color: #f5c6cb;
+}
+
+.attendance-day.justified {
+  background-color: #fff3cd;
+  border-color: #ffeaa7;
+}
+
+.attendance-day.weekend {
+  background-color: #f8f9fa;
+  color: #6c757d;
+}
+
+.attendance-day.other-month {
+  background-color: #f8f9fa;
+  color: #adb5bd;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const monthlyViewBtn = document.getElementById('monthly-view');
+  const summaryViewBtn = document.getElementById('summary-view');
+  const monthlyAttendance = document.getElementById('monthly-attendance');
+  const summaryAttendance = document.getElementById('summary-attendance');
+
+  monthlyViewBtn.addEventListener('change', function() {
+    if (this.checked) {
+      monthlyAttendance.classList.remove('d-none');
+      summaryAttendance.classList.add('d-none');
+    }
+  });
+
+  summaryViewBtn.addEventListener('change', function() {
+    if (this.checked) {
+      monthlyAttendance.classList.add('d-none');
+      summaryAttendance.classList.remove('d-none');
+    }
+  });
+});
+</script>

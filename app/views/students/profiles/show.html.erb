@@ -1,0 +1,31 @@
+<h1>Meu Perfil</h1>
+
+<div class="mb-3">
+  <%= link_to "Editar", edit_students_profile_path, class: "btn btn-primary" %>
+</div>
+
+<div class="card">
+  <div class="card-body">
+    <h5>Dados Pessoais</h5>
+    <p><strong>Nome:</strong> <%= current_user.full_name %></p>
+    <p><strong>Email:</strong> <%= current_user.email %></p>
+    
+    <% if current_user.classroom %>
+      <h5>Dados Acadêmicos</h5>
+      <p><strong>Turma:</strong> <%= current_user.classroom.name %></p>
+      <p><strong>Nível:</strong> <%= current_user.classroom.level.humanize %></p>
+    <% end %>
+    
+    <hr>
+    <h6>Estatísticas</h6>
+    <p>Média: <%= @overall_average || "N/A" %></p>
+    <p>Frequência: <%= @attendance_rate %>%</p>
+    <p>Disciplinas: <%= @total_subjects %></p>
+    
+    <div class="mt-3">
+      <%= link_to "Notas", students_grades_path, class: "btn btn-sm btn-success" %>
+      <%= link_to "Faltas", students_absences_path, class: "btn btn-sm btn-warning" %>
+      <%= link_to "Horários", students_class_schedules_path, class: "btn btn-sm btn-info" %>
+    </div>
+  </div>
+</div>

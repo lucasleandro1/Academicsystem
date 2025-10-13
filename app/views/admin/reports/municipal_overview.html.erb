@@ -1,0 +1,201 @@
+<div class="container-fluid py-4">
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="mb-0">
+            <i class="fas fa-city me-2"></i>
+            Relatório de Visão Geral Municipal
+          </h4>
+        </div>
+        
+        <div class="card-body">
+          <!-- Filtros -->
+          <div class="row mb-4">
+            <div class="col-md-12">
+              <%= form_tag admin_reports_municipal_overview_path, method: :get, class: "row g-3", local: true do %>
+                <div class="col-md-3">
+                  <%= select_tag :year, 
+                                 options_for_select((2020..Date.current.year).map { |y| [y, y] }, params[:year] || Date.current.year), 
+                                 { class: "form-select" } %>
+                </div>
+                <div class="col-md-3">
+                  <%= select_tag :school_id, 
+                                 options_from_collection_for_select(School.all, :id, :name, params[:school_id]),
+                                 { prompt: "Todas as escolas", class: "form-select" } %>
+                </div>
+                <div class="col-md-3">
+                  <%= submit_tag "Filtrar", class: "btn btn-primary" %>
+                  <%= link_to "Exportar PDF", admin_reports_export_pdf_path(format: :pdf), class: "btn btn-outline-danger ms-2" %>
+                </div>
+              <% end %>
+            </div>
+          </div>
+
+          <!-- Cards de Resumo -->
+          <div class="row mb-4">
+            <div class="col-md-3">
+              <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                  <h3><%= @total_schools || School.count %></h3>
+                  <p class="mb-0"><i class="fas fa-school me-2"></i>Total de Escolas</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                  <h3><%= @total_students || User.students.count %></h3>
+                  <p class="mb-0"><i class="fas fa-user-graduate me-2"></i>Total de Estudantes</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                  <h3><%= @total_teachers || User.teachers.count %></h3>
+                  <p class="mb-0"><i class="fas fa-chalkboard-teacher me-2"></i>Total de Professores</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="card bg-warning text-white">
+                <div class="card-body text-center">
+                  <h3><%= @total_classrooms || Classroom.count %></h3>
+                  <p class="mb-0"><i class="fas fa-door-open me-2"></i>Total de Salas</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Gráfico de Distribuição por Escola -->
+          <div class="row">
+            <div class="col-md-6">
+              <div class="card">
+                <div class="card-header">
+                  <h5><i class="fas fa-chart-pie me-2"></i>Distribuição de Estudantes por Escola</h5>
+                </div>
+                <div class="card-body">
+                  <canvas id="studentsPerSchoolChart"></canvas>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-md-6">
+              <div class="card">
+                <div class="card-header">
+                  <h5><i class="fas fa-chart-bar me-2"></i>Professores por Escola</h5>
+                </div>
+                <div class="card-body">
+                  <canvas id="teachersPerSchoolChart"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tabela Detalhada -->
+          <div class="row mt-4">
+            <div class="col-12">
+              <div class="card">
+                <div class="card-header">
+                  <h5><i class="fas fa-table me-2"></i>Detalhes por Escola</h5>
+                </div>
+                <div class="card-body">
+                  <div class="table-responsive">
+                    <table class="table table-striped">
+                      <thead>
+                        <tr>
+                          <th>Escola</th>
+                          <th>Estudantes</th>
+                          <th>Professores</th>
+                          <th>Salas</th>
+                          <th>Taxa Ocupação</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <% School.includes(:users, :classrooms).each do |school| %>
+                          <tr>
+                            <td>
+                              <%= link_to school.name, admin_school_path(school), class: "text-decoration-none" %>
+                            </td>
+                            <td>
+                              <span class="badge bg-success"><%= school.users.students.count %></span>
+                            </td>
+                            <td>
+                              <span class="badge bg-info"><%= school.users.teachers.count %></span>
+                            </td>
+                            <td>
+                              <span class="badge bg-warning"><%= school.classrooms.count %></span>
+                            </td>
+                            <td>
+                              <% if school.classrooms.count > 0 %>
+                                <% ocupacao = (school.users.students.count.to_f / (school.classrooms.count * 30) * 100).round(1) %>
+                                <div class="progress" style="height: 20px;">
+                                  <div class="progress-bar" style="width: <%= ocupacao > 100 ? 100 : ocupacao %>%">
+                                    <%= ocupacao %>%
+                                  </div>
+                                </div>
+                              <% else %>
+                                <span class="text-muted">N/A</span>
+                              <% end %>
+                            </td>
+                          </tr>
+                        <% end %>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Dados para os gráficos
+const schoolsData = <%= School.joins(:users).group('schools.name').where('users.user_type = ?', 'student').count.to_json.html_safe %>;
+const teachersData = <%= School.joins(:users).group('schools.name').where('users.user_type = ?', 'teacher').count.to_json.html_safe %>;
+
+// Gráfico de estudantes por escola
+const studentsCtx = document.getElementById('studentsPerSchoolChart').getContext('2d');
+new Chart(studentsCtx, {
+    type: 'doughnut',
+    data: {
+        labels: Object.keys(schoolsData),
+        datasets: [{
+            data: Object.values(schoolsData),
+            backgroundColor: ['#007bff', '#28a745', '#ffc107', '#dc3545', '#6f42c1']
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false
+    }
+});
+
+// Gráfico de professores por escola
+const teachersCtx = document.getElementById('teachersPerSchoolChart').getContext('2d');
+new Chart(teachersCtx, {
+    type: 'bar',
+    data: {
+        labels: Object.keys(teachersData),
+        datasets: [{
+            label: 'Professores',
+            data: Object.values(teachersData),
+            backgroundColor: '#17a2b8'
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+</script>

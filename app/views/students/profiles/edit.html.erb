@@ -1,0 +1,93 @@
+<% content_for :title, "Editar Perfil" %>
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1 class="h2">Editar Perfil</h1>
+  <%= link_to students_profile_path, class: "btn btn-outline-secondary" do %>
+    <i class="fas fa-arrow-left"></i> Voltar
+  <% end %>
+</div>
+
+<div class="row">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Dados Pessoais</h5>
+      </div>
+      <div class="card-body">
+        <%= form_with(model: @student, url: students_profile_path, method: :patch, local: true, class: "row g-3") do |form| %>
+          <% if @student.errors.any? %>
+            <div class="col-12">
+              <div class="alert alert-danger">
+                <h6>Por favor, corrija os seguintes erros:</h6>
+                <ul class="mb-0">
+                  <% @student.errors.full_messages.each do |message| %>
+                    <li><%= message %></li>
+                  <% end %>
+                </ul>
+              </div>
+            </div>
+          <% end %>
+
+          <div class="col-md-6">
+            <%= form.label :first_name, "Nome", class: "form-label" %>
+            <%= form.text_field :first_name, class: "form-control", required: true %>
+          </div>
+
+          <div class="col-md-6">
+            <%= form.label :last_name, "Sobrenome", class: "form-label" %>
+            <%= form.text_field :last_name, class: "form-control", required: true %>
+          </div>
+
+          <div class="col-md-6">
+            <%= form.label :email, "E-mail", class: "form-label" %>
+            <%= form.email_field :email, class: "form-control", disabled: true, 
+                title: "O e-mail não pode ser alterado. Entre em contato com a secretaria se necessário." %>
+            <div class="form-text">O e-mail não pode ser alterado.</div>
+          </div>
+
+          <div class="col-md-6">
+            <%= form.label :phone, "Telefone", class: "form-label" %>
+            <%= form.telephone_field :phone, class: "form-control" %>
+          </div>
+
+          <div class="col-md-6">
+            <%= form.label :birth_date, "Data de Nascimento", class: "form-label" %>
+            <%= form.date_field :birth_date, class: "form-control" %>
+          </div>
+
+          <div class="col-md-6">
+            <%= form.label :guardian_name, "Nome do Responsável", class: "form-label" %>
+            <%= form.text_field :guardian_name, class: "form-control" %>
+          </div>
+
+          <div class="col-12">
+            <hr>
+            <div class="d-flex justify-content-between">
+              <%= link_to "Cancelar", students_profile_path, class: "btn btn-outline-secondary" %>
+              <%= form.submit "Salvar Alterações", class: "btn btn-primary" %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Informações Importantes</h5>
+      </div>
+      <div class="card-body">
+        <div class="alert alert-info">
+          <i class="fas fa-info-circle"></i>
+          <strong>Observação:</strong> 
+          <ul class="mb-0 mt-2">
+            <li>Algumas informações podem não estar editáveis</li>
+            <li>Entre em contato com a secretaria para alterações no e-mail</li>
+            <li>Mantenha seus dados sempre atualizados</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

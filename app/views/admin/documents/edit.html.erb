@@ -1,0 +1,102 @@
+<div class="container-fluid py-4">
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="mb-0">
+            <i class="fas fa-edit me-2"></i>
+            Editar Documento
+          </h4>
+        </div>
+        
+        <div class="card-body">
+          <%= form_with model: [:admin, @document], local: true, multipart: true, class: "row g-3" do |form| %>
+            <% if @document.errors.any? %>
+              <div class="col-12">
+                <div class="alert alert-danger">
+                  <h5><i class="fas fa-exclamation-triangle me-2"></i>Erro ao salvar documento:</h5>
+                  <ul class="mb-0">
+                    <% @document.errors.full_messages.each do |message| %>
+                      <li><%= message %></li>
+                    <% end %>
+                  </ul>
+                </div>
+              </div>
+            <% end %>
+
+            <div class="col-md-6">
+              <%= form.label :title, "Título *", class: "form-label" %>
+              <%= form.text_field :title, class: "form-control", required: true %>
+            </div>
+
+            <div class="col-md-6">
+              <%= form.label :school_id, "Escola", class: "form-label" %>
+              <%= form.select :school_id, 
+                              options_from_collection_for_select(School.all, :id, :name, @document.school_id), 
+                              { prompt: "Selecione uma escola" }, 
+                              { class: "form-select" } %>
+            </div>
+
+            <div class="col-12">
+              <%= form.label :description, "Descrição", class: "form-label" %>
+              <%= form.text_area :description, class: "form-control", rows: 4 %>
+            </div>
+
+            <div class="col-md-6">
+              <%= form.label :document_type, "Tipo de Documento", class: "form-label" %>
+              <%= form.select :document_type, 
+                              options_for_select([
+                                ['Circular', 'circular'],
+                                ['Memorando', 'memorando'],
+                                ['Portaria', 'portaria'],
+                                ['Relatório', 'relatorio'],
+                                ['Ata', 'ata'],
+                                ['Outros', 'outros']
+                              ], @document.document_type), 
+                              { prompt: "Selecione o tipo" }, 
+                              { class: "form-select" } %>
+            </div>
+
+            <div class="col-md-6">
+              <%= form.label :file, "Arquivo", class: "form-label" %>
+              <%= form.file_field :file, class: "form-control", accept: ".pdf,.doc,.docx,.xls,.xlsx" %>
+              <% if @document.respond_to?(:file) && @document.file.present? %>
+                <small class="text-muted">
+                  Arquivo atual: <%= @document.file.filename if @document.file.respond_to?(:filename) %>
+                </small>
+              <% end %>
+            </div>
+
+            <div class="col-md-6">
+              <div class="form-check form-switch mt-4 pt-2">
+                <%= form.check_box :is_public, class: "form-check-input" %>
+                <%= form.label :is_public, "Documento público", class: "form-check-label" %>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="form-check form-switch mt-4 pt-2">
+                <%= form.check_box :active, class: "form-check-input", checked: true %>
+                <%= form.label :active, "Documento ativo", class: "form-check-label" %>
+              </div>
+            </div>
+
+            <div class="col-12">
+              <div class="d-flex justify-content-between">
+                <%= link_to admin_document_path(@document), class: "btn btn-outline-secondary" do %>
+                  <i class="fas fa-times"></i> Cancelar
+                <% end %>
+                
+                <div>
+                  <%= button_tag type: "submit", class: "btn btn-primary" do %>
+                    <i class="fas fa-save"></i> Atualizar Documento
+                  <% end %>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

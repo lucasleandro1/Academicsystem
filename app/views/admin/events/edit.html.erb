@@ -1,0 +1,85 @@
+<div class="container-fluid py-4">
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="mb-0">
+            <i class="fas fa-edit me-2"></i>
+            Editar Evento
+          </h4>
+        </div>
+        
+        <div class="card-body">
+          <%= form_with model: [:admin, @event], local: true, class: "row g-3" do |form| %>
+            <% if @event.errors.any? %>
+              <div class="col-12">
+                <div class="alert alert-danger">
+                  <h5><i class="fas fa-exclamation-triangle me-2"></i>Erro ao salvar evento:</h5>
+                  <ul class="mb-0">
+                    <% @event.errors.full_messages.each do |message| %>
+                      <li><%= message %></li>
+                    <% end %>
+                  </ul>
+                </div>
+              </div>
+            <% end %>
+
+            <div class="col-md-6">
+              <%= form.label :title, "Título *", class: "form-label" %>
+              <%= form.text_field :title, class: "form-control", required: true %>
+            </div>
+
+            <div class="col-md-6">
+              <%= form.label :school_id, "Escola", class: "form-label" %>
+              <%= form.select :school_id, 
+                              options_from_collection_for_select(School.all, :id, :name, @event.school_id), 
+                              { prompt: "Selecione uma escola" }, 
+                              { class: "form-select" } %>
+            </div>
+
+            <div class="col-12">
+              <%= form.label :description, "Descrição", class: "form-label" %>
+              <%= form.text_area :description, class: "form-control", rows: 4 %>
+            </div>
+
+            <div class="col-md-6">
+              <%= form.label :start_date, "Data de Início *", class: "form-label" %>
+              <%= form.datetime_local_field :start_date, class: "form-control", required: true %>
+            </div>
+
+            <div class="col-md-6">
+              <%= form.label :end_date, "Data de Fim", class: "form-label" %>
+              <%= form.datetime_local_field :end_date, class: "form-control" %>
+            </div>
+
+            <div class="col-md-6">
+              <%= form.label :location, "Local", class: "form-label" %>
+              <%= form.text_field :location, class: "form-control" %>
+            </div>
+
+            <div class="col-md-6">
+              <div class="form-check form-switch mt-4 pt-2">
+                <%= form.check_box :is_public, class: "form-check-input" %>
+                <%= form.label :is_public, "Evento público", class: "form-check-label" %>
+              </div>
+            </div>
+
+            <div class="col-12">
+              <div class="d-flex justify-content-between">
+                <%= link_to admin_event_path(@event), class: "btn btn-outline-secondary" do %>
+                  <i class="fas fa-times"></i> Cancelar
+                <% end %>
+                
+                <div>
+                  <%= button_tag type: "submit", class: "btn btn-primary" do %>
+                    <i class="fas fa-save"></i> Atualizar Evento
+                  <% end %>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

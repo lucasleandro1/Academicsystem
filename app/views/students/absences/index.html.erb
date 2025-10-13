@@ -90,25 +90,22 @@
   </div>
   <div class="card-body">
     <% @subjects.each do |subject| %>
-      <% subject_absences = @absences.where(subject: subject).count %>
-      <% # Calcula total de aulas baseado nos horários semanais desde o início do ano letivo %>
-      <% weeks_passed = ((Date.current - Date.new(2025, 2, 1)) / 7).ceil %>
-      <% total_classes = subject.class_schedules.count * [weeks_passed, 0].max %>
-      <% attendance_rate = total_classes > 0 ? ((total_classes - subject_absences).to_f / total_classes * 100).round(1) : 100 %>
+      <% data = @attendance_data[subject.id] %>
+      <% next unless data %>
       
       <div class="mb-3">
         <div class="d-flex justify-content-between align-items-center mb-1">
           <span class="fw-medium"><%= subject.name %></span>
           <span class="text-muted small">
-            <%= attendance_rate %>% de presença 
-            (<%= total_classes - subject_absences %>/<%= total_classes %> aulas)
+            <%= data[:attendance_rate] %>% de presença 
+            (<%= data[:present_classes] %>/<%= data[:total_classes] %> aulas)
           </span>
         </div>
         <div class="progress" style="height: 10px;">
-          <div class="progress-bar bg-<%= attendance_rate >= 75 ? 'success' : attendance_rate >= 50 ? 'warning' : 'danger' %>" 
-               style="width: <%= attendance_rate %>%"></div>
+          <div class="progress-bar bg-<%= data[:attendance_rate] >= 75 ? 'success' : data[:attendance_rate] >= 50 ? 'warning' : 'danger' %>" 
+               style="width: <%= data[:attendance_rate] %>%"></div>
         </div>
-        <% if attendance_rate < 75 %>
+        <% if data[:attendance_rate] < 75 %>
           <small class="text-danger">
             <i class="fas fa-exclamation-triangle"></i>
             Atenção: Frequência abaixo do mínimo (75%)
@@ -234,10 +231,8 @@
 
 <!-- Alertas de Frequência -->
 <% subjects_with_low_attendance = @subjects.select { |s| 
-     weeks_passed = ((Date.current - Date.new(2025, 2, 1)) / 7).ceil
-     total = s.class_schedules.count * [weeks_passed, 0].max
-     absences = @absences.where(subject: s).count
-     total > 0 && ((total - absences).to_f / total * 100) < 75
+     data = @attendance_data[s.id]
+     data && data[:attendance_rate] < 75
    } %>
 
 <% if subjects_with_low_attendance.any? %>
@@ -246,11 +241,8 @@
     <p class="mb-2">As seguintes disciplinas estão com frequência abaixo do mínimo (75%):</p>
     <ul class="mb-0">
       <% subjects_with_low_attendance.each do |subject| %>
-        <% weeks_passed = ((Date.current - Date.new(2025, 2, 1)) / 7).ceil %>
-        <% total = subject.class_schedules.count * [weeks_passed, 0].max %>
-        <% absences = @absences.where(subject: subject).count %>
-        <% rate = ((total - absences).to_f / total * 100).round(1) %>
-        <li><strong><%= subject.name %></strong> - <%= rate %>% de presença</li>
+        <% data = @attendance_data[subject.id] %>
+        <li><strong><%= subject.name %></strong> - <%= data[:attendance_rate] %>% de presença</li>
       <% end %>
     </ul>
   </div>

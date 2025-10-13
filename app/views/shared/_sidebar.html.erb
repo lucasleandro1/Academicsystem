@@ -288,7 +288,7 @@
 
     
     <li class="nav-item">
-      <%= link_to students_schedules_path, class: "nav-link #{'active' if controller_name == 'schedules' && controller.class.module_parent.name.downcase == 'students'}" do %>
+      <%= link_to students_class_schedules_path, class: "nav-link #{'active' if controller_name == 'class_schedules' && controller.class.module_parent.name.downcase == 'students'}" do %>
         <i class="fas fa-calendar-week"></i> Horários
       <% end %>
     </li>

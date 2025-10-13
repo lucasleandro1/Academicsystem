@@ -1,0 +1,172 @@
+<div class="container-fluid py-4">
+  <div class="row">
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="fas fa-user me-2"></i>Foto do Perfil</h5>
+        </div>
+        <div class="card-body text-center">
+          <div class="mb-3">
+            <% if current_user.respond_to?(:avatar) && current_user.avatar.present? %>
+              <%= image_tag current_user.avatar, class: "rounded-circle", style: "width: 150px; height: 150px; object-fit: cover;" %>
+            <% else %>
+              <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center mx-auto" style="width: 150px; height: 150px;">
+                <i class="fas fa-user fa-4x text-white"></i>
+              </div>
+            <% end %>
+          </div>
+          <h4><%= current_user.full_name %></h4>
+          <p class="text-muted mb-2">
+            <i class="fas fa-chalkboard-teacher me-1"></i>
+            Professor(a)
+          </p>
+          <p class="text-muted">
+            <i class="fas fa-school me-1"></i>
+            <%= current_user.school.name if current_user.school %>
+          </p>
+        </div>
+      </div>
+
+      <!-- Card de Estatísticas Rápidas -->
+      <div class="card mt-3">
+        <div class="card-header">
+          <h6 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Estatísticas</h6>
+        </div>
+        <div class="card-body">
+          <div class="row text-center">
+            <div class="col-6">
+              <h4 class="text-primary">
+                <%= current_user.subjects.count if current_user.respond_to?(:subjects) %>
+              </h4>
+              <small class="text-muted">Disciplinas</small>
+            </div>
+            <div class="col-6">
+              <h4 class="text-success">
+                <%= current_user.classrooms.count if current_user.respond_to?(:classrooms) %>
+              </h4>
+              <small class="text-muted">Turmas</small>
+            </div>
+          </div>
+          <hr>
+          <div class="row text-center">
+            <div class="col-6">
+              <h4 class="text-warning">
+                <%= current_user.absences.where(created_at: Date.current.beginning_of_month..Date.current.end_of_month).count if current_user.respond_to?(:absences) %>
+              </h4>
+              <small class="text-muted">Faltas (Mês)</small>
+            </div>
+            <div class="col-6">
+              <h4 class="text-info">
+                <%= current_user.messages.count if current_user.respond_to?(:messages) %>
+              </h4>
+              <small class="text-muted">Mensagens</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Informações Pessoais</h5>
+          <%= link_to edit_teachers_profile_path, class: "btn btn-primary btn-sm" do %>
+            <i class="fas fa-edit"></i> Editar Perfil
+          <% end %>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <strong>Nome Completo:</strong>
+              <p class="mb-0"><%= current_user.full_name %></p>
+            </div>
+            <div class="col-md-6 mb-3">
+              <strong>Email:</strong>
+              <p class="mb-0"><%= current_user.email %></p>
+            </div>
+            <div class="col-md-6 mb-3">
+              <strong>Telefone:</strong>
+              <p class="mb-0"><%= current_user.phone || "Não informado" %></p>
+            </div>
+            <div class="col-md-6 mb-3">
+              <strong>Data de Nascimento:</strong>
+              <p class="mb-0">
+                <%= current_user.birth_date.strftime("%d/%m/%Y") if current_user.birth_date %>
+              </p>
+            </div>
+            <div class="col-md-6 mb-3">
+              <strong>CPF:</strong>
+              <p class="mb-0"><%= current_user.cpf || "Não informado" %></p>
+            </div>
+            <div class="col-md-6 mb-3">
+              <strong>Especialização:</strong>
+              <p class="mb-0"><%= current_user.specialization if current_user.respond_to?(:specialization) %></p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card de Disciplinas -->
+      <div class="card mt-3">
+        <div class="card-header">
+          <h6 class="mb-0"><i class="fas fa-book me-2"></i>Minhas Disciplinas</h6>
+        </div>
+        <div class="card-body">
+          <% if current_user.respond_to?(:subjects) && current_user.subjects.any? %>
+            <div class="row">
+              <% current_user.subjects.each do |subject| %>
+                <div class="col-md-6 mb-2">
+                  <div class="card border-left-primary">
+                    <div class="card-body py-2">
+                      <h6 class="mb-1"><%= subject.name %></h6>
+                      <small class="text-muted">
+                        <%= subject.classroom.name if subject.classroom %>
+                        <span class="badge bg-info ms-2"><%= subject.workload %>h</span>
+                      </small>
+                    </div>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          <% else %>
+            <p class="text-muted mb-0">Nenhuma disciplina atribuída.</p>
+          <% end %>
+        </div>
+      </div>
+
+      <!-- Card de Horários -->
+      <div class="card mt-3">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h6 class="mb-0"><i class="fas fa-clock me-2"></i>Próximas Aulas</h6>
+          <%= link_to teachers_schedules_path, class: "btn btn-outline-primary btn-sm" do %>
+            Ver todos os horários
+          <% end %>
+        </div>
+        <div class="card-body">
+          <% if current_user.respond_to?(:class_schedules) %>
+            <% upcoming_classes = current_user.class_schedules.where("day_of_week = ? AND start_time > ?", Date.current.wday, Time.current.strftime("%H:%M")).limit(3) %>
+            <% if upcoming_classes.any? %>
+              <% upcoming_classes.each do |schedule| %>
+                <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                  <div>
+                    <strong><%= schedule.subject.name if schedule.subject %></strong><br>
+                    <small class="text-muted"><%= schedule.classroom.name if schedule.classroom %></small>
+                  </div>
+                  <div class="text-end">
+                    <span class="badge bg-primary">
+                      <%= schedule.start_time.strftime("%H:%M") if schedule.start_time %>
+                    </span>
+                  </div>
+                </div>
+              <% end %>
+            <% else %>
+              <p class="text-muted mb-0">Nenhuma aula próxima para hoje.</p>
+            <% end %>
+          <% else %>
+            <p class="text-muted mb-0">Horários não disponíveis.</p>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

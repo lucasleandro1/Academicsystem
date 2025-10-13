@@ -1,0 +1,119 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="<%= root_path %>">
+      <i class="fas fa-graduation-cap me-2"></i>
+      Sistema Acadêmico
+    </a>
+    
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav me-auto">
+        <% if user_signed_in? %>
+          <% case current_user.user_type %>
+          <% when 'admin' %>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown">
+                <i class="fas fa-cog"></i> Administração
+              </a>
+              <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="<%= admin_schools_path %>"><i class="fas fa-school"></i> Escolas</a></li>
+                <li><a class="dropdown-item" href="<%= admin_users_path %>"><i class="fas fa-users"></i> Usuários</a></li>
+                <li><a class="dropdown-item" href="<%= admin_directions_path %>"><i class="fas fa-user-tie"></i> Direções</a></li>
+                <li><a class="dropdown-item" href="<%= admin_events_path %>"><i class="fas fa-calendar"></i> Eventos</a></li>
+                <li><a class="dropdown-item" href="<%= admin_documents_path %>"><i class="fas fa-file"></i> Documentos</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="<%= admin_reports_path %>"><i class="fas fa-chart-bar"></i> Relatórios</a></li>
+                <li><a class="dropdown-item" href="<%= admin_settings_path %>"><i class="fas fa-cog"></i> Configurações</a></li>
+              </ul>
+            </li>
+          <% when 'direction' %>
+            <li class="nav-item"><a class="nav-link" href="<%= direction_path %>"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+            <li class="nav-item"><a class="nav-link" href="<%= direction_teachers_path %>"><i class="fas fa-chalkboard-teacher"></i> Professores</a></li>
+            <li class="nav-item"><a class="nav-link" href="<%= direction_students_path %>"><i class="fas fa-user-graduate"></i> Estudantes</a></li>
+            <li class="nav-item"><a class="nav-link" href="<%= direction_classrooms_path %>"><i class="fas fa-door-open"></i> Salas</a></li>
+            <li class="nav-item"><a class="nav-link" href="<%= direction_subjects_path %>"><i class="fas fa-book"></i> Matérias</a></li>
+          <% when 'teacher' %>
+            <li class="nav-item"><a class="nav-link" href="<%= teachers_path %>"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+            <li class="nav-item"><a class="nav-link" href="<%= teachers_classrooms_path %>"><i class="fas fa-door-open"></i> Minhas Turmas</a></li>
+            <li class="nav-item"><a class="nav-link" href="<%= teachers_grades_path %>"><i class="fas fa-star"></i> Notas</a></li>
+            <li class="nav-item"><a class="nav-link" href="<%= teachers_absences_path %>"><i class="fas fa-user-times"></i> Faltas</a></li>
+          <% when 'student' %>
+            <li class="nav-item"><a class="nav-link" href="<%= students_path %>"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+            <li class="nav-item"><a class="nav-link" href="<%= students_grades_path %>"><i class="fas fa-star"></i> Minhas Notas</a></li>
+            <li class="nav-item"><a class="nav-link" href="<%= students_schedules_path %>"><i class="fas fa-calendar"></i> Horários</a></li>
+            <li class="nav-item"><a class="nav-link" href="<%= students_subjects_path %>"><i class="fas fa-book"></i> Matérias</a></li>
+          <% end %>
+        <% end %>
+      </ul>
+      
+      <ul class="navbar-nav">
+        <% if user_signed_in? %>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle position-relative" href="#" id="notificationsDropdown" role="button" data-bs-toggle="dropdown">
+              <i class="fas fa-bell"></i>
+              <% if current_user.notifications.unread.any? %>
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                  <%= current_user.notifications.unread.count %>
+                </span>
+              <% end %>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" style="width: 300px;">
+              <li class="dropdown-header">Notificações</li>
+              <% if current_user.notifications.recent.any? %>
+                <% current_user.notifications.recent.limit(5).each do |notification| %>
+                  <li>
+                    <a class="dropdown-item <%= 'text-muted' if notification.read? %>" href="<%= notification_path(notification) %>">
+                      <small class="text-muted"><%= notification.created_at.strftime("%d/%m %H:%M") %></small><br>
+                      <%= truncate(notification.message, length: 50) %>
+                    </a>
+                  </li>
+                <% end %>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item text-center" href="<%= notifications_path %>">Ver todas</a></li>
+              <% else %>
+                <li><span class="dropdown-item text-muted">Nenhuma notificação</span></li>
+              <% end %>
+            </ul>
+          </li>
+          
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+              <i class="fas fa-user"></i> <%= current_user.full_name %>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li class="dropdown-header">
+                <small class="text-muted"><%= current_user.user_type.humanize %></small>
+              </li>
+              <li><hr class="dropdown-divider"></li>
+              <% if current_user.user_type == 'student' %>
+                <li><a class="dropdown-item" href="<%= students_profile_path %>"><i class="fas fa-user"></i> Meu Perfil</a></li>
+              <% elsif current_user.user_type == 'teacher' %>
+                <li><a class="dropdown-item" href="<%= teachers_profile_path %>"><i class="fas fa-user"></i> Meu Perfil</a></li>
+              <% end %>
+              <li><a class="dropdown-item" href="<%= messages_path %>"><i class="fas fa-envelope"></i> Mensagens</a></li>
+              <li><a class="dropdown-item" href="<%= edit_user_registration_path %>"><i class="fas fa-cog"></i> Configurações</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><%= link_to destroy_user_session_path, method: :delete, class: "dropdown-item" do %>
+                <i class="fas fa-sign-out-alt"></i> Sair
+              <% end %></li>
+            </ul>
+          </li>
+        <% else %>
+          <li class="nav-item">
+            <a class="nav-link" href="<%= new_user_session_path %>">
+              <i class="fas fa-sign-in-alt"></i> Entrar
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="<%= new_user_registration_path %>">
+              <i class="fas fa-user-plus"></i> Cadastrar
+            </a>
+          </li>
+        <% end %>
+      </ul>
+    </div>
+  </div>
+</nav>

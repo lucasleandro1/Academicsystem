@@ -10,7 +10,8 @@
 <!-- Filtros -->
 <div class="card mb-4">
   <div class="card-body">
-    <%= form_with url: students_events_path, method: :get, local: true, class: "row g-3" do |form| %>
+    <div class="row g-3">
+    <%= form_with url: students_events_path, method: :get, local: true do |form| %>
       <div class="col-md-3">
         <%= form.select :period, 
                         options_for_select([
@@ -43,11 +44,10 @@
           <%= form.submit "Filtrar", class: "btn btn-outline-secondary" %>
         </div>
       </div>
-    <% end %>
+      <% end %>
+    </div>
   </div>
-</div>
-
-<!-- Cards de Estatísticas -->
+</div><!-- Cards de Estatísticas -->
 <div class="row mb-4">
   <div class="col-md-3">
     <div class="card text-center bg-primary text-white">
@@ -331,76 +331,40 @@ function addToCalendar(title, startDate, endDate) {
   margin-left: 0.5rem;
 }
 </style>
-                  <% if event.start_time.present? %>
-                    <i class="fas fa-clock"></i>
-                    <%= event.start_time.strftime("%H:%M") %>
-                    <% if event.end_time.present? %>
-                      - <%= event.end_time.strftime("%H:%M") %>
-                    <% end %>
-                    <br>
-                  <% end %>
-                  <% if event.location.present? %>
-                    <i class="fas fa-map-marker-alt"></i>
-                    <%= event.location %>
-                  <% end %>
-                </div>
-              </div>
-              <% if event.description.length > 100 %>
-                <div class="card-footer">
-                  <button class="btn btn-sm btn-outline-primary" 
-                          data-bs-toggle="collapse" 
-                          data-bs-target="#event-<%= event.id %>" 
-                          aria-expanded="false">
-                    Ver mais
-                  </button>
-                  <div class="collapse mt-2" id="event-<%= event.id %>">
-                    <%= simple_format(event.description) %>
-                  </div>
-                </div>
-              <% end %>
-            </div>
-          </div>
-        <% end %>
-      </div>
 
-      <!-- Calendário de Eventos -->
-      <div class="row mt-4">
-        <div class="col-12">
-          <h4>Calendário do Mês</h4>
-          <div class="card">
-            <div class="card-body">
-              <div class="table-responsive">
-                <table class="table table-bordered table-sm">
-                  <thead>
-                    <tr class="table-light">
-                      <th>Dom</th>
-                      <th>Seg</th>
-                      <th>Ter</th>
-                      <th>Qua</th>
-                      <th>Qui</th>
-                      <th>Sex</th>
-                      <th>Sáb</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <!-- Aqui seria implementado o calendário -->
-                    <tr>
-                      <td colspan="7" class="text-center text-muted">
-                        Calendário em desenvolvimento
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+<!-- Calendário de Eventos -->
+    <div class="row mt-4">
+      <div class="col-12">
+        <h4>Calendário do Mês</h4>
+        <div class="card">
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-bordered table-sm">
+                <thead>
+                  <tr class="table-light">
+                    <th>Dom</th>
+                    <th>Seg</th>
+                    <th>Ter</th>
+                    <th>Qua</th>
+                    <th>Qui</th>
+                    <th>Sex</th>
+                    <th>Sáb</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- Aqui seria implementado o calendário -->
+                  <tr>
+                    <td colspan="7" class="text-center text-muted">
+                      Calendário em desenvolvimento
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
       </div>
-    <% else %>
-      <div class="alert alert-info">
-        <i class="fas fa-info-circle"></i>
-        Não há eventos programados no momento.
-      </div>
-    <% end %>
+    </div>
+
   </div>
 </div>
