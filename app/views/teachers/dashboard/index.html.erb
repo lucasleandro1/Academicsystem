@@ -1,79 +1,109 @@
-<% content_for :title, "Painel do Professor" %>
+<%# Page Title %>
+<% content_for :title, "Dashboard - Professor" %>
 
-<div class="d-flex justify-content-between align-items-center mb-4">
+<!-- Welcome Header -->
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
   <div>
-    <h1><i class="fas fa-chalkboard-teacher"></i> Painel do Professor</h1>
-    <p class="text-muted mb-0">Bem-vindo, <%= current_user.full_name %> - <%= current_user.school.name %></p>
+    <h1 class="h2">
+      <i class="fas fa-chalkboard-teacher text-primary me-2"></i>
+      Dashboard do Professor
+    </h1>
+    <p class="text-muted mb-0">
+      Bem-vindo(a), <%= current_user.full_name %>! 
+      Escola: <strong><%= current_user.school.name %></strong>
+    </p>
   </div>
-  <div class="text-end">
-    <small class="text-muted">
-      Hoje: <%= Date.current.strftime("%d/%m/%Y") %>
-      <br>
-      <%= Date.current.strftime("%A").capitalize %>
-    </small>
+  <div class="btn-toolbar mb-2 mb-md-0">
+    <div class="btn-group me-2">
+      <%= link_to teachers_grades_path, class: "btn btn-sm btn-outline-primary" do %>
+        <i class="fas fa-clipboard-list"></i> Notas
+      <% end %>
+      <%= link_to teachers_absences_path, class: "btn btn-sm btn-outline-secondary" do %>
+        <i class="fas fa-calendar-times"></i> Faltas
+      <% end %>
+      <%= link_to teachers_messages_path, class: "btn btn-sm btn-outline-info" do %>
+        <i class="fas fa-envelope"></i> Mensagens
+      <% end %>
+    </div>
   </div>
 </div>
 
-<!-- Cards de Estatísticas -->
+<!-- Statistics Cards -->
 <div class="row mb-4">
-  <div class="col-md-3">
-    <div class="card card-stat bg-primary text-white">
+  <div class="col-xl-3 col-md-6 mb-4">
+    <div class="card card-stat border-left-primary shadow h-100 py-2">
       <div class="card-body">
-        <div class="d-flex justify-content-between">
-          <div>
-            <h5 class="card-title">Turmas</h5>
-            <h2><%= @my_classrooms.count %></h2>
+        <div class="row no-gutters align-items-center">
+          <div class="col mr-2">
+            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+              Minhas Turmas
+            </div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800">
+              <%= @my_classrooms.count %>
+            </div>
           </div>
-          <div class="align-self-center">
-            <i class="fas fa-users fa-2x"></i>
+          <div class="col-auto">
+            <i class="fas fa-users fa-2x text-gray-300"></i>
           </div>
         </div>
       </div>
     </div>
   </div>
-  
-  <div class="col-md-3">
-    <div class="card card-stat bg-success text-white">
+
+  <div class="col-xl-3 col-md-6 mb-4">
+    <div class="card card-stat border-left-success shadow h-100 py-2">
       <div class="card-body">
-        <div class="d-flex justify-content-between">
-          <div>
-            <h5 class="card-title">Disciplinas</h5>
-            <h2><%= @my_subjects.count %></h2>
+        <div class="row no-gutters align-items-center">
+          <div class="col mr-2">
+            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+              Minhas Disciplinas
+            </div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800">
+              <%= @my_subjects.count %>
+            </div>
           </div>
-          <div class="align-self-center">
-            <i class="fas fa-book fa-2x"></i>
+          <div class="col-auto">
+            <i class="fas fa-book fa-2x text-gray-300"></i>
           </div>
         </div>
       </div>
     </div>
   </div>
-  
-  <div class="col-md-3">
-    <div class="card card-stat bg-info text-white">
+
+  <div class="col-xl-3 col-md-6 mb-4">
+    <div class="card card-stat border-left-info shadow h-100 py-2">
       <div class="card-body">
-        <div class="d-flex justify-content-between">
-          <div>
-            <h5 class="card-title">Alunos</h5>
-            <h2><%= @total_students %></h2>
+        <div class="row no-gutters align-items-center">
+          <div class="col mr-2">
+            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+              Total de Alunos
+            </div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800">
+              <%= @total_students %>
+            </div>
           </div>
-          <div class="align-self-center">
-            <i class="fas fa-user-graduate fa-2x"></i>
+          <div class="col-auto">
+            <i class="fas fa-user-graduate fa-2x text-gray-300"></i>
           </div>
         </div>
       </div>
     </div>
   </div>
-  
-  <div class="col-lg-3 col-md-6 mb-3">
-    <div class="card card-stat bg-warning text-white">
+
+  <div class="col-xl-3 col-md-6 mb-4">
+    <div class="card card-stat border-left-warning shadow h-100 py-2">
       <div class="card-body">
-        <div class="d-flex justify-content-between">
-          <div>
-            <h5 class="card-title">Mensagens</h5>
-            <h2><%= @recent_messages.count %></h2>
+        <div class="row no-gutters align-items-center">
+          <div class="col mr-2">
+            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+              Mensagens
+            </div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800">
+              <%= @recent_messages.count %>
+            </div>
           </div>
-          <div class="align-self-center">
-            <i class="fas fa-envelope fa-2x"></i>
+          <div class="col-auto">
+            <i class="fas fa-envelope fa-2x text-gray-300"></i>
           </div>
         </div>
       </div>
@@ -81,57 +111,175 @@
   </div>
 </div>
 
-<!-- Ações Rápidas -->
+<!-- Content Row -->
 <div class="row">
-  <div class="col-md-3">
-    <%= link_to teachers_subjects_path, class: "btn btn-outline-primary w-100 mb-3 p-3" do %>
-      <i class="fas fa-book fa-2x d-block mb-2"></i>
-      <strong>Minhas Disciplinas</strong>
-    <% end %>
+  <!-- Resumo da Agenda -->
+  <div class="col-lg-6 mb-4">
+    <div class="card shadow">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h6 class="m-0 font-weight-bold text-primary">
+          <i class="fas fa-calendar-alt me-2"></i>Agenda de Hoje
+        </h6>
+        <small class="text-muted">
+          <%= Date.current.strftime("%d/%m/%Y - %A").capitalize %>
+        </small>
+      </div>
+      <div class="card-body">
+        <% if @classes_today.any? %>
+          <% @classes_today.order(:start_time).each_with_index do |class_schedule, index| %>
+            <div class="d-flex align-items-center mb-3 <%= 'pb-3 border-bottom' if index < @classes_today.count - 1 %>">
+              <div class="me-3">
+                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
+                  <strong style="font-size: 12px;"><%= class_schedule.start_time.strftime("%H:%M") %></strong>
+                </div>
+              </div>
+              <div class="flex-grow-1">
+                <h6 class="mb-1">
+                  <%= class_schedule.subject.name %>
+                  <span class="badge bg-info ms-2"><%= class_schedule.classroom.name %></span>
+                </h6>
+                <small class="text-muted">
+                  <i class="fas fa-clock me-1"></i>
+                  <%= class_schedule.start_time.strftime("%H:%M") %> - <%= class_schedule.end_time.strftime("%H:%M") %>
+                  <% if class_schedule.period.present? %>
+                    · <%= class_schedule.period.capitalize %>
+                  <% end %>
+                </small>
+              </div>
+              <div class="text-end">
+                <%= link_to teachers_class_schedules_path, class: "btn btn-sm btn-outline-primary" do %>
+                  <i class="fas fa-eye"></i>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+        <% else %>
+          <div class="text-center text-muted py-4">
+            <i class="fas fa-calendar-day fa-3x mb-3"></i>
+            <h6>Nenhuma aula agendada para hoje</h6>
+            <p class="mb-0">Aproveite para planejar suas próximas aulas!</p>
+            <small class="text-muted">
+              <%= link_to "Ver grade completa", teachers_class_schedules_path, class: "text-decoration-none" %>
+            </small>
+          </div>
+        <% end %>
+      </div>
+    </div>
   </div>
-  <div class="col-md-3">
-    <%= link_to teachers_classrooms_path, class: "btn btn-outline-success w-100 mb-3 p-3" do %>
-      <i class="fas fa-users fa-2x d-block mb-2"></i>
-      <strong>Minhas Turmas</strong>
-    <% end %>
-  </div>
-  <div class="col-md-3">
-    <%= link_to teachers_grades_path, class: "btn btn-outline-info w-100 mb-3 p-3" do %>
-      <i class="fas fa-clipboard-list fa-2x d-block mb-2"></i>
-      <strong>Gerenciar Notas</strong>
-    <% end %>
-  </div>
-  <div class="col-md-3">
-    <%= link_to teachers_messages_path, class: "btn btn-outline-warning w-100 mb-3 p-3" do %>
-      <i class="fas fa-envelope fa-2x d-block mb-2"></i>
-      <strong>Mensagens</strong>
-    <% end %>
+
+  <!-- Mensagens Recentes -->
+  <div class="col-lg-6 mb-4">
+    <div class="card shadow">
+      <div class="card-header">
+        <h6 class="m-0 font-weight-bold text-primary">
+          <i class="fas fa-envelope me-2"></i>Mensagens Recentes
+        </h6>
+      </div>
+      <div class="card-body">
+        <% if @recent_messages.any? %>
+          <% @recent_messages.first(3).each do |message| %>
+            <div class="d-flex align-items-center mb-3">
+              <div class="me-3">
+                <div class="rounded-circle bg-info text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                  <i class="fas fa-user"></i>
+                </div>
+              </div>
+              <div class="flex-grow-1">
+                <h6 class="mb-0">Mensagem recebida</h6>
+                <small class="text-muted">
+                  <i class="fas fa-clock me-1"></i>
+                  Hoje
+                </small>
+              </div>
+            </div>
+          <% end %>
+        <% else %>
+          <div class="text-center text-muted py-4">
+            <i class="fas fa-inbox fa-3x mb-3"></i>
+            <p>Nenhuma mensagem recente</p>
+          </div>
+        <% end %>
+      </div>
+    </div>
   </div>
 </div>
 
-<div class="row">
-  <div class="col-md-3">
-    <%= link_to teachers_documents_path, class: "btn btn-outline-secondary w-100 mb-3 p-3" do %>
-      <i class="fas fa-folder fa-2x d-block mb-2"></i>
-      <strong>Documentos</strong>
-    <% end %>
-  </div>
-  <div class="col-md-3">
-    <%= link_to teachers_absences_path, class: "btn btn-outline-danger w-100 mb-3 p-3" do %>
-      <i class="fas fa-calendar-times fa-2x d-block mb-2"></i>
-      <strong>Controle de Faltas</strong>
-    <% end %>
-  </div>
-  <div class="col-md-3">
-    <%= link_to teachers_class_schedules_path, class: "btn btn-outline-dark w-100 mb-3 p-3" do %>
-      <i class="fas fa-calendar-alt fa-2x d-block mb-2"></i>
-      <strong>Grade de Horários</strong>
-    <% end %>
-  </div>
-  <div class="col-md-3">
-    <%= link_to teachers_reports_path, class: "btn btn-outline-primary w-100 mb-3 p-3" do %>
-      <i class="fas fa-chart-bar fa-2x d-block mb-2"></i>
-      <strong>Relatórios</strong>
-    <% end %>
+<!-- Resumo da Semana -->
+<div class="row mt-4">
+  <div class="col-12">
+    <div class="card shadow">
+      <div class="card-header">
+        <h6 class="m-0 font-weight-bold text-primary">
+          <i class="fas fa-chart-line me-2"></i>Resumo da Semana
+        </h6>
+      </div>
+      <div class="card-body">
+        <div class="row text-center">
+          <div class="col-md-3 mb-3">
+            <div class="border-left-success p-3">
+              <h4 class="text-success">
+                <% total_classes_week = current_user.class_schedules.count * 5 %>
+                <%= total_classes_week %>
+              </h4>
+              <small class="text-muted">Aulas na Semana</small>
+            </div>
+          </div>
+          <div class="col-md-3 mb-3">
+            <div class="border-left-info p-3">
+              <h4 class="text-info">
+                <%= @my_classrooms.count %>
+              </h4>
+              <small class="text-muted">Turmas Ativas</small>
+            </div>
+          </div>
+          <div class="col-md-3 mb-3">
+            <div class="border-left-primary p-3">
+              <h4 class="text-primary">
+                <%= @recent_messages.count %>
+              </h4>
+              <small class="text-muted">Mensagens Pendentes</small>
+            </div>
+          </div>
+          <div class="col-md-3 mb-3">
+            <div class="border-left-warning p-3">
+              <h4 class="text-warning">
+                <% today_classes = @classes_today.count %>
+                <%= today_classes %>
+              </h4>
+              <small class="text-muted">Aulas Hoje</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
+
+<style>
+  .border-left-primary {
+    border-left: 0.25rem solid #4e73df !important;
+  }
+  .border-left-success {
+    border-left: 0.25rem solid #1cc88a !important;
+  }
+  .border-left-info {
+    border-left: 0.25rem solid #36b9cc !important;
+  }
+  .border-left-warning {
+    border-left: 0.25rem solid #f6c23e !important;
+  }
+  .text-xs {
+    font-size: 0.7rem;
+  }
+  .text-gray-800 {
+    color: #5a5c69 !important;
+  }
+  .text-gray-300 {
+    color: #dddfeb !important;
+  }
+  
+  .card:hover {
+    transform: translateY(-2px);
+    transition: transform 0.2s ease;
+  }
+</style>
