@@ -7,126 +7,211 @@
   <% end %>
 </div>
 
-<!-- Subject Filter -->
-<% if @subjects.any? %>
+<!-- Classroom Filter -->
+<% if @classrooms.any? %>
   <div class="row mb-4">
-    <div class="col-md-6">
+    <div class="col-md-8">
       <div class="card">
         <div class="card-body">
-          <h6 class="card-title">Filtrar por Disciplina</h6>
+          <h6 class="card-title"><i class="fas fa-filter me-2"></i>Filtrar por Turma</h6>
           <%= form_tag teachers_grades_path, method: :get, local: true, class: "d-flex" do %>
-            <%= select_tag :subject_id, 
-                options_from_collection_for_select(@subjects, :id, :name, params[:subject_id]), 
-                { prompt: "Todas as disciplinas", class: "form-select me-2" } %>
+            <%= select_tag :classroom_id, 
+                options_from_collection_for_select(@classrooms, :id, :simple_name, params[:classroom_id]), 
+                { prompt: "Todas as turmas", class: "form-select me-2" } %>
             <%= submit_tag "Filtrar", class: "btn btn-outline-primary" %>
+            <% if params[:classroom_id].present? %>
+              <%= link_to teachers_grades_path, class: "btn btn-outline-secondary ms-2" do %>
+                <i class="fas fa-times"></i> Limpar
+              <% end %>
+            <% end %>
           <% end %>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card bg-light">
+        <div class="card-body text-center">
+          <h6 class="card-title mb-1">Total de Notas</h6>
+          <h3 class="text-primary mb-0"><%= @grades.count %></h3>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="row">
-    <div class="col-12">
-      <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <h5 class="mb-0">
-            <i class="fas fa-star text-warning me-2"></i>
-            Notas Lançadas
-            <% if @selected_subject %>
-              - <%= @selected_subject.name %>
-            <% end %>
-          </h5>
-          <span class="badge bg-primary"><%= @grades.count %> notas</span>
+  <% if @grades.any? %>
+    <% grades_by_classroom = @grades.group_by { |grade| grade.subject.classroom } %>
+    
+    <% grades_by_classroom.each do |classroom, grades| %>
+      <div class="card mb-4">
+        <div class="card-header">
+          <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+              <i class="fas fa-users text-primary me-2"></i>
+              <%= classroom&.simple_name || "Turma não definida" %>
+            </h5>
+            <span class="badge bg-primary fs-6"><%= grades.count %> nota<%= 's' if grades.count != 1 %></span>
+          </div>
         </div>
-        <div class="card-body">
-          <% if @grades.any? %>
-            <div class="table-responsive">
-              <table class="table table-hover">
-                <thead class="table-light">
-                  <tr>
-                    <th>Aluno</th>
-                    <th>Disciplina</th>
-                    <th>Bimestre</th>
-                    <th>Tipo</th>
-                    <th>Nota</th>
-                    <th>Data</th>
-                    <th>Ações</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <% @grades.each do |grade| %>
+        <div class="card-body p-0">
+          <% grades_by_subject = grades.group_by(&:subject) %>
+          
+          <% grades_by_subject.each_with_index do |(subject, subject_grades), index| %>
+            <div class="border-bottom <%= 'border-0' if index == grades_by_subject.count - 1 %>">
+              <div class="px-3 py-2 bg-light">
+                <h6 class="mb-0 text-muted">
+                  <i class="fas fa-book me-1"></i>
+                  <%= subject.name %> 
+                  <small class="badge bg-secondary ms-2"><%= subject_grades.count %> nota<%= 's' if subject_grades.count != 1 %></small>
+                </h6>
+              </div>
+              
+              <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                  <thead class="table-light">
                     <tr>
-                      <td>
-                        <div class="d-flex align-items-center">
-                          <div class="rounded-circle bg-primary text-white me-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
-                            <%= grade.student.full_name.first.upcase %>
-                          </div>
-                          <%= grade.student.full_name %>
-                        </div>
-                      </td>
-                      <td>
-                        <span class="badge bg-info"><%= grade.subject.name %></span>
-                      </td>
-                      <td>
-                        <span class="badge bg-secondary"><%= grade.bimester %>º Bim</span>
-                      </td>
-                      <td>
-                        <span class="badge bg-light text-dark"><%= grade.grade_type.humanize %></span>
-                      </td>
-                      <td>
-                        <span class="badge <%= grade.value >= 7 ? 'bg-success' : grade.value >= 5 ? 'bg-warning' : 'bg-danger' %>">
-                          <%= number_with_precision(grade.value, precision: 1) %>
-                        </span>
-                      </td>
-                      <td>
-                        <small class="text-muted">
-                          <%= l(grade.created_at, format: :short) %>
-                        </small>
-                      </td>
-                      <td>
-                        <div class="btn-group" role="group">
-                          <%= link_to edit_teachers_grade_path(grade), class: "btn btn-sm btn-outline-primary", title: "Editar" do %>
-                            <i class="fas fa-edit"></i>
-                          <% end %>
-                          <%= link_to teachers_grade_path(grade), method: :delete, 
-                              confirm: "Tem certeza que deseja excluir esta nota?", 
-                              class: "btn btn-sm btn-outline-danger", title: "Excluir" do %>
-                            <i class="fas fa-trash"></i>
-                          <% end %>
-                        </div>
-                      </td>
+                      <th width="25%">Aluno</th>
+                      <th width="15%">Bimestre</th>
+                      <th width="15%">Tipo</th>
+                      <th width="10%">Nota</th>
+                      <th width="15%">Data</th>
+                      <th width="20%">Ações</th>
                     </tr>
-                  <% end %>
-                </tbody>
-              </table>
-            </div>
-          <% else %>
-            <div class="text-center py-4">
-              <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
-              <h5 class="text-muted">Nenhuma nota lançada</h5>
-              <p class="text-muted">
-                <% if @selected_subject %>
-                  Não há notas lançadas para a disciplina "<%= @selected_subject.name %>".
-                <% else %>
-                  Comece lançando a primeira nota para seus alunos.
-                <% end %>
-              </p>
-              <%= link_to new_teachers_grade_path, class: "btn btn-primary" do %>
-                <i class="fas fa-plus me-2"></i>Lançar Primeira Nota
-              <% end %>
+                  </thead>
+                  <tbody>
+                    <% subject_grades.each do |grade| %>
+                      <tr>
+                        <td>
+                          <div class="d-flex align-items-center">
+                            <div class="rounded-circle bg-primary text-white me-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; font-size: 14px;">
+                              <%= grade.student.full_name.first.upcase %>
+                            </div>
+                            <div>
+                              <div class="fw-medium"><%= grade.student.full_name %></div>
+                              <small class="text-muted"><%= grade.assessment_name %></small>
+                            </div>
+                          </div>
+                        </td>
+                        <td>
+                          <span class="badge bg-secondary fs-7"><%= grade.bimester %>º Bimestre</span>
+                        </td>
+                        <td>
+                          <span class="badge bg-light text-dark border">
+                            <i class="fas fa-<%= case grade.grade_type
+                              when 'prova' then 'file-alt'
+                              when 'trabalho' then 'tasks'
+                              when 'atividade' then 'pencil-alt'
+                              when 'participacao' then 'comments'
+                              when 'projeto' then 'project-diagram'
+                              when 'recuperacao' then 'redo'
+                              else 'clipboard'
+                            end %> me-1"></i>
+                            <%= grade.grade_type.humanize %>
+                          </span>
+                        </td>
+                        <td>
+                          <span class="badge fs-6 <%= grade.value >= 7 ? 'bg-success' : grade.value >= 5 ? 'bg-warning text-dark' : 'bg-danger' %>">
+                            <%= number_with_precision(grade.value, precision: 1) %>/<%= grade.max_value %>
+                          </span>
+                        </td>
+                        <td>
+                          <small class="text-muted">
+                            <i class="fas fa-calendar me-1"></i>
+                            <%= l(grade.assessment_date, format: :short) %>
+                          </small>
+                        </td>
+                        <td>
+                          <div class="btn-group btn-group-sm" role="group">
+                            <%= link_to edit_teachers_grade_path(grade), class: "btn btn-outline-primary", title: "Editar nota" do %>
+                              <i class="fas fa-edit"></i>
+                            <% end %>
+                            <%= link_to teachers_grade_path(grade), 
+                                method: :delete, 
+                                confirm: "Tem certeza que deseja excluir esta nota de #{grade.student.full_name}?", 
+                                class: "btn btn-outline-danger", 
+                                title: "Excluir nota" do %>
+                              <i class="fas fa-trash"></i>
+                            <% end %>
+                          </div>
+                        </td>
+                      </tr>
+                    <% end %>
+                  </tbody>
+                </table>
+              </div>
             </div>
           <% end %>
         </div>
       </div>
+    <% end %>
+  <% else %>
+    <div class="row">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-body text-center py-5">
+            <i class="fas fa-clipboard-list fa-4x text-muted mb-4"></i>
+            <h4 class="text-muted mb-3">Nenhuma nota encontrada</h4>
+            <p class="text-muted mb-4">
+              <% if @selected_classroom %>
+                Não há notas lançadas para a turma "<%= @selected_classroom.simple_name %>".
+              <% else %>
+                Comece lançando a primeira nota para seus alunos.
+              <% end %>
+            </p>
+            <%= link_to new_teachers_grade_path, class: "btn btn-primary btn-lg" do %>
+              <i class="fas fa-plus me-2"></i>Lançar Primeira Nota
+            <% end %>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
+  <% end %>
 <% else %>
   <div class="row">
     <div class="col-12">
       <div class="alert alert-info">
-        <h5><i class="fas fa-info-circle me-2"></i>Nenhuma disciplina encontrada</h5>
-        <p class="mb-0">Você precisa estar vinculado a pelo menos uma disciplina para lançar notas. Entre em contato com a direção da escola.</p>
+        <h5><i class="fas fa-info-circle me-2"></i>Nenhuma turma encontrada</h5>
+        <p class="mb-0">Você precisa estar vinculado a pelo menos uma disciplina em uma turma para lançar notas. Entre em contato com a direção da escola.</p>
       </div>
     </div>
   </div>
 <% end %>
+
+<style>
+  .fs-7 {
+    font-size: 0.875rem;
+  }
+  
+  .card-header h5 {
+    font-weight: 600;
+  }
+  
+  .table td {
+    vertical-align: middle;
+  }
+  
+  .badge.fs-6 {
+    font-size: 0.95rem;
+  }
+  
+  .btn-group-sm .btn {
+    padding: 0.25rem 0.5rem;
+  }
+  
+  .rounded-circle {
+    font-weight: 600;
+  }
+  
+  .card .border-bottom:last-child {
+    border-bottom: none !important;
+  }
+  
+  .table thead th {
+    font-weight: 600;
+    font-size: 0.875rem;
+    border-bottom: 2px solid #dee2e6;
+  }
+  
+  .bg-light.border {
+    border-color: #ced4da !important;
+  }
+</style>

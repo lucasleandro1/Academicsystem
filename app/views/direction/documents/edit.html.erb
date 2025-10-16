@@ -77,25 +77,19 @@
             <div class="col-12 mb-3">
               <%= form.label :file, "Arquivo", class: "form-label" %>
               
-              <% if @document.file.present? %>
+              <% if @document.attachment.attached? %>
                 <div class="alert alert-info mb-2">
                   <i class="fas fa-info-circle"></i>
                   <strong>Arquivo atual:</strong> 
-                  <% if @document.file.respond_to?(:filename) %>
-                    <%= @document.file.filename %>
-                  <% else %>
-                    Arquivo anexado
-                  <% end %>
-                  <% if @document.file.respond_to?(:byte_size) %>
-                    (<%= number_to_human_size(@document.file.byte_size) %>)
-                  <% end %>
+                  <%= @document.attachment.filename %>
+                  (<%= number_to_human_size(@document.attachment.byte_size) %>)
                 </div>
               <% end %>
               
-              <%= form.file_field :file, class: "form-control", accept: ".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png" %>
+              <%= form.file_field :attachment, class: "form-control", accept: ".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.html,.svg,.json,.pbm" %>
               <div class="form-text">
-                Formatos aceitos: PDF, DOC, DOCX, TXT, JPG, PNG. Tamanho máximo: 10MB.
-                <% if @document.file.present? %>
+                Formatos aceitos: PDF, DOC, DOCX, TXT, JPG, PNG, HTML, SVG, JSON. Tamanho máximo: 10MB.
+                <% if @document.attachment.attached? %>
                   <br><strong>Nota:</strong> Selecione um novo arquivo apenas se quiser substituir o atual.
                 <% end %>
               </div>

@@ -61,6 +61,9 @@
                 <td>
                   <div>
                     <strong><%= document.title %></strong>
+                    <% if document.attachment.attached? %>
+                      <i class="fas fa-paperclip text-success ms-1" title="Arquivo anexado"></i>
+                    <% end %>
                     <% if document.description.present? %>
                       <br><small class="text-muted"><%= truncate(document.description, length: 50) %></small>
                     <% end %>
@@ -83,6 +86,12 @@
                   <div class="btn-group" role="group">
                     <%= link_to direction_document_path(document), class: "btn btn-sm btn-outline-primary", title: "Visualizar" do %>
                       <i class="fas fa-eye"></i>
+                    <% end %>
+                    <% if document.attachment.attached? %>
+                      <%= link_to rails_blob_path(document.attachment, disposition: "attachment"), 
+                                  class: "btn btn-sm btn-outline-success", target: "_blank", title: "Baixar arquivo" do %>
+                        <i class="fas fa-download"></i>
+                      <% end %>
                     <% end %>
                     <%= link_to edit_direction_document_path(document), class: "btn btn-sm btn-outline-warning", title: "Editar" do %>
                       <i class="fas fa-edit"></i>

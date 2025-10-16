@@ -122,33 +122,65 @@
   </div>
 </div>
 
-<!-- Turma -->
-<% if @subject.classroom.present? %>
-<div class="card mb-4">
-  <div class="card-header">
-    <h5 class="mb-0"><i class="fas fa-users"></i> Turma: <%= @subject.classroom.name %></h5>
-  </div>
-  <div class="card-body">
-    <div class="row">
-      <div class="col-md-6">
-        <strong>Turno:</strong> <%= @subject.classroom.shift == 'morning' ? 'Manhã' : @subject.classroom.shift == 'afternoon' ? 'Tarde' : 'Noite' %><br>
-        <strong>Nível:</strong> <%= 
-          case @subject.classroom.level
-          when 'elementary_1' then 'Fundamental I'
-          when 'elementary_2' then 'Fundamental II'
-          when 'high_school' then 'Ensino Médio'
-          else 'Não definido'
-          end
-        %><br>
-        <strong>Sala:</strong> <%= @subject.classroom.name || 'Não definida' %>
+<!-- Turmas -->
+<% 
+  classrooms = @subject.available_classrooms
+  classroom_name = @subject.classroom_name
+%>
+<% if classrooms.any? %>
+  <% if classrooms.size == 1 %>
+    <% classroom = classrooms.first %>
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-users"></i> Turma: <%= classroom.name %></h5>
       </div>
-      <div class="col-md-6">
-        <strong>Total de Alunos:</strong> <%= @subject.classroom.students.count %><br>
-        <strong>Coordenador:</strong> <%= @subject.classroom.coordinator&.full_name || 'Não definido' %>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6">
+            <strong>Turno:</strong> <%= classroom.shift == 'morning' ? 'Manhã' : classroom.shift == 'afternoon' ? 'Tarde' : 'Noite' %><br>
+            <strong>Nível:</strong> <%= 
+              case classroom.level
+              when 'elementary_1' then 'Fundamental I'
+              when 'elementary_2' then 'Fundamental II'
+              when 'high_school' then 'Ensino Médio'
+              else 'Não definido'
+              end
+            %><br>
+            <strong>Sala:</strong> <%= classroom.name %>
+          </div>
+          <div class="col-md-6">
+            <strong>Total de Alunos:</strong> <%= classroom.students.count %><br>
+            <strong>Coordenador:</strong> <%= classroom.coordinator&.full_name || 'Não definido' %>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-</div>
+  <% else %>
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-users"></i> Turmas: <%= classroom_name %></h5>
+      </div>
+      <div class="card-body">
+        <div class="alert alert-info">
+          <i class="fas fa-info-circle"></i>
+          Esta disciplina está associada a múltiplas turmas através dos horários de aula.
+        </div>
+        <div class="row">
+          <% classrooms.each do |classroom| %>
+            <div class="col-md-6 mb-3">
+              <div class="border p-3 rounded">
+                <h6><%= classroom.name %></h6>
+                <small>
+                  <strong>Turno:</strong> <%= classroom.shift == 'morning' ? 'Manhã' : classroom.shift == 'afternoon' ? 'Tarde' : 'Noite' %><br>
+                  <strong>Alunos:</strong> <%= classroom.students.count %>
+                </small>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  <% end %>
 <% else %>
 <div class="card mb-4">
   <div class="card-header">

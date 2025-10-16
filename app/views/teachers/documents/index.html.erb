@@ -66,13 +66,14 @@
           <div class="table-responsive">
             <table class="table table-hover">
               <thead>
-                <tr>
+                <thead>
                   <th>Título</th>
                   <th>Tipo</th>
                   <th>Disciplina</th>
+                  <th class="text-center">Anexo</th>
                   <th>Criado em</th>
                   <th>Ações</th>
-                </tr>
+                </thead>
               </thead>
               <tbody>
                 <% @my_documents.each do |document| %>
@@ -105,6 +106,15 @@
                         <span class="text-muted">Geral</span>
                       <% end %>
                     </td>
+                    <td class="text-center">
+                      <% if document.attachment.attached? %>
+                        <i class="fas fa-paperclip text-success" title="Arquivo anexado (Active Storage)"></i>
+                      <% elsif document.file_path.present? && File.exist?(document.file_path) %>
+                        <i class="fas fa-file text-warning" title="Arquivo legado"></i>
+                      <% else %>
+                        <i class="fas fa-file-slash text-muted" title="Sem anexo"></i>
+                      <% end %>
+                    </td>
                     <td>
                       <%= document.created_at.strftime("%d/%m/%Y") %>
                       <br>
@@ -118,7 +128,7 @@
                         <%= link_to edit_teachers_document_path(document), class: "btn btn-outline-secondary", title: "Editar" do %>
                           <i class="fas fa-edit"></i>
                         <% end %>
-                        <% if document.attachment.present? %>
+                        <% if document.attachment.attached? || (document.file_path.present? && File.exist?(document.file_path)) %>
                           <%= link_to download_teachers_document_path(document), class: "btn btn-outline-success", title: "Download" do %>
                             <i class="fas fa-download"></i>
                           <% end %>
@@ -157,13 +167,15 @@
           <div class="table-responsive">
             <table class="table table-hover">
               <thead>
-                <tr>
+                <thead>
                   <th>Título</th>
                   <th>Disciplina</th>
+                  <th>Compartilhado com</th>
                   <th>Criado por</th>
+                  <th class="text-center">Anexo</th>
                   <th>Data</th>
                   <th>Ações</th>
-                </tr>
+                </thead>
               </thead>
               <tbody>
                 <% @documents.each do |document| %>
@@ -176,14 +188,32 @@
                       <% end %>
                     </td>
                     <td>
-                      <%= document.subject.name %>
-                      <br>
-                      <small class="text-muted"><%= document.subject.classroom_name %></small>
+                      <% if document.subject %>
+                        <%= document.subject.name %>
+                        <br>
+                        <small class="text-muted"><%= document.subject.classroom_name %></small>
+                      <% else %>
+                        <span class="text-muted">Disciplina não definida</span>
+                      <% end %>
+                    </td>
+                    <td>
+                      <span class="badge bg-primary">
+                        <%= document.sharing_description %>
+                      </span>
                     </td>
                     <td>
                       <%= document.user.full_name %>
                       <br>
-                      <small class="text-muted"><%= document.user.profile.humanize %></small>
+                      <small class="text-muted"><%= document.user.user_type.humanize %></small>
+                    </td>
+                    <td class="text-center">
+                      <% if document.attachment.attached? %>
+                        <i class="fas fa-paperclip text-success" title="Arquivo anexado (Active Storage)"></i>
+                      <% elsif document.file_path.present? && File.exist?(document.file_path) %>
+                        <i class="fas fa-file text-warning" title="Arquivo legado"></i>
+                      <% else %>
+                        <i class="fas fa-file-slash text-muted" title="Sem anexo"></i>
+                      <% end %>
                     </td>
                     <td>
                       <%= document.created_at.strftime("%d/%m/%Y") %>
@@ -195,7 +225,12 @@
                         <%= link_to teachers_document_path(document), class: "btn btn-outline-primary", title: "Ver" do %>
                           <i class="fas fa-eye"></i>
                         <% end %>
-                        <% if document.attachment.present? %>
+                        <% if current_user == document.user %>
+                          <%= link_to edit_teachers_document_path(document), class: "btn btn-outline-secondary", title: "Editar" do %>
+                            <i class="fas fa-edit"></i>
+                          <% end %>
+                        <% end %>
+                        <% if document.attachment.attached? || (document.file_path.present? && File.exist?(document.file_path)) %>
                           <%= link_to download_teachers_document_path(document), class: "btn btn-outline-success", title: "Download" do %>
                             <i class="fas fa-download"></i>
                           <% end %>

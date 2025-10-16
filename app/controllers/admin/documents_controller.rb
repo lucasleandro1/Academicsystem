@@ -110,7 +110,9 @@ class Admin::DocumentsController < ApplicationController
   end
 
   def download
-    if File.exist?(@document.file_path)
+    if @document.attachment.attached?
+      redirect_to rails_blob_path(@document.attachment, disposition: "attachment")
+    elsif @document.file_path.present? && File.exist?(@document.file_path)
       # Sanitizar nome do arquivo para evitar path traversal
       safe_filename = File.basename(@document.file_name)
       send_file @document.file_path, filename: safe_filename, type: "application/octet-stream"
@@ -126,6 +128,6 @@ class Admin::DocumentsController < ApplicationController
   end
 
   def document_params
-    params.require(:document).permit(:title, :description, :document_type, :file_path, :file_name, :school_id, :user_id, :is_municipal)
+    params.require(:document).permit(:title, :description, :document_type, :attachment, :file_path, :file_name, :school_id, :user_id, :is_municipal)
   end
 end

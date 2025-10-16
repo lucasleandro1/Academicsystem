@@ -28,6 +28,7 @@ class User < ApplicationRecord
   alias_method :grades, :student_grades
   alias_method :absences, :student_absences
   alias_method :subjects, :teacher_subjects
+  alias_method :authored_documents, :teacher_documents
 
   def my_classrooms
     return Classroom.where(id: classroom_id) if student? && classroom_id.present?

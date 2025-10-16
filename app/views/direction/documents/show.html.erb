@@ -7,16 +7,22 @@
       Documento da escola <%= current_user.school.name %>
     </p>
   </div>
-  <div class="btn-group">
+  <div class="btn-group" role="group">
     <%= link_to direction_documents_path, class: "btn btn-outline-secondary" do %>
       <i class="fas fa-arrow-left"></i> Voltar
     <% end %>
-    <%= link_to edit_direction_document_path(@document), class: "btn btn-warning" do %>
+    <% if @document.attachment.attached? %>
+      <%= link_to rails_blob_path(@document.attachment, disposition: "attachment"), 
+                  class: "btn btn-outline-success", target: "_blank", title: "Baixar arquivo" do %>
+        <i class="fas fa-download"></i> Baixar
+      <% end %>
+    <% end %>
+    <%= link_to edit_direction_document_path(@document), class: "btn btn-outline-warning", title: "Editar documento" do %>
       <i class="fas fa-edit"></i> Editar
     <% end %>
     <%= link_to direction_document_path(@document), method: :delete, 
-                confirm: "Tem certeza que deseja excluir este documento?",
-                class: "btn btn-danger" do %>
+                confirm: "Tem certeza que deseja excluir este documento? Esta ação não pode ser desfeita.",
+                class: "btn btn-outline-danger", title: "Excluir documento" do %>
       <i class="fas fa-trash"></i> Excluir
     <% end %>
   </div>
@@ -93,20 +99,37 @@
         </div>
         <% end %>
 
-        <% if @document.respond_to?(:file) && @document.file.present? %>
+        <% if @document.attachment.attached? %>
+        <div class="row mb-3">
+          <div class="col-sm-3">
+            <strong>Arquivo anexado:</strong>
+          </div>
+          <div class="col-sm-9">
+            <div class="d-flex align-items-center justify-content-between">
+              <div class="d-flex align-items-center">
+                <i class="fas fa-file text-success me-2"></i>
+                <div>
+                  <span class="fw-medium"><%= @document.attachment.filename %></span><br>
+                  <small class="text-muted">
+                    <%= number_to_human_size(@document.attachment.byte_size) %> • 
+                    <%= @document.attachment.content_type %>
+                  </small>
+                </div>
+              </div>
+              <%= link_to rails_blob_path(@document.attachment, disposition: "attachment"), 
+                          class: "btn btn-sm btn-success", target: "_blank", title: "Baixar arquivo" do %>
+                <i class="fas fa-download"></i> Baixar
+              <% end %>
+            </div>
+          </div>
+        </div>
+        <% else %>
         <div class="row mb-3">
           <div class="col-sm-3">
             <strong>Arquivo:</strong>
           </div>
           <div class="col-sm-9">
-            <div class="d-flex align-items-center">
-              <i class="fas fa-file me-2"></i>
-              <span><%= @document.file.filename if @document.file.respond_to?(:filename) %></span>
-              <%= link_to "Baixar", download_direction_document_path(@document), 
-                          class: "btn btn-sm btn-primary ms-2", target: "_blank" do %>
-                <i class="fas fa-download"></i> Baixar
-              <% end %>
-            </div>
+            <span class="text-muted"><i class="fas fa-file-slash me-1"></i>Nenhum arquivo anexado</span>
           </div>
         </div>
         <% end %>
@@ -117,53 +140,47 @@
   <div class="col-lg-4">
     <div class="card">
       <div class="card-header">
-        <h5><i class="fas fa-cogs"></i> Ações</h5>
+        <h5><i class="fas fa-info"></i> Informações do Documento</h5>
       </div>
       <div class="card-body">
-        <div class="d-grid gap-2">
-          <%= link_to edit_direction_document_path(@document), class: "btn btn-warning" do %>
-            <i class="fas fa-edit"></i> Editar Documento
-          <% end %>
-          
-          <% if @document.respond_to?(:file) && @document.file.present? %>
-            <%= link_to download_direction_document_path(@document), 
-                        class: "btn btn-success", target: "_blank" do %>
-              <i class="fas fa-download"></i> Baixar Arquivo
-            <% end %>
-          <% end %>
-
-          <button type="button" class="btn btn-info" onclick="copyDocumentLink()">
-            <i class="fas fa-link"></i> Copiar Link
-          </button>
-
-          <hr>
-
-          <%= link_to direction_document_path(@document), method: :delete, 
-                      confirm: "Tem certeza que deseja excluir este documento? Esta ação não pode ser desfeita.",
-                      class: "btn btn-danger" do %>
-            <i class="fas fa-trash"></i> Excluir Documento
+        <div class="mb-3">
+          <strong class="text-muted">Escola:</strong><br>
+          <%= current_user.school.name %>
+        </div>
+        
+        <div class="mb-3">
+          <strong class="text-muted">ID do documento:</strong><br>
+          #<%= @document.id %>
+        </div>
+        
+        <% if @document.attachment.attached? %>
+        <div class="mb-3">
+          <strong class="text-muted">Arquivo anexado:</strong><br>
+          <i class="fas fa-file text-success me-1"></i>
+          <%= @document.attachment.filename %><br>
+          <small class="text-muted">
+            <%= number_to_human_size(@document.attachment.byte_size) %> • 
+            <%= @document.attachment.content_type %>
+          </small>
+        </div>
+        <% end %>
+        
+        <div class="mb-3">
+          <strong class="text-muted">Compartilhamento:</strong><br>
+          <% if @document.respond_to?(:sharing_description) %>
+            <%= @document.sharing_description %>
+          <% else %>
+            Todos os usuários da escola
           <% end %>
         </div>
-      </div>
-    </div>
-
-    <div class="card mt-3">
-      <div class="card-header">
-        <h5><i class="fas fa-info"></i> Informações do Sistema</h5>
-      </div>
-      <div class="card-body">
-        <small class="text-muted">
-          <strong>Escola:</strong> <%= current_user.school.name %><br>
-          <strong>ID do documento:</strong> #<%= @document.id %><br>
-          <% if @document.respond_to?(:file) && @document.file.present? %>
-            <strong>Tamanho do arquivo:</strong> 
-            <% if @document.file.respond_to?(:byte_size) %>
-              <%= number_to_human_size(@document.file.byte_size) %>
-            <% else %>
-              Não disponível
-            <% end %>
-          <% end %>
-        </small>
+        
+        <hr class="my-3">
+        
+        <div class="d-grid">
+          <button type="button" class="btn btn-outline-info btn-sm" onclick="copyDocumentLink()">
+            <i class="fas fa-link"></i> Copiar Link do Documento
+          </button>
+        </div>
       </div>
     </div>
   </div>

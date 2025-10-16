@@ -4,7 +4,7 @@ class Teachers::SubjectsController < ApplicationController
 
   def index
     @subjects = current_user.teacher_subjects
-                           .includes(:classroom, :school)
+                           .includes(:classroom, :school, class_schedules: :classroom)
                            .order("classrooms.name")
   end
 

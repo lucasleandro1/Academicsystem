@@ -57,9 +57,10 @@
           </div>
 
           <div class="mb-3">
-            <%= form.label :file, "Arquivo", class: "form-label" %>
-            <%= form.file_field :file, class: "form-control", accept: ".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.jpg,.jpeg,.png" %>
+            <%= form.label :attachment, "Arquivo", class: "form-label" %>
+            <%= form.file_field :attachment, class: "form-control", accept: ".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.jpg,.jpeg,.png" %>
             <div class="form-text">
+              <i class="fas fa-info-circle text-primary me-1"></i>
               Formatos aceitos: PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, TXT, JPG, JPEG, PNG (máx. 10MB)
             </div>
             <div class="invalid-feedback">Por favor, selecione um arquivo.</div>

@@ -4,6 +4,7 @@ class Teachers::AbsencesController < ApplicationController
   before_action :set_absence, only: [ :show, :edit, :update, :destroy ]
 
   def index
+    # Manter a funcionalidade original do index para não quebrar outras partes
     @subjects = current_user.teacher_subjects.includes(:classroom)
     @selected_subject = params[:subject_id] ? current_user.teacher_subjects.find(params[:subject_id]) : @subjects.first
     @absences = @selected_subject&.absences&.includes(:student) || Absence.none
@@ -11,16 +12,25 @@ class Teachers::AbsencesController < ApplicationController
   end
 
   def attendance
-    @subjects = current_user.teacher_subjects.includes(:classroom)
-    @subject = params[:subject_id] ? current_user.teacher_subjects.find(params[:subject_id]) : nil
-    @classrooms = @subject&.available_classrooms || []
-    @selected_classroom = params[:classroom_id] ? Classroom.find(params[:classroom_id]) : nil
-    @students = @selected_classroom ? @subject&.students_from_classroom(@selected_classroom.id) || [] : []
+    # Agrupar disciplinas por nome para evitar duplicação
+    all_subjects = current_user.teacher_subjects.includes(:classroom)
+    @subjects_grouped = all_subjects.group_by(&:name).map do |name, subjects|
+      representative_subject = subjects.first
+      representative_subject.define_singleton_method(:grouped_subjects) { subjects }
+      representative_subject
+    end
+
+    # Obter parâmetros
+    @selected_subject_name = params[:subject_name]
+    @selected_classroom_id = params[:classroom_id]
     @date = params[:date] ? Date.parse(params[:date]) : Date.current
 
+    # Carregar dados baseados nos parâmetros
+    load_attendance_data
+
     # Buscar faltas já registradas para esta data, disciplina e turma
-    if @subject && @selected_classroom && @date
-      existing_absences = @subject.absences.where(
+    if @current_subject && @selected_classroom && @date
+      existing_absences = @current_subject.absences.where(
         date: @date,
         user_id: @students.pluck(:id)
       )
@@ -30,11 +40,73 @@ class Teachers::AbsencesController < ApplicationController
     end
   end
 
+  def get_classrooms
+    subject_name = params[:subject_name]
+
+    if subject_name.present?
+      subject_instances = current_user.teacher_subjects.select { |s| s.name == subject_name }
+      classrooms = subject_instances.map(&:available_classrooms).flatten.uniq
+
+      render json: {
+        classrooms: classrooms.map { |c| { id: c.id, name: c.name } }
+      }
+    else
+      render json: { classrooms: [] }
+    end
+  end
+
+  def get_students
+    subject_name = params[:subject_name]
+    classroom_id = params[:classroom_id]
+    date = params[:date] ? Date.parse(params[:date]) : Date.current
+
+    if subject_name.present? && classroom_id.present?
+      classroom = Classroom.find(classroom_id)
+      subject_instances = current_user.teacher_subjects.select { |s| s.name == subject_name }
+      subject = subject_instances.find { |s| s.available_classrooms.include?(classroom) }
+
+      if subject
+        students = subject.students_from_classroom(classroom_id)
+
+        # Buscar faltas já registradas para esta data
+        existing_absences = subject.absences.where(
+          date: date,
+          user_id: students.pluck(:id)
+        )
+        absent_student_ids = existing_absences.pluck(:user_id)
+
+        render json: {
+          students: students.map { |s| {
+            id: s.id,
+            name: s.full_name,
+            email: s.email,
+            is_absent: absent_student_ids.include?(s.id)
+          } },
+          date: date.strftime("%d/%m/%Y")
+        }
+      else
+        render json: { students: [], date: date.strftime("%d/%m/%Y") }
+      end
+    else
+      render json: { students: [], date: date.strftime("%d/%m/%Y") }
+    end
+  end
+
   def bulk_create
-    @subject = current_user.teacher_subjects.find(params[:subject_id])
     @selected_classroom = Classroom.find(params[:classroom_id])
-    @students = @subject.students_from_classroom(@selected_classroom.id)
     @date = Date.parse(params[:date])
+
+    # Encontrar a instância correta da disciplina para esta turma
+    subject_name = params[:subject_name]
+    subject_instances = current_user.teacher_subjects.select { |s| s.name == subject_name }
+    @subject = subject_instances.find { |s| s.available_classrooms.include?(@selected_classroom) }
+
+    unless @subject
+      redirect_to attendance_teachers_absences_path, alert: "Disciplina não encontrada para esta turma."
+      return
+    end
+
+    @students = @subject.students_from_classroom(@selected_classroom.id)
 
     # Obter lista de alunos faltosos
     absent_student_ids = params[:absent_students] || []
@@ -62,7 +134,7 @@ class Teachers::AbsencesController < ApplicationController
     end
 
     redirect_to attendance_teachers_absences_path(
-      subject_id: @subject.id,
+      subject_name: subject_name,
       classroom_id: @selected_classroom.id,
       date: @date
     ), notice: "Chamada registrada! #{success_count} falta(s) registrada(s)."
@@ -127,11 +199,34 @@ class Teachers::AbsencesController < ApplicationController
 
   private
 
+  def load_attendance_data
+    # Inicializar variáveis vazias
+    @classrooms = []
+    @students = []
+    @subject_instances = []
+    @current_subject = nil
+    @selected_classroom = nil
+
+    # Carregar turmas se disciplina foi selecionada
+    if @selected_subject_name.present?
+      all_subjects = current_user.teacher_subjects.includes(:classroom)
+      @subject_instances = all_subjects.select { |s| s.name == @selected_subject_name }
+      @classrooms = @subject_instances.map(&:available_classrooms).flatten.uniq
+
+      # Carregar alunos se turma foi selecionada
+      if @selected_classroom_id.present? && @classrooms.any? { |c| c.id.to_s == @selected_classroom_id.to_s }
+        @selected_classroom = @classrooms.find { |c| c.id.to_s == @selected_classroom_id.to_s }
+        @current_subject = @subject_instances.find { |s| s.available_classrooms.include?(@selected_classroom) }
+        @students = @current_subject&.students_from_classroom(@selected_classroom_id) || []
+      end
+    end
+  end
+
   def set_absence
     @absence = Absence.joins(:subject).where(subjects: { user_id: current_user.id }).find(params[:id])
   end
 
   def absence_params
-    params.require(:absence).permit(:subject_id, :user_id, :date, :justified)
+    params.require(:absence).permit(:subject_id, :user_id, :date, :justified, :justification)
   end
 end

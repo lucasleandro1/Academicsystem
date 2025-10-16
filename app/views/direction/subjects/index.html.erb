@@ -198,8 +198,8 @@
             <!-- Estatísticas -->
             <div class="row mb-3">
               <div class="col-6 text-center">
-                <h4 class="text-primary">1</h4>
-                <small class="text-muted">Turma</small>
+                <h4 class="text-primary"><%= subject.classrooms_count %></h4>
+                <small class="text-muted"><%= subject.classrooms_count == 1 ? "Turma" : "Turmas" %></small>
               </div>
               <div class="col-6 text-center">
                 <h4 class="text-success"><%= subject.students.count %></h4>
@@ -211,10 +211,11 @@
             <div class="mb-2">
               <small class="text-muted">Turma:</small>
               <br>
-              <% if subject.classroom.present? %>
-                <span class="badge bg-light text-dark"><%= subject.classroom.name %></span>
+              <% classroom_name = subject.classroom_name %>
+              <% if classroom_name == "Não atribuída" %>
+                <span class="badge bg-warning text-dark">Não atribuída</span>
               <% else %>
-                <span class="badge bg-warning text-dark">Não definida</span>
+                <span class="badge bg-light text-dark"><%= classroom_name %></span>
               <% end %>
             </div>
           </div>

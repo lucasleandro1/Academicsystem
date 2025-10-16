@@ -1,0 +1,144 @@
+<% content_for :title, @document.title %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h1><i class="fas fa-file-alt"></i> <%= @document.title %></h1>
+    <p class="text-muted mb-0">
+      Documento da escola <%= current_user.school.name %>
+    </p>
+  </div>
+  <div class="btn-group" role="group">
+    <%= link_to teachers_documents_path, class: "btn btn-outline-secondary" do %>
+      <i class="fas fa-arrow-left"></i> Voltar
+    <% end %>
+    <% if @document.attachment.attached? %>
+      <%= link_to rails_blob_path(@document.attachment, disposition: "attachment"), 
+                  class: "btn btn-outline-success", target: "_blank", title: "Baixar arquivo" do %>
+        <i class="fas fa-download"></i> Baixar
+      <% end %>
+    <% end %>
+    <% if current_user == @document.user %>
+      <%= link_to edit_teachers_document_path(@document), class: "btn btn-outline-warning", title: "Editar documento" do %>
+        <i class="fas fa-edit"></i> Editar
+      <% end %>
+    <% end %>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title"><%= @document.title %></h5>
+        
+        <% if @document.description.present? %>
+          <p class="card-text"><%= @document.description %></p>
+        <% end %>
+
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <strong>Tipo:</strong> <%= @document.type_description %>
+          </div>
+          <div class="col-md-6">
+            <strong>Criado em:</strong> <%= @document.created_at.strftime("%d/%m/%Y às %H:%M") %>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <strong>Disciplina:</strong> 
+            <% if @document.subject %>
+              <%= @document.subject.name %>
+            <% else %>
+              <span class="text-muted">Geral</span>
+            <% end %>
+          </div>
+          <div class="col-md-6">
+            <strong>Criado por:</strong> <%= @document.user.full_name %>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <strong>Compartilhado com:</strong>
+          <span class="badge bg-primary"><%= @document.sharing_description %></span>
+        </div>
+
+        <% if @document.attachment.attached? %>
+          <div class="mb-3">
+            <strong>Arquivo anexado:</strong><br>
+            <div class="d-flex align-items-center justify-content-between mt-2">
+              <div class="d-flex align-items-center">
+                <i class="fas fa-file text-success me-2"></i>
+                <div>
+                  <span class="fw-medium"><%= @document.attachment.filename %></span><br>
+                  <small class="text-muted">
+                    <%= number_to_human_size(@document.attachment.byte_size) %> • 
+                    <%= @document.attachment.content_type %>
+                  </small>
+                </div>
+              </div>
+              <%= link_to rails_blob_path(@document.attachment, disposition: "attachment"), 
+                          class: "btn btn-sm btn-success", target: "_blank", title: "Baixar arquivo" do %>
+                <i class="fas fa-download"></i> Baixar
+              <% end %>
+            </div>
+          </div>
+        <% else %>
+          <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i>
+            Este documento não possui arquivo anexado.
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-header">
+        <h6 class="mb-0"><i class="fas fa-info-circle"></i> Informações Adicionais</h6>
+      </div>
+      <div class="card-body">
+        <% if @document.subject&.classroom %>
+          <div class="mb-3">
+            <strong>Turma da Disciplina:</strong><br>
+            <small class="text-muted"><%= @document.subject.classroom_name %></small>
+          </div>
+        <% end %>
+
+        <% if @document.classroom %>
+          <div class="mb-3">
+            <strong>Turma Específica:</strong><br>
+            <small class="text-muted"><%= @document.classroom.name %></small>
+          </div>
+        <% end %>
+
+        <div class="mb-3">
+          <strong>Escopo:</strong><br>
+          <small class="text-muted">
+            <% case @document.sharing_type %>
+            <% when 'all_students' %>
+              Documento visível para todos os alunos da escola
+            <% when 'all_subject_students' %>
+              Documento visível para todos os alunos matriculados na disciplina
+            <% when 'specific_classroom' %>
+              Documento visível apenas para os alunos da turma específica
+            <% when 'specific_student' %>
+              Documento visível apenas para um aluno específico
+            <% else %>
+              Escopo não definido
+            <% end %>
+          </small>
+        </div>
+
+        <% if @document.is_municipal? %>
+          <div class="mb-3">
+            <span class="badge bg-warning text-dark">
+              <i class="fas fa-building"></i> Documento Municipal
+            </span>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

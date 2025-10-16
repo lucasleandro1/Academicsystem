@@ -5,7 +5,7 @@ class Students::SubjectsController < ApplicationController
   def index
     return redirect_to students_root_path, alert: "Você não está em nenhuma turma." unless current_user.classroom
 
-    @subjects = current_user.classroom.subjects.includes(:user, :classroom)
+    @subjects = current_user.classroom.subjects.includes(:user, :classroom, class_schedules: :classroom)
     @current_semester = determine_current_semester
     @academic_year = Date.current.year
   end
@@ -23,6 +23,7 @@ class Students::SubjectsController < ApplicationController
     @teacher = @subject.user
     @classroom = @subject.classroom
     @class_schedules = ClassSchedule.where(subject: @subject)
+                                  .includes(:classroom)
                                   .order(:weekday, :start_time)
 
     # Estatísticas básicas

@@ -53,8 +53,9 @@
           </div>
           <div class="col-sm-9">
             <%= @absence.subject.name %>
-            <% if @absence.subject.classroom %>
-              <small class="text-muted">- <%= @absence.subject.classroom.name %></small>
+            <% classroom_name = @absence.subject.classroom_name %>
+            <% unless classroom_name == "Não atribuída" %>
+              <small class="text-muted">- <%= classroom_name %></small>
             <% end %>
           </div>
         </div>

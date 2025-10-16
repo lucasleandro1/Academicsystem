@@ -1,0 +1,187 @@
+<% content_for :title, "Editar Documento" %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1><i class="fas fa-edit"></i> Editar Documento</h1>
+  <%= link_to teachers_documents_path, class: "btn btn-outline-secondary" do %>
+    <i class="fas fa-arrow-left"></i> Voltar
+  <% end %>
+</div>
+
+<div class="row">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-body">
+        <%= form_with model: [:teachers, @document], local: true, multipart: true do |form| %>
+          <% if @document.errors.any? %>
+            <div class="alert alert-danger">
+              <h6>Erro ao atualizar documento:</h6>
+              <ul class="mb-0">
+                <% @document.errors.full_messages.each do |message| %>
+                  <li><%= message %></li>
+                <% end %>
+              </ul>
+            </div>
+          <% end %>
+
+          <div class="mb-3">
+            <%= form.label :title, class: "form-label" %>
+            <%= form.text_field :title, class: "form-control", placeholder: "Ex: Material de Apoio - Capítulo 1" %>
+          </div>
+
+          <div class="mb-3">
+            <%= form.label :description, class: "form-label" %>
+            <%= form.text_area :description, class: "form-control", rows: 3, placeholder: "Descreva brevemente o conteúdo do documento..." %>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <%= form.label :document_type, "Tipo", class: "form-label" %>
+                <%= form.select :document_type, 
+                    options_for_select([
+                      ["Boletim", "boletim"],
+                      ["Histórico Escolar", "historico"],
+                      ["Comunicado", "comunicado"],
+                      ["Regulamento", "regulamento"],
+                      ["Circular", "circular"],
+                      ["Ata", "ata"],
+                      ["Certificado", "certificado"],
+                      ["Declaração", "declaracao"],
+                      ["Outros", "outros"]
+                    ], @document.document_type), 
+                    { prompt: "Selecione o tipo" }, 
+                    { class: "form-select" } %>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <%= form.label :subject_id, "Disciplina", class: "form-label" %>
+                <%= form.select :subject_id, 
+                    @subjects, 
+                    { prompt: "Geral (sem disciplina específica)", selected: @document.subject_id }, 
+                    { class: "form-select" } %>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <%= form.label :sharing_type, "Opções de Compartilhamento", class: "form-label" %>
+            <%= form.select :sharing_type, [
+              ['Todos os alunos da escola', 'all_students'],
+              ['Todos os alunos da disciplina', 'all_subject_students'],
+              ['Turma específica', 'specific_classroom'],
+              ['Aluno específico', 'specific_student']
+            ], { selected: @document.sharing_type || 'all_subject_students' }, { class: "form-select", id: "sharing_type_select" } %>
+            <small class="form-text text-muted">Escolha com quem deseja compartilhar este documento</small>
+          </div>
+
+          <div class="mb-3" id="classroom_select_div" style="display: none;">
+            <%= form.label :classroom_id, "Selecionar Turma", class: "form-label" %>
+            <%= form.select :classroom_id, 
+                options_from_collection_for_select(@classrooms, :id, :name, @document.classroom_id), 
+                { prompt: "Escolha uma turma" }, 
+                { class: "form-select" } %>
+          </div>
+
+          <div class="mb-3" id="student_select_div" style="display: none;">
+            <%= form.label :user_id, "Selecionar Aluno", class: "form-label" %>
+            <%= form.select :user_id, 
+                options_from_collection_for_select(@students, :id, :full_name, @document.user_id), 
+                { prompt: "Escolha um aluno" }, 
+                { class: "form-select" } %>
+          </div>
+
+          <div class="mb-3">
+            <%= form.label :attachment, "Arquivo", class: "form-label" %>
+            <% if @document.attachment.attached? %>
+              <div class="mb-2">
+                <small class="text-muted">
+                  Arquivo atual: <strong><%= @document.attachment.filename %></strong>
+                  (<%= number_to_human_size(@document.attachment.byte_size) %>)
+                </small>
+              </div>
+            <% end %>
+            <%= form.file_field :attachment, class: "form-control", accept: ".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.png,.jpg,.jpeg" %>
+            <small class="form-text text-muted">
+              Formatos aceitos: PDF, DOC, DOCX, PPT, PPTX, XLS, XLSX, TXT, PNG, JPG, JPEG (máx. 10MB)
+              <br>Deixe em branco para manter o arquivo atual.
+            </small>
+          </div>
+
+          <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+            <%= link_to teachers_documents_path, class: "btn btn-outline-secondary me-md-2" do %>
+              <i class="fas fa-times"></i> Cancelar
+            <% end %>
+            <%= form.submit "Atualizar Documento", class: "btn btn-primary" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-header">
+        <h6 class="mb-0"><i class="fas fa-info-circle"></i> Informações</h6>
+      </div>
+      <div class="card-body">
+        <h6>Tipos de Documento:</h6>
+        <ul class="small">
+          <li><strong>Boletim:</strong> Notas e avaliações</li>
+          <li><strong>Histórico:</strong> Registro acadêmico</li>
+          <li><strong>Comunicado:</strong> Informações gerais</li>
+          <li><strong>Outro:</strong> Comunicados, orientações gerais</li>
+        </ul>
+
+        <hr>
+
+        <h6>Visibilidade:</h6>
+        <ul class="small">
+          <li><strong>Todos os alunos da escola:</strong> Visível para todos os estudantes</li>
+          <li><strong>Todos os alunos da disciplina:</strong> Apenas alunos matriculados na disciplina</li>
+          <li><strong>Turma específica:</strong> Apenas alunos da turma selecionada</li>
+          <li><strong>Aluno específico:</strong> Apenas para o aluno escolhido</li>
+        </ul>
+
+        <hr>
+
+        <h6>Formatos Recomendados:</h6>
+        <ul class="small">
+          <li><strong>PDF:</strong> Para materiais finalizados</li>
+          <li><strong>DOC/DOCX:</strong> Para textos editáveis</li>
+          <li><strong>PPT/PPTX:</strong> Para apresentações</li>
+          <li><strong>Imagens:</strong> Para esquemas e diagramas</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const sharingTypeSelect = document.getElementById('sharing_type_select');
+  const classroomDiv = document.getElementById('classroom_select_div');
+  const studentDiv = document.getElementById('student_select_div');
+
+  function toggleSharingOptions() {
+    const selectedValue = sharingTypeSelect.value;
+    
+    // Ocultar todos os campos primeiro
+    classroomDiv.style.display = 'none';
+    studentDiv.style.display = 'none';
+    
+    // Mostrar o campo relevante
+    if (selectedValue === 'specific_classroom') {
+      classroomDiv.style.display = 'block';
+    } else if (selectedValue === 'specific_student') {
+      studentDiv.style.display = 'block';
+    }
+  }
+
+  // Executar na carga da página
+  toggleSharingOptions();
+  
+  // Executar quando o valor mudar
+  sharingTypeSelect.addEventListener('change', toggleSharingOptions);
+});
+</script>

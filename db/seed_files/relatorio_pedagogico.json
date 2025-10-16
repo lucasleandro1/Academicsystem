@@ -1,0 +1,34 @@
+{
+  "escola": {
+    "nome": "Colégio Estadual Dom Pedro II",
+    "cnpj": "12.345.678/0001-90",
+    "endereco": "Rua da Educação, 456 - Centro - São Paulo/SP",
+    "telefone": "(11) 3456-7890",
+    "email": "secretaria@dompedroii.edu.br"
+  },
+  "estatisticas_3_bimestre": {
+    "total_alunos": 150,
+    "aprovados": 142,
+    "reprovados": 8,
+    "media_geral": 7.6,
+    "disciplinas_com_maior_dificuldade": [
+      "Física",
+      "Química",
+      "Matemática"
+    ],
+    "disciplinas_com_melhor_desempenho": [
+      "Educação Física",
+      "Artes",
+      "Geografia"
+    ],
+    "eventos_realizados": 3,
+    "participacao_pais_reunioes": "87%"
+  },
+  "metas_4_bimestre": [
+    "Melhorar desempenho em Física e Química",
+    "Aumentar participação dos pais",
+    "Implementar projeto de reforço escolar",
+    "Organizar feira de profissões",
+    "Preparar alunos para ENEM 2025"
+  ]
+}

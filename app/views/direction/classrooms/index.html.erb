@@ -162,25 +162,26 @@
                 <small class="text-muted">Alunos</small>
               </div>
               <div class="col-4 text-center">
-                <h4 class="text-success"><%= classroom.subjects.count %></h4>
+                <h4 class="text-success"><%= classroom.class_schedules.joins(:subject).distinct.count('subjects.id') %></h4>
                 <small class="text-muted">Disciplinas</small>
               </div>
               <div class="col-4 text-center">
-                <h4 class="text-info"><%= classroom.subjects.joins(:user).distinct.count %></h4>
+                <h4 class="text-info"><%= classroom.class_schedules.joins(subject: :user).distinct.count('users.id') %></h4>
                 <small class="text-muted">Professores</small>
               </div>
             </div>
 
             <!-- Principais disciplinas -->
-            <% if classroom.subjects.any? %>
+            <% schedule_subjects = classroom.class_schedules.joins(:subject).distinct.pluck('subjects.name') %>
+            <% if schedule_subjects.any? %>
               <div class="mb-3">
                 <small class="text-muted">Principais Disciplinas:</small>
                 <br>
-                <% classroom.subjects.limit(3).each do |subject| %>
-                  <span class="badge bg-secondary me-1"><%= subject.name %></span>
+                <% schedule_subjects.first(3).each do |subject_name| %>
+                  <span class="badge bg-secondary me-1"><%= subject_name %></span>
                 <% end %>
-                <% if classroom.subjects.count > 3 %>
-                  <small class="text-muted">+<%= classroom.subjects.count - 3 %> mais</small>
+                <% if schedule_subjects.count > 3 %>
+                  <small class="text-muted">+<%= schedule_subjects.count - 3 %> mais</small>
                 <% end %>
               </div>
             <% end %>

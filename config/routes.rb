@@ -106,11 +106,18 @@ Rails.application.routes.draw do
 
   namespace :teachers do
     resources :classrooms, only: [ :index, :show ]
-    resources :grades
+    resources :grades do
+      collection do
+        get :get_classrooms
+        get :get_students
+      end
+    end
     resources :absences do
       collection do
         get :attendance
         post :bulk_create
+        get :get_classrooms
+        get :get_students
       end
     end
     resources :subjects, only: [ :index, :show ] do

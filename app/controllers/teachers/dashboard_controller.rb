@@ -4,7 +4,7 @@ class Teachers::DashboardController < ApplicationController
 
   def index
     @teacher = current_user
-    @subjects = @teacher.teacher_subjects.includes(:classroom, :school)
+    @subjects = @teacher.teacher_subjects.includes(:classroom, :school, class_schedules: :classroom)
     @recent_messages = @teacher.received_messages.unread.recent.limit(5)
     @total_students = total_students_count
     @classes_today = classes_today

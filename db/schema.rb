@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_09_19_011116) do
+ActiveRecord::Schema[8.0].define(version: 2025_10_16_153748) do
   create_table "absences", force: :cascade do |t|
     t.integer "subject_id", null: false
     t.date "date"
@@ -20,6 +20,34 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_19_011116) do
     t.integer "user_id", null: false
     t.index ["subject_id"], name: "index_absences_on_subject_id"
     t.index ["user_id"], name: "index_absences_on_user_id"
+  end
+
+  create_table "active_storage_attachments", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "record_type", null: false
+    t.bigint "record_id", null: false
+    t.bigint "blob_id", null: false
+    t.datetime "created_at", null: false
+    t.index ["blob_id"], name: "index_active_storage_attachments_on_blob_id"
+    t.index ["record_type", "record_id", "name", "blob_id"], name: "index_active_storage_attachments_uniqueness", unique: true
+  end
+
+  create_table "active_storage_blobs", force: :cascade do |t|
+    t.string "key", null: false
+    t.string "filename", null: false
+    t.string "content_type"
+    t.text "metadata"
+    t.string "service_name", null: false
+    t.bigint "byte_size", null: false
+    t.string "checksum"
+    t.datetime "created_at", null: false
+    t.index ["key"], name: "index_active_storage_blobs_on_key", unique: true
+  end
+
+  create_table "active_storage_variant_records", force: :cascade do |t|
+    t.bigint "blob_id", null: false
+    t.string "variation_digest", null: false
+    t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
   create_table "calendars", force: :cascade do |t|
@@ -78,7 +106,12 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_19_011116) do
     t.boolean "is_municipal"
     t.string "file_path"
     t.string "file_name"
+    t.integer "subject_id"
+    t.string "sharing_type", default: "all_students"
+    t.integer "classroom_id"
+    t.index ["classroom_id"], name: "index_documents_on_classroom_id"
     t.index ["school_id"], name: "index_documents_on_school_id"
+    t.index ["subject_id"], name: "index_documents_on_subject_id"
     t.index ["user_id"], name: "index_documents_on_user_id"
   end
 
@@ -185,12 +218,16 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_19_011116) do
 
   add_foreign_key "absences", "subjects"
   add_foreign_key "absences", "users"
+  add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "calendars", "schools"
   add_foreign_key "class_schedules", "classrooms"
   add_foreign_key "class_schedules", "schools"
   add_foreign_key "class_schedules", "subjects"
   add_foreign_key "classrooms", "schools"
+  add_foreign_key "documents", "classrooms"
   add_foreign_key "documents", "schools"
+  add_foreign_key "documents", "subjects"
   add_foreign_key "documents", "users"
   add_foreign_key "events", "schools"
   add_foreign_key "grades", "schools"

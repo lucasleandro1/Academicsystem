@@ -26,6 +26,10 @@ class Classroom < ApplicationRecord
     "#{name} - #{academic_year} (#{shift.humanize})"
   end
 
+  def simple_name
+    "#{name} - #{academic_year}"
+  end
+
   def student_count
     students.count
   end

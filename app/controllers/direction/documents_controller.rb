@@ -98,20 +98,8 @@ class Direction::DocumentsController < ApplicationController
       return
     end
 
-    if @document.respond_to?(:file) && @document.file.present?
-      if @document.file.respond_to?(:download)
-        send_data @document.file.download,
-                  filename: @document.file.filename.to_s,
-                  type: @document.file.content_type,
-                  disposition: "attachment"
-      elsif @document.file.respond_to?(:path)
-        send_file @document.file.path,
-                  filename: @document.title + File.extname(@document.file.path),
-                  type: @document.file.content_type || "application/octet-stream",
-                  disposition: "attachment"
-      else
-        redirect_to direction_document_path(@document), alert: "Arquivo não disponível para download."
-      end
+    if @document.attachment.attached?
+      redirect_to rails_blob_path(@document.attachment, disposition: "attachment")
     else
       redirect_to direction_document_path(@document), alert: "Nenhum arquivo anexado a este documento."
     end
@@ -121,6 +109,6 @@ class Direction::DocumentsController < ApplicationController
 
 
   def document_params
-    params.require(:document).permit(:title, :description, :document_type, :file)
+    params.require(:document).permit(:title, :description, :document_type, :attachment)
   end
 end

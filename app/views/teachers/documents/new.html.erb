@@ -52,21 +52,39 @@
               <div class="mb-3">
                 <%= form.label :subject_id, "Disciplina", class: "form-label" %>
                 <%= form.select :subject_id, 
-                    options_from_collection_for_select(@subjects, :id, :name), 
-                    { prompt: "Selecione a disciplina" }, 
+                    @subjects, 
+                    { prompt: "Geral (sem disciplina específica)" }, 
                     { class: "form-select" } %>
-                <small class="form-text text-muted">Deixe em branco para documento geral</small>
+                <small class="form-text text-muted">Escolha a disciplina para associar o documento</small>
               </div>
             </div>
           </div>
 
           <div class="mb-3">
-            <%= form.label :user_id, "Compartilhar com Aluno Específico", class: "form-label" %>
+            <%= form.label :sharing_type, "Opções de Compartilhamento", class: "form-label" %>
+            <%= form.select :sharing_type, [
+              ['Todos os alunos da escola', 'all_students'],
+              ['Todos os alunos da disciplina', 'all_subject_students'],
+              ['Turma específica', 'specific_classroom'],
+              ['Aluno específico', 'specific_student']
+            ], { selected: 'all_subject_students' }, { class: "form-select", id: "sharing_type_select" } %>
+            <small class="form-text text-muted">Escolha com quem deseja compartilhar este documento</small>
+          </div>
+
+          <div class="mb-3" id="classroom_select_div" style="display: none;">
+            <%= form.label :classroom_id, "Selecionar Turma", class: "form-label" %>
+            <%= form.select :classroom_id, 
+                options_from_collection_for_select(@classrooms, :id, :name), 
+                { prompt: "Escolha uma turma" }, 
+                { class: "form-select" } %>
+          </div>
+
+          <div class="mb-3" id="student_select_div" style="display: none;">
+            <%= form.label :user_id, "Selecionar Aluno", class: "form-label" %>
             <%= form.select :user_id, 
                 options_from_collection_for_select(@students, :id, :full_name), 
-                { prompt: "Todos os alunos da disciplina" }, 
+                { prompt: "Escolha um aluno" }, 
                 { class: "form-select" } %>
-            <small class="form-text text-muted">Deixe em branco para disponibilizar para todos os alunos</small>
           </div>
 
           <div class="mb-3">
@@ -106,8 +124,10 @@
 
         <h6>Visibilidade:</h6>
         <ul class="small">
-          <li>Se não selecionar aluno específico, o documento ficará disponível para todos os alunos da disciplina</li>
-          <li>Documentos gerais (sem disciplina) ficam visíveis para todos seus alunos</li>
+          <li><strong>Todos os alunos da escola:</strong> Visível para todos os estudantes</li>
+          <li><strong>Todos os alunos da disciplina:</strong> Apenas alunos matriculados na disciplina</li>
+          <li><strong>Turma específica:</strong> Apenas alunos da turma selecionada</li>
+          <li><strong>Aluno específico:</strong> Apenas para o aluno escolhido</li>
         </ul>
 
         <hr>
@@ -123,3 +143,32 @@
     </div>
   </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const sharingTypeSelect = document.getElementById('sharing_type_select');
+  const classroomDiv = document.getElementById('classroom_select_div');
+  const studentDiv = document.getElementById('student_select_div');
+
+  function toggleSharingOptions() {
+    const selectedValue = sharingTypeSelect.value;
+    
+    // Ocultar todos os campos primeiro
+    classroomDiv.style.display = 'none';
+    studentDiv.style.display = 'none';
+    
+    // Mostrar o campo relevante
+    if (selectedValue === 'specific_classroom') {
+      classroomDiv.style.display = 'block';
+    } else if (selectedValue === 'specific_student') {
+      studentDiv.style.display = 'block';
+    }
+  }
+
+  // Executar na carga da página
+  toggleSharingOptions();
+  
+  // Executar quando o valor mudar
+  sharingTypeSelect.addEventListener('change', toggleSharingOptions);
+});
+</script>

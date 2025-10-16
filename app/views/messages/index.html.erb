@@ -42,7 +42,15 @@
       </div>
     <% end %>
   </div>
-</div> 
+</div>
+
+<!-- Mensagens -->
+<div class="row">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">
+        <h5>
+          <i class="bi bi-inbox"></i> Mensagens Recebidas
           <% if @unread_count > 0 %>
             <span class="badge bg-danger"><%= @unread_count %></span>
           <% end %>

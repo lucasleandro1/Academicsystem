@@ -30,10 +30,10 @@
           <% end %>
 
           <div class="row">
-            <div class="col-md-6 mb-3">
-              <%= form.label :subject_id, "Disciplina", class: "form-label" %>
-              <%= form.select :subject_id, 
-                  options_from_collection_for_select(@subjects, :id, :name, @grade.subject_id), 
+            <div class="col-md-4 mb-3">
+              <%= form.label :subject_name, "Disciplina", class: "form-label" %>
+              <%= form.select :subject_name, 
+                  options_for_select(@subjects_grouped.map { |s| [s.name, s.name] }, @selected_subject_name), 
                   { prompt: "Selecione uma disciplina" }, 
                   { class: "form-select", required: true, id: "subject_select" } %>
               <div class="invalid-feedback">
@@ -41,12 +41,23 @@
               </div>
             </div>
 
-            <div class="col-md-6 mb-3">
+            <div class="col-md-4 mb-3">
+              <%= form.label :classroom_id, "Turma", class: "form-label" %>
+              <%= form.select :classroom_id, 
+                  @classrooms.any? ? options_from_collection_for_select(@classrooms, :id, :name, @selected_classroom_id) : "",
+                  { prompt: @selected_subject_name ? "Selecione a turma" : "Primeiro selecione uma disciplina" }, 
+                  { class: "form-select", required: true, id: "classroom_select", disabled: @classrooms.empty? } %>
+              <div class="invalid-feedback">
+                Por favor, selecione uma turma.
+              </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
               <%= form.label :user_id, "Aluno", class: "form-label" %>
               <%= form.select :user_id, 
-                  options_from_collection_for_select(@students, :id, :full_name, @grade.user_id), 
-                  { prompt: "Selecione um aluno" }, 
-                  { class: "form-select", required: true, id: "student_select" } %>
+                  @students.any? ? options_from_collection_for_select(@students, :id, :full_name, @selected_user_id || @grade.user_id) : "",
+                  { prompt: @selected_classroom ? "Selecione um aluno" : "Primeiro selecione disciplina e turma" }, 
+                  { class: "form-select", required: true, id: "student_select", disabled: @students.empty? } %>
               <div class="invalid-feedback">
                 Por favor, selecione um aluno.
               </div>
@@ -152,16 +163,122 @@
     }, false);
   })();
 
-  // Atualizar lista de alunos quando disciplina muda
-  document.getElementById('subject_select').addEventListener('change', function() {
-    var subjectId = this.value;
-    var studentSelect = document.getElementById('student_select');
+  // Atualizar formulário dinamicamente com AJAX
+  document.addEventListener('DOMContentLoaded', function() {
+    const subjectSelect = document.getElementById('subject_select');
+    const classroomSelect = document.getElementById('classroom_select');
+    const studentSelect = document.getElementById('student_select');
     
-    if (subjectId) {
-      // Aqui você pode fazer uma requisição AJAX para buscar os alunos da disciplina
-      // Por enquanto, mantemos todos os alunos visíveis
-    } else {
-      studentSelect.innerHTML = '<option value="">Selecione primeiro uma disciplina</option>';
+    if (subjectSelect && classroomSelect && studentSelect) {
+      
+      // Função para carregar turmas
+      function loadClassrooms(subjectName, preserveSelection = false) {
+        if (!subjectName) {
+          classroomSelect.innerHTML = '<option value="">Selecione uma disciplina primeiro</option>';
+          classroomSelect.disabled = true;
+          studentSelect.innerHTML = '<option value="">Primeiro selecione disciplina e turma</option>';
+          studentSelect.disabled = true;
+          return;
+        }
+
+        const currentValue = preserveSelection ? classroomSelect.value : '';
+        classroomSelect.innerHTML = '<option value="">Carregando...</option>';
+        classroomSelect.disabled = true;
+        studentSelect.innerHTML = '<option value="">Selecione uma turma primeiro</option>';
+        studentSelect.disabled = true;
+        
+        fetch(`/teachers/grades/get_classrooms?subject_name=${encodeURIComponent(subjectName)}`, {
+          headers: {
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        })
+        .then(response => response.json())
+        .then(data => {
+          classroomSelect.innerHTML = '<option value="">Selecione a turma</option>';
+          
+          data.classrooms.forEach(classroom => {
+            const option = document.createElement('option');
+            option.value = classroom.id;
+            option.textContent = classroom.name;
+            if (currentValue && classroom.id.toString() === currentValue) {
+              option.selected = true;
+            }
+            classroomSelect.appendChild(option);
+          });
+          
+          classroomSelect.disabled = false;
+          
+          // Se havia uma turma selecionada, carregar alunos automaticamente
+          if (currentValue && classroomSelect.value) {
+            loadStudents(subjectName, classroomSelect.value, true);
+          }
+        })
+        .catch(error => {
+          console.error('Erro ao carregar turmas:', error);
+          classroomSelect.innerHTML = '<option value="">Erro ao carregar turmas</option>';
+          classroomSelect.disabled = false;
+        });
+      }
+      
+      // Função para carregar alunos
+      function loadStudents(subjectName, classroomId, preserveSelection = false) {
+        if (!classroomId || !subjectName) {
+          studentSelect.innerHTML = '<option value="">Selecione uma turma primeiro</option>';
+          studentSelect.disabled = true;
+          return;
+        }
+
+        const currentValue = preserveSelection ? studentSelect.value : '';
+        studentSelect.innerHTML = '<option value="">Carregando...</option>';
+        studentSelect.disabled = true;
+        
+        fetch(`/teachers/grades/get_students?subject_name=${encodeURIComponent(subjectName)}&classroom_id=${classroomId}`, {
+          headers: {
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        })
+        .then(response => response.json())
+        .then(data => {
+          studentSelect.innerHTML = '<option value="">Selecione o aluno</option>';
+          
+          data.students.forEach(student => {
+            const option = document.createElement('option');
+            option.value = student.id;
+            option.textContent = student.name;
+            if (currentValue && student.id.toString() === currentValue) {
+              option.selected = true;
+            }
+            studentSelect.appendChild(option);
+          });
+          
+          studentSelect.disabled = false;
+        })
+        .catch(error => {
+          console.error('Erro ao carregar alunos:', error);
+          studentSelect.innerHTML = '<option value="">Erro ao carregar alunos</option>';
+          studentSelect.disabled = false;
+        });
+      }
+      
+      // Event listeners
+      subjectSelect.addEventListener('change', function() {
+        loadClassrooms(this.value, false);
+      });
+      
+      classroomSelect.addEventListener('change', function() {
+        loadStudents(subjectSelect.value, this.value, false);
+      });
+      
+      // Inicialização: se há disciplina selecionada e turmas não estão carregadas via AJAX
+      if (subjectSelect.value && classroomSelect.options.length <= 1) {
+        loadClassrooms(subjectSelect.value, true);
+      }
+      // Se disciplina e turma estão selecionadas, mas alunos não estão carregados
+      else if (subjectSelect.value && classroomSelect.value && studentSelect.options.length <= 1) {
+        loadStudents(subjectSelect.value, classroomSelect.value, true);
+      }
     }
   });
 </script>

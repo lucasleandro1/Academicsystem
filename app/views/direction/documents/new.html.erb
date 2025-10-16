@@ -67,10 +67,10 @@
             <h6 class="text-muted border-bottom pb-2">Arquivo</h6>
             
             <div class="mb-3">
-              <%= form.label :file, "Selecionar Arquivo", class: "form-label" %>
-              <%= form.file_field :file, class: "form-control", accept: ".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png" %>
+              <%= form.label :attachment, "Selecionar Arquivo", class: "form-label" %>
+              <%= form.file_field :attachment, class: "form-control", accept: ".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.html,.svg,.json,.pbm" %>
               <div class="form-text">
-                Formatos aceitos: PDF, DOC, DOCX, TXT, JPG, JPEG, PNG. Tamanho máximo: 10MB
+                Formatos aceitos: PDF, DOC, DOCX, TXT, JPG, JPEG, PNG, HTML, SVG, JSON. Tamanho máximo: 10MB
               </div>
             </div>
           </div>

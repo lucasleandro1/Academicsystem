@@ -48,16 +48,41 @@
                       </td>
                     </tr>
                     <tr>
-                      <th>Arquivo:</th>
+                      <th>Arquivo anexado:</th>
                       <td>
-                        <% if @document.respond_to?(:file) && @document.file.present? %>
-                          <%= link_to download_admin_document_path(@document), 
-                                      class: "btn btn-outline-primary btn-sm" do %>
-                            <i class="fas fa-download me-1"></i>
-                            Baixar Arquivo
-                          <% end %>
+                        <% if @document.attachment.attached? %>
+                          <div class="d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                              <i class="fas fa-file text-success me-2"></i>
+                              <div>
+                                <span class="fw-medium"><%= @document.attachment.filename %></span><br>
+                                <small class="text-muted">
+                                  <%= number_to_human_size(@document.attachment.byte_size) %> • 
+                                  <%= @document.attachment.content_type %>
+                                </small>
+                              </div>
+                            </div>
+                            <%= link_to rails_blob_path(@document.attachment, disposition: "attachment"), 
+                                        class: "btn btn-outline-success btn-sm", target: "_blank", title: "Baixar arquivo" do %>
+                              <i class="fas fa-download"></i> Baixar
+                            <% end %>
+                          </div>
+                        <% elsif @document.file_path.present? && @document.file_name.present? %>
+                          <div class="d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                              <i class="fas fa-file text-warning me-2"></i>
+                              <div>
+                                <span class="fw-medium"><%= @document.file_name %></span><br>
+                                <small class="text-muted">Arquivo legado do sistema</small>
+                              </div>
+                            </div>
+                            <%= link_to download_admin_document_path(@document), 
+                                        class: "btn btn-outline-primary btn-sm" do %>
+                              <i class="fas fa-download me-1"></i> Baixar
+                            <% end %>
+                          </div>
                         <% else %>
-                          <span class="text-muted">Nenhum arquivo anexado</span>
+                          <span class="text-muted"><i class="fas fa-file-slash me-1"></i>Nenhum arquivo anexado</span>
                         <% end %>
                       </td>
                     </tr>
@@ -101,10 +126,26 @@
                     <%= @document.updated_at.strftime("%d/%m/%Y às %H:%M") if @document.updated_at %>
                   </div>
 
-                  <% if @document.respond_to?(:file_size) && @document.file_size %>
+                  <% if @document.attachment.attached? %>
                     <div class="mb-2">
-                      <small class="text-muted">Tamanho do arquivo:</small><br>
-                      <%= number_to_human_size(@document.file_size) %>
+                      <small class="text-muted">Arquivo anexado:</small><br>
+                      <i class="fas fa-file text-success me-1"></i>
+                      <%= @document.attachment.filename %><br>
+                      <small class="text-muted">
+                        <%= number_to_human_size(@document.attachment.byte_size) %> • 
+                        <%= @document.attachment.content_type %>
+                      </small>
+                    </div>
+                  <% elsif @document.file_name.present? %>
+                    <div class="mb-2">
+                      <small class="text-muted">Arquivo (sistema legado):</small><br>
+                      <i class="fas fa-file text-warning me-1"></i>
+                      <%= @document.file_name %><br>
+                      <% if @document.respond_to?(:file_size) && @document.file_size %>
+                        <small class="text-muted">
+                          <%= number_to_human_size(@document.file_size) %>
+                        </small>
+                      <% end %>
                     </div>
                   <% end %>
                 </div>
@@ -121,7 +162,12 @@
               <% end %>
             </div>
             <div>
-              <% if @document.respond_to?(:file) && @document.file.present? %>
+              <% if @document.attachment.attached? %>
+                <%= link_to rails_blob_path(@document.attachment, disposition: "attachment"), 
+                            class: "btn btn-success me-2", target: "_blank" do %>
+                  <i class="fas fa-download"></i> Baixar
+                <% end %>
+              <% elsif @document.file_path.present? && @document.file_name.present? %>
                 <%= link_to download_admin_document_path(@document), 
                             class: "btn btn-success me-2" do %>
                   <i class="fas fa-download"></i> Baixar

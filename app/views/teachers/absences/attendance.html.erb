@@ -18,9 +18,9 @@
         <%= form_tag attendance_teachers_absences_path, method: :get, local: true do %>
           <div class="row">
             <div class="col-md-4 mb-3">
-              <%= label_tag :subject_id, "Disciplina", class: "form-label" %>
-              <%= select_tag :subject_id, 
-                  options_from_collection_for_select(@subjects, :id, :name, @subject&.id),
+              <%= label_tag :subject_name, "Disciplina", class: "form-label" %>
+              <%= select_tag :subject_name, 
+                  options_for_select(@subjects_grouped.map { |s| [s.name, s.name] }, @selected_subject_name),
                   { prompt: "Selecione a disciplina", class: "form-select", required: true, id: "subject_select" } %>
             </div>
 
@@ -28,7 +28,7 @@
               <%= label_tag :classroom_id, "Turma", class: "form-label" %>
               <%= select_tag :classroom_id, 
                   @classrooms.any? ? options_from_collection_for_select(@classrooms, :id, :name, @selected_classroom&.id) : "",
-                  { prompt: @subject ? "Selecione a turma" : "Primeiro selecione uma disciplina", 
+                  { prompt: @selected_subject_name ? "Selecione a turma" : "Primeiro selecione uma disciplina", 
                     class: "form-select", required: true, id: "classroom_select", disabled: @classrooms.empty? } %>
             </div>
 
@@ -40,8 +40,8 @@
 
           <div class="d-flex gap-2">
             <%= submit_tag "Carregar Turma", class: "btn btn-primary" %>
-            <% if @subject && @selected_classroom && @date %>
-              <%= link_to "Nova Falta Individual", new_teachers_absence_path(subject_id: @subject.id), class: "btn btn-outline-secondary" %>
+            <% if @current_subject && @selected_classroom && @date %>
+              <%= link_to "Nova Falta Individual", new_teachers_absence_path(subject_id: @current_subject.id), class: "btn btn-outline-secondary" %>
             <% end %>
           </div>
         <% end %>
@@ -49,7 +49,7 @@
     </div>
 
     <!-- Lista de Alunos para Chamada -->
-    <% if @subject && @selected_classroom && @students.any? %>
+    <% if @current_subject && @selected_classroom && @students.any? %>
       <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
           <h5><i class="fas fa-users"></i> Lista de Chamada - <%= @selected_classroom.name %></h5>
@@ -57,7 +57,7 @@
         </div>
         <div class="card-body">
           <%= form_tag bulk_create_teachers_absences_path, local: true do %>
-            <%= hidden_field_tag :subject_id, @subject.id %>
+            <%= hidden_field_tag :subject_name, @selected_subject_name %>
             <%= hidden_field_tag :classroom_id, @selected_classroom.id %>
             <%= hidden_field_tag :date, @date %>
 
@@ -126,7 +126,7 @@
           <% end %>
         </div>
       </div>
-    <% elsif @subject && @selected_classroom %>
+    <% elsif @current_subject && @selected_classroom %>
       <div class="alert alert-info">
         <i class="fas fa-info-circle"></i>
         <strong>Nenhum aluno encontrado</strong><br>
@@ -136,7 +136,7 @@
   </div>
 
   <div class="col-md-4">
-    <% if @subject && @selected_classroom %>
+    <% if @current_subject && @selected_classroom %>
       <!-- Informações da Turma -->
       <div class="card">
         <div class="card-header">
@@ -145,7 +145,7 @@
         <div class="card-body">
           <div class="mb-3">
             <strong>Disciplina:</strong><br>
-            <span class="text-muted"><%= @subject.name %></span>
+            <span class="text-muted"><%= @current_subject.name %></span>
           </div>
           
           <div class="mb-3">
@@ -209,31 +209,144 @@
 document.addEventListener('DOMContentLoaded', function() {
   const subjectSelect = document.getElementById('subject_select');
   const classroomSelect = document.getElementById('classroom_select');
+  const dateInput = document.querySelector('input[name="date"]');
   
   if (subjectSelect && classroomSelect) {
-    subjectSelect.addEventListener('change', function() {
-      const subjectId = this.value;
-      
-      if (subjectId) {
-        const url = new URL(window.location);
-        url.searchParams.set('subject_id', subjectId);
-        url.searchParams.delete('classroom_id');
-        window.location.href = url.toString();
+    
+    // Função para carregar turmas
+    function loadClassrooms(subjectName, preserveSelection = false) {
+      if (!subjectName) {
+        classroomSelect.innerHTML = '<option value="">Selecione uma disciplina primeiro</option>';
+        classroomSelect.disabled = true;
+        clearStudentsList();
+        return;
       }
+
+      const currentValue = preserveSelection ? classroomSelect.value : '';
+      classroomSelect.innerHTML = '<option value="">Carregando...</option>';
+      classroomSelect.disabled = true;
+      clearStudentsList();
+      
+      fetch(`/teachers/absences/get_classrooms?subject_name=${encodeURIComponent(subjectName)}`, {
+        headers: {
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        classroomSelect.innerHTML = '<option value="">Selecione a turma</option>';
+        
+        data.classrooms.forEach(classroom => {
+          const option = document.createElement('option');
+          option.value = classroom.id;
+          option.textContent = classroom.name;
+          if (currentValue && classroom.id.toString() === currentValue) {
+            option.selected = true;
+          }
+          classroomSelect.appendChild(option);
+        });
+        
+        classroomSelect.disabled = false;
+        
+        // Se havia uma turma selecionada, carregar lista automaticamente
+        if (currentValue && classroomSelect.value) {
+          loadStudents();
+        }
+      })
+      .catch(error => {
+        console.error('Erro ao carregar turmas:', error);
+        classroomSelect.innerHTML = '<option value="">Erro ao carregar turmas</option>';
+        classroomSelect.disabled = false;
+      });
+    }
+
+    // Quando disciplina muda, carrega turmas
+    subjectSelect.addEventListener('change', function() {
+      loadClassrooms(this.value, false);
     });
     
-    classroomSelect.addEventListener('change', function() {
-      const classroomId = this.value;
-      const subjectId = document.getElementById('subject_select').value;
+    // Quando turma muda, carrega alunos
+    function loadStudents() {
+      const classroomId = classroomSelect.value;
+      const subjectName = subjectSelect.value;
+      const date = dateInput ? dateInput.value : new Date().toISOString().split('T')[0];
       
-      if (classroomId && subjectId) {
-        const url = new URL(window.location);
-        url.searchParams.set('subject_id', subjectId);
-        url.searchParams.set('classroom_id', classroomId);
-        window.location.href = url.toString();
+      if (classroomId && subjectName && date) {
+        // Mostrar loading
+        showStudentsLoading();
+        
+        fetch(`/teachers/absences/get_students?subject_name=${encodeURIComponent(subjectName)}&classroom_id=${classroomId}&date=${date}`, {
+          headers: {
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        })
+        .then(response => response.json())
+        .then(data => {
+          renderStudentsList(data.students);
+          updateCounts();
+        })
+        .catch(error => {
+          console.error('Erro ao carregar alunos:', error);
+          showStudentsError();
+        });
+      } else {
+        clearStudentsList();
       }
-    });
+    }
+    
+    classroomSelect.addEventListener('change', loadStudents);
+    if (dateInput) {
+      dateInput.addEventListener('change', loadStudents);
+    }
+    
+    // Inicialização: se há disciplina selecionada e turmas não estão carregadas via AJAX
+    if (subjectSelect.value && classroomSelect.options.length <= 1) {
+      loadClassrooms(subjectSelect.value, true);
+    }
+    // Se disciplina e turma estão selecionadas, mas precisa recarregar alunos
+    else if (subjectSelect.value && classroomSelect.value) {
+      // Dados já foram carregados pelo servidor, não precisa fazer nada
+      // A menos que precise recarregar por causa da data
+    }
   }
+  
+  function clearStudentsList() {
+    const container = document.querySelector('.card .card-body');
+    const existingList = container.querySelector('.students-list-container');
+    if (existingList) {
+      existingList.remove();
+    }
+  }
+  
+  function showStudentsLoading() {
+    clearStudentsList();
+    const container = document.querySelector('.card .card-body');
+    if (container) {
+      const loadingDiv = document.createElement('div');
+      loadingDiv.className = 'students-list-container text-center p-4';
+      loadingDiv.innerHTML = '<div class="spinner-border" role="status"><span class="visually-hidden">Carregando...</span></div><br>Carregando alunos...';
+      container.appendChild(loadingDiv);
+    }
+  }
+  
+  function showStudentsError() {
+    clearStudentsList();
+    const container = document.querySelector('.card .card-body');
+    if (container) {
+      const errorDiv = document.createElement('div');
+      errorDiv.className = 'students-list-container alert alert-danger';
+      errorDiv.innerHTML = 'Erro ao carregar lista de alunos. Tente novamente.';
+      container.appendChild(errorDiv);
+    }
+  }
+  
+  function renderStudentsList(students) {
+    // Esta função será implementada quando necessário
+    // Por ora, manteremos o comportamento atual
+  }
+}
   
   // Adicionar listeners para os radio buttons
   const radioButtons = document.querySelectorAll('input[type="radio"][name^="attendance_"]');

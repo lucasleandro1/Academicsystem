@@ -69,6 +69,7 @@
             <tr>
               <th>Documento</th>
               <th>Tipo</th>
+              <th>Anexo</th>
               <th>Escola</th>
               <th>Municipal</th>
               <th>Data</th>
@@ -87,6 +88,15 @@
                 </td>
                 <td>
                   <span class="badge bg-info"><%= document.document_type&.humanize || "N/A" %></span>
+                </td>
+                <td class="text-center">
+                  <% if document.attachment.attached? %>
+                    <i class="fas fa-paperclip text-success" title="Arquivo anexado (Active Storage)"></i>
+                  <% elsif document.file_path.present? %>
+                    <i class="fas fa-file text-warning" title="Arquivo legado"></i>
+                  <% else %>
+                    <i class="fas fa-file-slash text-muted" title="Sem anexo"></i>
+                  <% end %>
                 </td>
                 <td>
                   <%= document.school.name %>

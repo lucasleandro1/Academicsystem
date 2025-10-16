@@ -58,11 +58,22 @@
             </div>
 
             <div class="col-md-6">
-              <%= form.label :file, "Arquivo", class: "form-label" %>
-              <%= form.file_field :file, class: "form-control", accept: ".pdf,.doc,.docx,.xls,.xlsx" %>
-              <% if @document.respond_to?(:file) && @document.file.present? %>
+              <%= form.label :attachment, "Arquivo", class: "form-label" %>
+              <%= form.file_field :attachment, class: "form-control", accept: ".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.jpg,.jpeg,.png" %>
+              <% if @document.attachment.attached? %>
+                <small class="text-success">
+                  <i class="fas fa-file me-1"></i>
+                  Arquivo atual: <%= @document.attachment.filename %>
+                </small>
+              <% elsif @document.file_name.present? %>
+                <small class="text-warning">
+                  <i class="fas fa-file me-1"></i>
+                  Arquivo legado: <%= @document.file_name %>
+                </small>
+              <% else %>
                 <small class="text-muted">
-                  Arquivo atual: <%= @document.file.filename if @document.file.respond_to?(:filename) %>
+                  <i class="fas fa-info-circle me-1"></i>
+                  Nenhum arquivo anexado
                 </small>
               <% end %>
             </div>

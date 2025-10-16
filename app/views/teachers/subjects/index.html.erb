@@ -19,7 +19,7 @@
               </div>
               <div class="card-body">
                 <p class="card-text">
-                  <strong>Turma:</strong> <%= subject.classroom&.name || 'Não definida' %><br>
+                  <strong>Turma:</strong> <%= subject.classroom_name %><br>
                   <strong>Carga Horária:</strong> <%= subject.workload %>h
                 </p>
                 <% if subject.description.present? %>

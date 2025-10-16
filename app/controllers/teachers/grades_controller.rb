@@ -5,8 +5,26 @@ class Teachers::GradesController < ApplicationController
 
   def index
     @subjects = current_user.teacher_subjects.includes(:classroom)
-    @selected_subject = params[:subject_id] ? current_user.teacher_subjects.find(params[:subject_id]) : @subjects.first
-    @grades = @selected_subject&.grades&.includes(:student) || Grade.none
+
+    # Obter turmas disponíveis para o professor
+    @classrooms = Classroom.joins(:subjects)
+                          .where(subjects: { user_id: current_user.id })
+                          .distinct
+                          .order(:name)
+
+    # Filtrar por turma se especificada
+    if params[:classroom_id].present?
+      @selected_classroom = @classrooms.find(params[:classroom_id])
+      @grades = Grade.joins(subject: :classroom)
+                    .where(subjects: { user_id: current_user.id, classroom_id: @selected_classroom.id })
+                    .includes(:student, subject: :classroom)
+                    .order(assessment_date: :desc, bimester: :desc, created_at: :desc)
+    else
+      @grades = Grade.joins(:subject)
+                    .where(subjects: { user_id: current_user.id })
+                    .includes(:student, subject: :classroom)
+                    .order(assessment_date: :desc, bimester: :desc, created_at: :desc)
+    end
   end
 
   def show
@@ -14,9 +32,30 @@ class Teachers::GradesController < ApplicationController
 
   def new
     @grade = Grade.new
-    @subjects = current_user.teacher_subjects
-    @subject = params[:subject_id] ? current_user.teacher_subjects.find(params[:subject_id]) : nil
-    @students = @subject&.students || []
+
+    # Agrupar disciplinas por nome para o seletor inicial
+    all_subjects = current_user.teacher_subjects.includes(:classroom)
+    @subjects_grouped = all_subjects.group_by(&:name).map do |name, subjects|
+      representative_subject = subjects.first
+      representative_subject.define_singleton_method(:grouped_subjects) { subjects }
+      representative_subject
+    end
+
+    # Obter parâmetros da URL ou do formulário
+    @selected_subject_name = params[:subject_name] || params.dig(:grade, :subject_name)
+    @selected_classroom_id = params[:classroom_id] || params.dig(:grade, :classroom_id)
+    @selected_user_id = params[:user_id] || params.dig(:grade, :user_id)
+
+    # Carregar dados baseados nos parâmetros
+    load_form_data
+
+    # Se há dados de erro de validação, preservar valores do formulário
+    if params[:grade].present?
+      @grade.assign_attributes(grade_params.except(:subject_name, :classroom_id))
+      @selected_subject_name ||= params[:grade][:subject_name]
+      @selected_classroom_id ||= params[:grade][:classroom_id]
+      @selected_user_id ||= params[:grade][:user_id]
+    end
   end
 
   def edit
@@ -24,22 +63,97 @@ class Teachers::GradesController < ApplicationController
     @students = @grade.subject.students
   end
 
-  def create
-    @grade = Grade.new(grade_params)
+  def get_classrooms
+    subject_name = params[:subject_name]
 
-    if @grade.save
-      redirect_to teachers_grades_path(subject_id: @grade.subject_id), notice: "Nota registrada com sucesso."
+    if subject_name.present?
+      subject_instances = current_user.teacher_subjects.select { |s| s.name == subject_name }
+      classrooms = subject_instances.map(&:available_classrooms).flatten.uniq
+
+      render json: {
+        classrooms: classrooms.map { |c| { id: c.id, name: c.name } }
+      }
     else
-      @subjects = current_user.teacher_subjects
-      @subject = Subject.find(grade_params[:subject_id]) if grade_params[:subject_id]
-      @students = @subject&.students || []
-      render :new
+      render json: { classrooms: [] }
     end
+  end
+
+  def get_students
+    subject_name = params[:subject_name]
+    classroom_id = params[:classroom_id]
+
+    if subject_name.present? && classroom_id.present?
+      classroom = Classroom.find(classroom_id)
+      subject_instances = current_user.teacher_subjects.select { |s| s.name == subject_name }
+      subject = subject_instances.find { |s| s.available_classrooms.include?(classroom) }
+
+      if subject
+        students = subject.students_from_classroom(classroom_id)
+        render json: {
+          students: students.map { |s| { id: s.id, name: s.full_name } }
+        }
+      else
+        render json: { students: [] }
+      end
+    else
+      render json: { students: [] }
+    end
+  end
+
+  def create
+    # Encontrar a disciplina correta baseada no nome e turma
+    subject_name = params[:grade][:subject_name]
+    classroom_id = params[:grade][:classroom_id]
+
+    if subject_name.present? && classroom_id.present?
+      classroom = Classroom.find(classroom_id)
+      subject_instances = current_user.teacher_subjects.select { |s| s.name == subject_name }
+      subject = subject_instances.find { |s| s.available_classrooms.include?(classroom) }
+
+      if subject
+        # Criar os parâmetros corretos com o subject_id encontrado
+        grade_params_with_subject = grade_params.except(:subject_name, :classroom_id).merge(subject_id: subject.id)
+        @grade = Grade.new(grade_params_with_subject)
+
+        if @grade.save
+          redirect_to teachers_grades_path(classroom_id: classroom_id), notice: "Nota registrada com sucesso."
+          return
+        end
+      else
+        @grade = Grade.new(grade_params.except(:subject_name, :classroom_id))
+        @grade.errors.add(:subject_id, "não encontrada para esta turma")
+      end
+    else
+      @grade = Grade.new(grade_params.except(:subject_name, :classroom_id))
+      @grade.errors.add(:base, "Disciplina e turma devem ser selecionadas")
+    end
+
+    # Se chegou até aqui, houve erro - recarregar dados para o formulário
+    all_subjects = current_user.teacher_subjects.includes(:classroom)
+    @subjects_grouped = all_subjects.group_by(&:name).map do |name, subjects|
+      representative_subject = subjects.first
+      representative_subject.define_singleton_method(:grouped_subjects) { subjects }
+      representative_subject.define_singleton_method(:all_classrooms) do
+        subjects.map(&:available_classrooms).flatten.uniq
+      end
+      representative_subject
+    end
+
+    @selected_subject_name = subject_name
+    @subject_instances = all_subjects.select { |s| s.name == subject_name } if subject_name
+    @classrooms = @subject_instances&.map(&:available_classrooms)&.flatten&.uniq || []
+    @selected_classroom = classroom_id.present? ? Classroom.find(classroom_id) : nil
+    @students = @selected_classroom && @subject_instances ?
+                @subject_instances.find { |s| s.available_classrooms.include?(@selected_classroom) }&.students_from_classroom(@selected_classroom.id) || [] :
+                []
+
+    render :new
   end
 
   def update
     if @grade.update(grade_params)
-      redirect_to teachers_grades_path(subject_id: @grade.subject_id), notice: "Nota atualizada com sucesso."
+      classroom_id = @grade.subject.classroom_id
+      redirect_to teachers_grades_path(classroom_id: classroom_id), notice: "Nota atualizada com sucesso."
     else
       @subjects = current_user.teacher_subjects
       @students = @grade.subject.students
@@ -48,9 +162,9 @@ class Teachers::GradesController < ApplicationController
   end
 
   def destroy
-    subject_id = @grade.subject_id
+    classroom_id = @grade.subject.classroom_id
     @grade.destroy
-    redirect_to teachers_grades_path(subject_id: subject_id), notice: "Nota removida com sucesso."
+    redirect_to teachers_grades_path(classroom_id: classroom_id), notice: "Nota removida com sucesso."
   end
 
   private
@@ -59,7 +173,30 @@ class Teachers::GradesController < ApplicationController
     @grade = Grade.joins(:subject).where(subjects: { user_id: current_user.id }).find(params[:id])
   end
 
+  def load_form_data
+    # Inicializar variáveis vazias
+    @classrooms = []
+    @students = []
+    @subject_instances = []
+    @current_subject = nil
+    @selected_classroom = nil
+
+    # Carregar turmas se disciplina foi selecionada
+    if @selected_subject_name.present?
+      all_subjects = current_user.teacher_subjects.includes(:classroom)
+      @subject_instances = all_subjects.select { |s| s.name == @selected_subject_name }
+      @classrooms = @subject_instances.map(&:available_classrooms).flatten.uniq
+
+      # Carregar alunos se turma foi selecionada
+      if @selected_classroom_id.present? && @classrooms.any? { |c| c.id.to_s == @selected_classroom_id.to_s }
+        @selected_classroom = @classrooms.find { |c| c.id.to_s == @selected_classroom_id.to_s }
+        @current_subject = @subject_instances.find { |s| s.available_classrooms.include?(@selected_classroom) }
+        @students = @current_subject&.students_from_classroom(@selected_classroom_id) || []
+      end
+    end
+  end
+
   def grade_params
-    params.require(:grade).permit(:subject_id, :user_id, :bimester, :value, :grade_type)
+    params.require(:grade).permit(:subject_id, :subject_name, :classroom_id, :user_id, :bimester, :value, :grade_type)
   end
 end

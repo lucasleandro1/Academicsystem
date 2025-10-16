@@ -4,7 +4,7 @@ class Direction::SubjectsController < ApplicationController
   before_action :set_subject, only: [ :show, :edit, :update, :destroy ]
 
   def index
-    @subjects = current_user.school.subjects.includes(:classroom, :user)
+    @subjects = current_user.school.subjects.includes(:classroom, :user, class_schedules: :classroom)
 
     # Aplicar filtros
     @subjects = @subjects.where("name LIKE ?", "%#{params[:search]}%") if params[:search].present?
@@ -15,7 +15,7 @@ class Direction::SubjectsController < ApplicationController
 
   def show
     @grades = @subject.grades.includes(:student)
-    @class_schedules = @subject.class_schedules
+    @class_schedules = @subject.class_schedules.includes(:classroom)
   end
 
   def new

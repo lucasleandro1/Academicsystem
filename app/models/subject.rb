@@ -6,9 +6,10 @@ class Subject < ApplicationRecord
   has_many :grades, dependent: :destroy
   has_many :absences, dependent: :destroy
   has_many :class_schedules, dependent: :destroy
+  has_many :documents, dependent: :destroy
 
   validates :name, :workload, presence: true
-  validates :name, uniqueness: { scope: [ :school_id ] }
+  validates :name, uniqueness: { scope: [ :school_id, :classroom_id ] }
   validates :workload, numericality: { greater_than: 0 }
   validates :code, uniqueness: { scope: :school_id }, allow_blank: true
   validates :area, inclusion: {
@@ -99,6 +100,20 @@ class Subject < ApplicationRecord
         "Não atribuída"
       end
     end
+  end
+
+  def classrooms_count
+    # Conta o número total de turmas que esta disciplina atende
+    classrooms = []
+
+    # Adicionar turma direta se existir
+    classrooms << classroom if classroom.present?
+
+    # Adicionar turmas via horários
+    classrooms_from_schedules = class_schedules.joins(:classroom).includes(:classroom).map(&:classroom).uniq
+    classrooms.concat(classrooms_from_schedules)
+
+    classrooms.uniq.count
   end
 
   private
