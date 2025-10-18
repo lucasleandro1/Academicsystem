@@ -32,117 +32,117 @@
       <div class="card bg-light">
         <div class="card-body text-center">
           <h6 class="card-title mb-1">Total de Notas</h6>
-          <h3 class="text-primary mb-0"><%= @grades.count %></h3>
+          <h3 class="text-primary mb-0"><%= @grades.total_count %></h3>
+          <small class="text-muted">Página <%= @grades.current_page %> de <%= @grades.total_pages %></small>
         </div>
       </div>
     </div>
   </div>
 
   <% if @grades.any? %>
-    <% grades_by_classroom = @grades.group_by { |grade| grade.subject.classroom } %>
-    
-    <% grades_by_classroom.each do |classroom, grades| %>
-      <div class="card mb-4">
-        <div class="card-header">
-          <div class="d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">
-              <i class="fas fa-users text-primary me-2"></i>
-              <%= classroom&.simple_name || "Turma não definida" %>
-            </h5>
-            <span class="badge bg-primary fs-6"><%= grades.count %> nota<%= 's' if grades.count != 1 %></span>
-          </div>
-        </div>
-        <div class="card-body p-0">
-          <% grades_by_subject = grades.group_by(&:subject) %>
-          
-          <% grades_by_subject.each_with_index do |(subject, subject_grades), index| %>
-            <div class="border-bottom <%= 'border-0' if index == grades_by_subject.count - 1 %>">
-              <div class="px-3 py-2 bg-light">
-                <h6 class="mb-0 text-muted">
-                  <i class="fas fa-book me-1"></i>
-                  <%= subject.name %> 
-                  <small class="badge bg-secondary ms-2"><%= subject_grades.count %> nota<%= 's' if subject_grades.count != 1 %></small>
-                </h6>
-              </div>
-              
-              <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                  <thead class="table-light">
-                    <tr>
-                      <th width="25%">Aluno</th>
-                      <th width="15%">Bimestre</th>
-                      <th width="15%">Tipo</th>
-                      <th width="10%">Nota</th>
-                      <th width="15%">Data</th>
-                      <th width="20%">Ações</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <% subject_grades.each do |grade| %>
-                      <tr>
-                        <td>
-                          <div class="d-flex align-items-center">
-                            <div class="rounded-circle bg-primary text-white me-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; font-size: 14px;">
-                              <%= grade.student.full_name.first.upcase %>
-                            </div>
-                            <div>
-                              <div class="fw-medium"><%= grade.student.full_name %></div>
-                              <small class="text-muted"><%= grade.assessment_name %></small>
-                            </div>
-                          </div>
-                        </td>
-                        <td>
-                          <span class="badge bg-secondary fs-7"><%= grade.bimester %>º Bimestre</span>
-                        </td>
-                        <td>
-                          <span class="badge bg-light text-dark border">
-                            <i class="fas fa-<%= case grade.grade_type
-                              when 'prova' then 'file-alt'
-                              when 'trabalho' then 'tasks'
-                              when 'atividade' then 'pencil-alt'
-                              when 'participacao' then 'comments'
-                              when 'projeto' then 'project-diagram'
-                              when 'recuperacao' then 'redo'
-                              else 'clipboard'
-                            end %> me-1"></i>
-                            <%= grade.grade_type.humanize %>
-                          </span>
-                        </td>
-                        <td>
-                          <span class="badge fs-6 <%= grade.value >= 7 ? 'bg-success' : grade.value >= 5 ? 'bg-warning text-dark' : 'bg-danger' %>">
-                            <%= number_with_precision(grade.value, precision: 1) %>/<%= grade.max_value %>
-                          </span>
-                        </td>
-                        <td>
-                          <small class="text-muted">
-                            <i class="fas fa-calendar me-1"></i>
-                            <%= l(grade.assessment_date, format: :short) %>
-                          </small>
-                        </td>
-                        <td>
-                          <div class="btn-group btn-group-sm" role="group">
-                            <%= link_to edit_teachers_grade_path(grade), class: "btn btn-outline-primary", title: "Editar nota" do %>
-                              <i class="fas fa-edit"></i>
-                            <% end %>
-                            <%= link_to teachers_grade_path(grade), 
-                                method: :delete, 
-                                confirm: "Tem certeza que deseja excluir esta nota de #{grade.student.full_name}?", 
-                                class: "btn btn-outline-danger", 
-                                title: "Excluir nota" do %>
-                              <i class="fas fa-trash"></i>
-                            <% end %>
-                          </div>
-                        </td>
-                      </tr>
-                    <% end %>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          <% end %>
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="fas fa-clipboard-list text-primary me-2"></i>
+          Notas Lançadas
+          <span class="badge bg-primary ms-2"><%= @grades.total_count %> total</span>
+        </h5>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead class="table-light">
+              <tr>
+                <th width="20%">Aluno</th>
+                <th width="15%">Disciplina</th>
+                <th width="12%">Turma</th>
+                <th width="10%">Bimestre</th>
+                <th width="12%">Tipo</th>
+                <th width="8%">Nota</th>
+                <th width="10%">Data</th>
+                <th width="13%">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @grades.each do |grade| %>
+                <tr>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <div class="rounded-circle bg-primary text-white me-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; font-size: 14px;">
+                        <%= grade.student.full_name.first.upcase %>
+                      </div>
+                      <div>
+                        <div class="fw-medium"><%= grade.student.full_name %></div>
+                        <small class="text-muted"><%= grade.assessment_name %></small>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="badge bg-light text-dark border">
+                      <i class="fas fa-book me-1"></i>
+                      <%= grade.subject.name %>
+                    </span>
+                  </td>
+                  <td>
+                    <% classroom = grade.subject.available_classrooms.find { |c| c.students.include?(grade.student) } %>
+                    <small class="text-muted">
+                      <%= classroom&.name || "N/A" %>
+                    </small>
+                  </td>
+                  <td>
+                    <span class="badge bg-secondary fs-7"><%= grade.bimester %>º Bim</span>
+                  </td>
+                  <td>
+                    <span class="badge bg-light text-dark border">
+                      <i class="fas fa-<%= case grade.grade_type
+                        when 'prova' then 'file-alt'
+                        when 'trabalho' then 'tasks'
+                        when 'atividade' then 'pencil-alt'
+                        when 'participacao' then 'comments'
+                        when 'projeto' then 'project-diagram'
+                        when 'recuperacao' then 'redo'
+                        else 'clipboard'
+                      end %> me-1"></i>
+                      <%= grade.grade_type.humanize %>
+                    </span>
+                  </td>
+                  <td>
+                    <span class="badge fs-6 <%= grade.value >= 7 ? 'bg-success' : grade.value >= 5 ? 'bg-warning text-dark' : 'bg-danger' %>">
+                      <%= number_with_precision(grade.value, precision: 1) %>/<%= grade.max_value %>
+                    </span>
+                  </td>
+                  <td>
+                    <small class="text-muted">
+                      <i class="fas fa-calendar me-1"></i>
+                      <%= l(grade.assessment_date, format: :short) %>
+                    </small>
+                  </td>
+                  <td>
+                    <div class="btn-group btn-group-sm" role="group">
+                      <%= link_to edit_teachers_grade_path(grade), class: "btn btn-outline-primary", title: "Editar nota" do %>
+                        <i class="fas fa-edit"></i>
+                      <% end %>
+                      <%= link_to teachers_grade_path(grade), 
+                          method: :delete, 
+                          confirm: "Tem certeza que deseja excluir esta nota de #{grade.student.full_name}?", 
+                          class: "btn btn-outline-danger", 
+                          title: "Excluir nota" do %>
+                        <i class="fas fa-trash"></i>
+                      <% end %>
+                    </div>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
         </div>
       </div>
-    <% end %>
+    </div>
+    
+    <!-- Paginação -->
+    <div class="d-flex justify-content-center mt-4">
+      <%= paginate @grades %>
+    </div>
   <% else %>
     <div class="row">
       <div class="col-12">

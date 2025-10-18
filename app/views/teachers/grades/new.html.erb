@@ -18,6 +18,8 @@
     <div class="card">
       <div class="card-body">
         <%= form_with model: [@grade], url: teachers_grades_path, local: true, class: "needs-validation", novalidate: true do |form| %>
+          <%= hidden_field_tag :form_token, "#{Time.current.to_i}_#{SecureRandom.hex(8)}" %>
+          
           <% if @grade.errors.any? %>
             <div class="alert alert-danger">
               <h6><%= pluralize(@grade.errors.count, "erro") %> impedem que a nota seja salva:</h6>
@@ -100,7 +102,42 @@
                 Por favor, informe a nota (0 a 10).
               </div>
               <div class="form-text">
-                Nota de 0 a 10
+                Nota obtida pelo aluno
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <%= form.label :max_value, "Nota Máxima", class: "form-label" %>
+              <%= form.number_field :max_value, step: 0.1, min: 0, max: 10, value: @grade.max_value || 10, class: "form-control", required: true %>
+              <div class="invalid-feedback">
+                Por favor, informe a nota máxima (0 a 10).
+              </div>
+              <div class="form-text">
+                Valor máximo da avaliação (padrão: 10)
+              </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+              <%= form.label :assessment_name, "Nome da Avaliação", class: "form-label" %>
+              <%= form.text_field :assessment_name, class: "form-control", required: true, placeholder: "Ex: P1, Trabalho 1, etc." %>
+              <div class="invalid-feedback">
+                Por favor, informe o nome da avaliação.
+              </div>
+              <div class="form-text">
+                Identificação da avaliação
+              </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+              <%= form.label :assessment_date, "Data da Avaliação", class: "form-label" %>
+              <%= form.date_field :assessment_date, value: @grade.assessment_date || Date.current, class: "form-control", required: true %>
+              <div class="invalid-feedback">
+                Por favor, informe a data da avaliação.
+              </div>
+              <div class="form-text">
+                Data em que a avaliação foi aplicada
               </div>
             </div>
           </div>
@@ -109,9 +146,7 @@
             <%= link_to teachers_grades_path, class: "btn btn-outline-secondary me-2" do %>
               <i class="fas fa-times"></i> Cancelar
             <% end %>
-            <%= form.submit "Lançar Nota", class: "btn btn-success" do %>
-              <i class="fas fa-save"></i> Lançar Nota
-            <% end %>
+            <%= form.submit "Lançar Nota", class: "btn btn-success" %>
           </div>
         <% end %>
       </div>
@@ -139,6 +174,9 @@
           <li>• Notas de 0 a 10</li>
           <li>• Use vírgula para decimais</li>
           <li>• Selecione primeiro a disciplina</li>
+          <li>• Defina o nome da avaliação</li>
+          <li>• Informe a nota máxima possível</li>
+          <li>• Data padrão é hoje</li>
         </ul>
       </div>
     </div>
@@ -152,10 +190,26 @@
     window.addEventListener('load', function() {
       var forms = document.getElementsByClassName('needs-validation');
       var validation = Array.prototype.filter.call(forms, function(form) {
+        var isSubmitting = false;
+        
         form.addEventListener('submit', function(event) {
+          // Prevenir múltiplas submissões
+          if (isSubmitting) {
+            event.preventDefault();
+            return false;
+          }
+          
           if (form.checkValidity() === false) {
             event.preventDefault();
             event.stopPropagation();
+          } else {
+            isSubmitting = true;
+            // Desabilitar o botão de submit
+            var submitButton = form.querySelector('input[type="submit"]');
+            if (submitButton) {
+              submitButton.disabled = true;
+              submitButton.value = 'Salvando...';
+            }
           }
           form.classList.add('was-validated');
         }, false);

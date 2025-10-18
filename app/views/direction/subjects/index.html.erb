@@ -50,7 +50,7 @@
 
 <!-- Estatísticas Rápidas -->
 <div class="row mb-4">
-  <div class="col-md-3">
+  <div class="col-md-4">
     <div class="card text-center">
       <div class="card-body">
         <h3 class="text-primary"><%= @subjects.count %></h3>
@@ -69,14 +69,6 @@
   <div class="col-md-4">
     <div class="card text-center">
       <div class="card-body">
-        <h3 class="text-info"><%= @subjects.joins(:user).distinct.count('users.id') %></h3>
-        <small class="text-muted">Com Professores</small>
-      </div>
-    </div>
-  </div>
-  <div class="col-md-3">
-    <div class="card text-center">
-      <div class="card-body">
         <h3 class="text-warning"><%= @subjects.joins(:classroom).distinct.count('classrooms.id') %></h3>
         <small class="text-muted">Turmas Distintas</small>
       </div>
@@ -88,7 +80,7 @@
 <div class="row">
   <% if @subjects.any? %>
     <% @subjects.each do |subject| %>
-      <div class="col-lg-6 col-md-12 mb-4">
+      <div class="col-lg-3 col-md-6 mb-4">
         <div class="card h-100">
           <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0">
@@ -303,36 +295,3 @@
     </div>
   <% end %>
 </div>
-
-<!-- Gráfico por Área -->
-<% if @subjects.any? %>
-  <div class="card mt-4">
-    <div class="card-header">
-      <h5><i class="fas fa-chart-pie"></i> Distribuição por Área</h5>
-    </div>
-    <div class="card-body">
-      <div class="row">
-        <% area_stats = @subjects.group(:area).count %>
-        <% area_names = { 
-          'languages' => 'Linguagens',
-          'mathematics' => 'Matemática',
-          'natural_sciences' => 'Ciências da Natureza',
-          'human_sciences' => 'Ciências Humanas',
-          'religious_education' => 'Ensino Religioso',
-          'physical_education' => 'Educação Física',
-          'arts' => 'Artes',
-          'technology' => 'Tecnologia'
-        } %>
-        
-        <% area_stats.each do |area, count| %>
-          <div class="col-md-3 col-6 mb-3">
-            <div class="text-center">
-              <h4 class="text-primary"><%= count %></h4>
-              <small class="text-muted"><%= area_names[area] || 'Não definida' %></small>
-            </div>
-          </div>
-        <% end %>
-      </div>
-    </div>
-  </div>
-<% end %>

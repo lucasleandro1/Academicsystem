@@ -99,7 +99,7 @@
               Disciplinas
             </div>
             <div class="h5 mb-0 font-weight-bold text-gray-800" id="total-subjects">
-              <%= @total_subjects %>
+              <%= current_user.school.subjects.count %>
             </div>
           </div>
           <div class="col-auto">
