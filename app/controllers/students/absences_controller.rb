@@ -93,6 +93,36 @@ class Students::AbsencesController < ApplicationController
         hash[subject_id][:unjustified] += count
       end
     end
+
+    # Calcular faltas por mês para cada disciplina
+    @monthly_absences = {}
+    @subjects.each do |subject|
+      monthly_data = []
+      total_absences = 0
+
+      # Últimos 12 meses
+      (11.downto(0)).each do |months_ago|
+        month_start = months_ago.months.ago.beginning_of_month
+        month_end = months_ago.months.ago.end_of_month
+        month_name = %w[Janeiro Fevereiro Março Abril Maio Junho Julho Agosto Setembro Outubro Novembro Dezembro][month_start.month - 1]
+
+        absences_count = all_absences.where(subject: subject)
+                                   .where(date: month_start..month_end)
+                                   .count
+
+        monthly_data << {
+          name: month_name,
+          count: absences_count,
+          date: month_start
+        }
+        total_absences += absences_count
+      end
+
+      @monthly_absences[subject.id] = {
+        monthly_data: monthly_data,
+        total_absences: total_absences
+      }
+    end
   end
 
   private

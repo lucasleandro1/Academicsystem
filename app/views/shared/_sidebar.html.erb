@@ -55,12 +55,6 @@
         <i class="fas fa-chart-bar"></i> Relatórios
       <% end %>
     </li>
-    
-    <li class="nav-item">
-      <%= link_to admin_settings_path, class: "nav-link #{'active' if controller_name == 'settings' && controller.class.module_parent.name.downcase == 'admin'}" do %>
-        <i class="fas fa-cogs"></i> Configurações
-      <% end %>
-    </li>
   </ul>
 
 <% when 'direction' %>
@@ -290,6 +284,12 @@
     <li class="nav-item">
       <%= link_to students_class_schedules_path, class: "nav-link #{'active' if controller_name == 'class_schedules' && controller.class.module_parent.name.downcase == 'students'}" do %>
         <i class="fas fa-calendar-week"></i> Horários
+      <% end %>
+    </li>
+    
+    <li class="nav-item">
+      <%= link_to students_documents_path, class: "nav-link #{'active' if controller_name == 'documents' && controller.class.module_parent.name.downcase == 'students'}" do %>
+        <i class="fas fa-file-alt"></i> Documentos
       <% end %>
     </li>
     

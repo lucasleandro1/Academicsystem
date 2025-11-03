@@ -15,10 +15,12 @@ FactoryBot.define do
 
     trait :justified do
       justified { true }
+      justification { "Consulta médica comprovada" }
     end
 
     trait :unjustified do
       justified { false }
+      justification { nil }
     end
 
     trait :past_date do

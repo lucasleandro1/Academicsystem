@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_10_16_153748) do
+ActiveRecord::Schema[8.0].define(version: 2025_11_03_132016) do
   create_table "absences", force: :cascade do |t|
     t.integer "subject_id", null: false
     t.date "date"
@@ -18,6 +18,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_16_153748) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "user_id", null: false
+    t.text "justification"
     t.index ["subject_id"], name: "index_absences_on_subject_id"
     t.index ["user_id"], name: "index_absences_on_user_id"
   end
@@ -210,6 +211,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_16_153748) do
     t.string "last_name"
     t.string "phone"
     t.integer "classroom_id"
+    t.string "guardian_phone"
     t.index ["classroom_id"], name: "index_users_on_classroom_id"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true

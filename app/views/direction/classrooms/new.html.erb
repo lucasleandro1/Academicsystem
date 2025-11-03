@@ -82,51 +82,33 @@
         </div>
       </div>
 
-      <!-- Configurações de Horário -->
+      <!-- Dias de Funcionamento -->
       <div class="card mb-4">
         <div class="card-header">
-          <h5 class="mb-0"><i class="fas fa-clock"></i> Configurações de Horário</h5>
+          <h5 class="mb-0"><i class="fas fa-calendar-alt"></i> Dias de Funcionamento</h5>
         </div>
         <div class="card-body">
-          <div class="row">
-            <div class="col-md-6 mb-3">
-              <%= form.label :start_time, "Horário de Início", class: "form-label" %>
-              <%= form.time_field :start_time, class: "form-control" %>
-              <div class="form-text">
-                Horário de início das aulas desta turma
-              </div>
-            </div>
-
-            <div class="col-md-6 mb-3">
-              <%= form.label :end_time, "Horário de Término", class: "form-label" %>
-              <%= form.time_field :end_time, class: "form-control" %>
-              <div class="form-text">
-                Horário de término das aulas desta turma
-              </div>
-            </div>
-
-            <div class="col-12 mb-3">
-              <%= form.label :active_days, "Dias Ativos", class: "form-label" %>
-              <div class="row">
-                <% [
-                  ['Segunda-feira', 'monday'],
-                  ['Terça-feira', 'tuesday'], 
-                  ['Quarta-feira', 'wednesday'],
-                  ['Quinta-feira', 'thursday'],
-                  ['Sexta-feira', 'friday'],
-                  ['Sábado', 'saturday']
-                ].each do |day_name, day_value| %>
-                  <div class="col-md-4 col-6">
-                    <div class="form-check">
-                      <%= form.check_box :active_days, { multiple: true, class: "form-check-input" }, day_value, "" %>
-                      <%= form.label "active_days_#{day_value}", day_name, class: "form-check-label" %>
-                    </div>
+          <div class="col-12 mb-3">
+            <%= form.label :active_days, "Dias da Semana *", class: "form-label" %>
+            <div class="row">
+              <% [
+                ['Segunda-feira', 'monday'],
+                ['Terça-feira', 'tuesday'], 
+                ['Quarta-feira', 'wednesday'],
+                ['Quinta-feira', 'thursday'],
+                ['Sexta-feira', 'friday'],
+                ['Sábado', 'saturday']
+              ].each do |day_name, day_value| %>
+                <div class="col-md-4 col-6">
+                  <div class="form-check">
+                    <%= form.check_box :active_days, { multiple: true, class: "form-check-input" }, day_value, "" %>
+                    <%= form.label "active_days_#{day_value}", day_name, class: "form-check-label" %>
                   </div>
-                <% end %>
-              </div>
-              <div class="form-text">
-                Selecione os dias da semana em que esta turma tem aulas
-              </div>
+                </div>
+              <% end %>
+            </div>
+            <div class="form-text">
+              Selecione os dias da semana em que esta turma funciona. Os horários específicos serão definidos na grade de horários.
             </div>
           </div>
         </div>
@@ -167,44 +149,24 @@
         </div>
       </div>
 
-      <!-- Status e Configurações Avançadas -->
+      <!-- Configurações Adicionais -->
       <div class="card mb-4">
         <div class="card-header">
-          <h5 class="mb-0"><i class="fas fa-cog"></i> Configurações Avançadas</h5>
+          <h5 class="mb-0"><i class="fas fa-cog"></i> Configurações Adicionais</h5>
         </div>
         <div class="card-body">
           <div class="row">
             <div class="col-md-6 mb-3">
-              <div class="form-check form-switch">
-                <%= form.check_box :active, class: "form-check-input", checked: true %>
-                <%= form.label :active, "Turma Ativa", class: "form-check-label" %>
-              </div>
-              <div class="form-text">
-                Turmas inativas não aparecem nas listagens principais
-              </div>
-            </div>
-            <!-- Configurações removidas: allow_enrollments não é mais necessário -->
-
-            <div class="col-md-6 mb-3">
-              <%= form.label :academic_year, "Ano Letivo", class: "form-label" %>
-              <%= form.number_field :academic_year, class: "form-control", 
-                                   value: Date.current.year, min: 2020, max: 2030 %>
-              <div class="form-text">
-                Ano letivo ao qual esta turma pertence
-              </div>
-            </div>
-
-            <div class="col-md-6 mb-3">
-              <%= form.label :semester, "Semestre", class: "form-label" %>
+              <%= form.label :semester, "Duração do Curso", class: "form-label" %>
               <%= form.select :semester, 
                               options_for_select([
-                                ['Anual', 'annual'],
+                                ['Curso Anual', 'annual'],
                                 ['1º Semestre', 'first'],
                                 ['2º Semestre', 'second']
                               ], 'annual'),
                               {}, { class: "form-select" } %>
               <div class="form-text">
-                Período letivo da turma
+                Define se a turma funciona o ano todo ou apenas um semestre
               </div>
             </div>
           </div>
@@ -246,21 +208,29 @@
         <ul>
           <li><strong>Nome da Turma:</strong> Identificação principal (ex: 1ª Série A, 9º Ano B)</li>
           <li><strong>Código:</strong> Identificador único opcional para controle interno</li>
-          <li><strong>Série/Ano:</strong> Nível educacional da turma</li>
-          <li><strong>Turno:</strong> Período de funcionamento da turma</li>
+          <li><strong>Nível de Ensino:</strong> Fundamental I, Fundamental II ou Ensino Médio</li>
+          <li><strong>Turno:</strong> Período de funcionamento da turma (matutino, vespertino, noturno)</li>
+          <li><strong>Ano Letivo:</strong> Ano ao qual a turma pertence</li>
         </ul>
         
-        <h6>Configurações de Horário</h6>
+        <h6>Dias de Funcionamento</h6>
         <ul>
-          <li><strong>Horários:</strong> Definem o período de aulas da turma</li>
-          <li><strong>Dias Ativos:</strong> Dias da semana com aulas regulares</li>
+          <li><strong>Dias da Semana:</strong> Selecione os dias em que a turma funciona</li>
+          <li><strong>Horários Específicos:</strong> Serão definidos posteriormente na grade de horários</li>
+        </ul>
+        
+        <h6>Localização</h6>
+        <ul>
+          <li><strong>Sala/Prédio:</strong> Informações sobre onde a turma está localizada</li>
+          <li><strong>Observações:</strong> Detalhes extras para facilitar a localização</li>
         </ul>
         
         <h6>Dicas</h6>
         <ul>
           <li>Use nomes padronizados para facilitar a organização</li>
-          <li>Defina a capacidade considerando o espaço físico disponível</li>
+          <li>Os horários específicos das aulas serão configurados na grade de horários</li>
           <li>Mantenha as informações de localização atualizadas</li>
+          <li>Selecione apenas os dias em que a turma realmente funciona</li>
         </ul>
       </div>
       <div class="modal-footer">

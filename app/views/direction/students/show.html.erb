@@ -118,8 +118,8 @@
                 <tr>
                   <td class="fw-semibold text-muted">Telefone:</td>
                   <td>
-                    <% if @student.phone.present? %>
-                      <%= @student.phone %>
+                    <% if @student.guardian_phone.present? %>
+                      <%= @student.guardian_phone %>
                     <% else %>
                       <span class="text-muted">Não informado</span>
                     <% end %>

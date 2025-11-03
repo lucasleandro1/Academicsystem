@@ -1,185 +1,134 @@
 <% content_for :title, "Grade de Horários" %>
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-  <h1><i class="fas fa-calendar-alt"></i> Grade de Horários</h1>
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1 class="h2">Grade de Horários</h1>
   <%= link_to new_direction_class_schedule_path, class: "btn btn-primary" do %>
     <i class="fas fa-plus"></i> Novo Horário
   <% end %>
 </div>
 
-<!-- Filtros -->
-<div class="card mb-4">
-  <div class="card-body">
-    <%= form_with url: direction_class_schedules_path, method: :get, local: true, class: "row g-3" do |form| %>
-      <div class="col-md-4">
-        <%= form.select :classroom_id, 
-                        options_from_collection_for_select(@classrooms, :id, :name, params[:classroom_id]),
-                        { prompt: "Todas as turmas" }, 
-                        { class: "form-select" } %>
-      </div>
-      <div class="col-md-4">
-        <%= form.select :weekday, 
-                        options_for_select([['Todos os dias', '']] + @days_of_week, params[:weekday]),
-                        {}, { class: "form-select" } %>
-      </div>
-      <div class="col-md-4">
-        <%= form.submit "Filtrar", class: "btn btn-outline-primary w-100" %>
-      </div>
+<!-- Seletor de Turma -->
+<div class="row mb-4">
+  <div class="col-12">
+    <%= form_with url: direction_class_schedules_path, method: :get, local: true, class: "d-flex align-items-center gap-3" do |form| %>
+      <label class="form-label mb-0"><strong>Turma:</strong></label>
+      <%= form.select :classroom_id, 
+                      options_from_collection_for_select(@classrooms, :id, :name, params[:classroom_id]),
+                      { prompt: "Selecione uma turma" }, 
+                      { class: "form-select", style: "width: auto;", onchange: "this.form.submit();" } %>
     <% end %>
   </div>
 </div>
 
 <!-- Grade de Horários -->
-<div class="card">
-  <div class="card-header">
-    <h5><i class="fas fa-table"></i> Horários por Turma</h5>
-  </div>
-  <div class="card-body">
+<div class="row">
+  <div class="col-12">
     <% if @selected_classroom %>
-      <!-- Horários de uma turma específica -->
-      <h6>Turma: <%= @selected_classroom.name %></h6>
+      <h4 class="mb-3">Turma: <span class="badge bg-primary"><%= @selected_classroom.name %></span></h4>
       
-      <div class="table-responsive">
-        <table class="table table-bordered">
-          <thead>
-            <tr>
-              <th>Horário</th>
-              <% @days_of_week.each do |day_name, day_number| %>
-                <th class="text-center"><%= day_name %></th>
-              <% end %>
-            </tr>
-          </thead>
-          <tbody>
-            <% time_slots = @class_schedules.map { |cs| "#{cs.start_time.strftime('%H:%M')} - #{cs.end_time.strftime('%H:%M')}" }.uniq.sort %>
-            <% time_slots.each do |time_slot| %>
-              <tr>
-                <td class="fw-bold"><%= time_slot %></td>
-                <% @days_of_week.each do |day_name, day_number| %>
-                  <td class="text-center">
-                    <% schedule = @class_schedules.find { |cs| cs.weekday == day_number && "#{cs.start_time.strftime('%H:%M')} - #{cs.end_time.strftime('%H:%M')}" == time_slot } %>
-                    <% if schedule %>
-                      <div class="badge bg-primary">
-                        <%= schedule.subject.name %>
-                      </div>
-                      <div class="small text-muted">
-                        <%= schedule.subject.teacher.full_name %>
-                      </div>
-                    <% else %>
-                      <span class="text-muted">-</span>
-                    <% end %>
-                  </td>
-                <% end %>
-              </tr>
-            <% end %>
-          </tbody>
-        </table>
-      </div>
-    <% else %>
-      <!-- Todos os horários -->
       <% if @class_schedules.any? %>
         <div class="table-responsive">
-          <table class="table table-hover">
-            <thead>
+          <table class="table table-bordered">
+            <thead class="table-light">
               <tr>
-                <th>Turma</th>
-                <th>Disciplina</th>
-                <th>Professor</th>
-                <th>Dia da Semana</th>
                 <th>Horário</th>
-                <th>Ações</th>
+                <th>Segunda</th>
+                <th>Terça</th>
+                <th>Quarta</th>
+                <th>Quinta</th>
+                <th>Sexta</th>
+                <th>Sábado</th>
               </tr>
             </thead>
             <tbody>
-              <% @class_schedules.each do |schedule| %>
+              <% 
+                # Obter slots de horários únicos dos horários cadastrados
+                time_slots = @class_schedules.map { |cs| "#{cs.start_time.strftime('%H:%M')} - #{cs.end_time.strftime('%H:%M')}" }.uniq.sort
+                
+                # Se não há horários, usar horários padrão
+                if time_slots.empty?
+                  time_slots = [
+                    "07:00 - 07:45", "07:45 - 08:30", "08:30 - 09:15", "09:30 - 10:15",
+                    "10:15 - 11:00", "11:00 - 11:45", "13:30 - 14:15", "14:15 - 15:00",
+                    "15:00 - 15:45", "16:00 - 16:45", "16:45 - 17:30"
+                  ]
+                end
+              %>
+              
+              <% time_slots.each do |time_slot| %>
                 <tr>
-                  <td>
-                    <%= link_to direction_class_schedule_path(schedule.classroom), class: "text-decoration-none" do %>
-                      <strong><%= schedule.classroom.name %></strong>
-                    <% end %>
+                  <td class="table-light">
+                    <strong><%= time_slot %></strong>
                   </td>
-                  <td>
-                    <span class="badge bg-info"><%= schedule.subject.name %></span>
-                  </td>
-                  <td>
-                    <%= schedule.subject.teacher.full_name %>
-                  </td>
-                  <td>
-                    <%= @days_of_week.find { |name, num| num == schedule.weekday }&.first %>
-                  </td>
-                  <td>
-                    <strong><%= schedule.start_time.strftime("%H:%M") %></strong>
-                    até
-                    <strong><%= schedule.end_time.strftime("%H:%M") %></strong>
-                  </td>
-                  <td>
-                    <div class="btn-group" role="group">
-                      <%= link_to edit_direction_class_schedule_path(schedule), class: "btn btn-sm btn-outline-warning", title: "Editar" do %>
-                        <i class="fas fa-edit"></i>
+                  <% (1..6).each do |day_number| %>
+                    <td>
+                      <% schedule = @class_schedules.find { |cs| cs.weekday == day_number && "#{cs.start_time.strftime('%H:%M')} - #{cs.end_time.strftime('%H:%M')}" == time_slot } %>
+                      <% if schedule %>
+                        <div class="small">
+                          <strong><%= schedule.subject.name %></strong><br>
+                          <span class="text-muted">
+                            <%= schedule.subject.teacher.full_name %>
+                          </span>
+                        </div>
                       <% end %>
-                      <%= link_to direction_class_schedule_path(schedule), method: :delete, 
-                                 class: "btn btn-sm btn-outline-danger", title: "Excluir",
-                                 confirm: "Tem certeza que deseja excluir este horário?" do %>
-                        <i class="fas fa-trash"></i>
-                      <% end %>
-                    </div>
-                  </td>
+                    </td>
+                  <% end %>
                 </tr>
               <% end %>
             </tbody>
           </table>
         </div>
       <% else %>
-        <div class="text-center py-5">
-          <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
-          <h5 class="text-muted">Nenhum horário encontrado</h5>
-          <p class="text-muted">
-            <% if params[:classroom_id].present? || params[:weekday].present? %>
-              Tente ajustar os filtros de busca.
-            <% else %>
-              Configure os primeiros horários para as turmas.
-            <% end %>
-          </p>
-          <%= link_to new_direction_class_schedule_path, class: "btn btn-primary" do %>
-            <i class="fas fa-plus"></i> Adicionar Horário
-          <% end %>
+        <div class="alert alert-info">
+          <i class="fas fa-info-circle"></i>
+          Esta turma ainda não possui horários de aula cadastrados.
         </div>
       <% end %>
+    <% else %>
+      <div class="alert alert-warning">
+        <i class="fas fa-exclamation-triangle"></i>
+        Selecione uma turma acima para visualizar sua grade de horários.
+      </div>
     <% end %>
   </div>
 </div>
 
-<!-- Estatísticas -->
+<!-- Lista de Turmas e Estatísticas -->
 <div class="row mt-4">
-  <div class="col-md-3">
-    <div class="card text-center">
-      <div class="card-body">
-        <h4 class="text-primary"><%= @classrooms.count %></h4>
-        <small class="text-muted">Turmas</small>
+  <div class="col-12">
+    <h4>Resumo das Turmas</h4>
+    <% if @classrooms.any? %>
+      <div class="row">
+        <% @classrooms.each do |classroom| %>
+          <div class="col-md-6 col-lg-4 mb-3">
+            <div class="card">
+              <div class="card-body">
+                <h6 class="card-title">
+                  <%= link_to direction_class_schedules_path(classroom_id: classroom.id), class: "text-decoration-none" do %>
+                    <%= classroom.name %>
+                  <% end %>
+                </h6>
+                <p class="card-text">
+                  <small class="text-muted">
+                    <i class="fas fa-calendar-check"></i> 
+                    <%= @class_schedules.select { |cs| cs.classroom_id == classroom.id }.count %> horários<br>
+                    <i class="fas fa-users"></i> 
+                    <%= classroom.students.count %> alunos
+                  </small>
+                </p>
+                <%= link_to direction_class_schedules_path(classroom_id: classroom.id), class: "btn btn-sm btn-outline-primary" do %>
+                  <i class="fas fa-eye"></i> Ver Grade
+                <% end %>
+              </div>
+            </div>
+          </div>
+        <% end %>
       </div>
-    </div>
-  </div>
-  <div class="col-md-3">
-    <div class="card text-center">
-      <div class="card-body">
-        <h4 class="text-info"><%= @class_schedules.count %></h4>
-        <small class="text-muted">Horários Configurados</small>
+    <% else %>
+      <div class="alert alert-warning">
+        <i class="fas fa-exclamation-triangle"></i>
+        Nenhuma turma cadastrada no sistema.
       </div>
-    </div>
-  </div>
-  <div class="col-md-3">
-    <div class="card text-center">
-      <div class="card-body">
-        <h4 class="text-success"><%= @class_schedules.select { |cs| cs.weekday.between?(1, 5) }.count %></h4>
-        <small class="text-muted">Horários Semana</small>
-      </div>
-    </div>
-  </div>
-  <div class="col-md-3">
-    <div class="card text-center">
-      <div class="card-body">
-        <h4 class="text-warning"><%= @class_schedules.select { |cs| cs.weekday == 6 }.count %></h4>
-        <small class="text-muted">Horários Sábado</small>
-      </div>
-    </div>
+    <% end %>
   </div>
 </div>

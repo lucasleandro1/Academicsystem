@@ -40,7 +40,7 @@
             </div>
 
             <div class="col-md-4 mb-3">
-              <%= form.label :event_type, "Tipo de Evento", class: "form-label" %>
+              <%= form.label :event_type, "Tipo de Evento *", class: "form-label" %>
               <%= form.select :event_type, 
                               options_for_select([
                                 ['Selecione...', ''],
@@ -51,7 +51,10 @@
                                 ['Reunião', 'reuniao'],
                                 ['Feriado', 'feriado']
                               ], @event.event_type),
-                              {}, { class: "form-select" } %>
+                              {}, { class: "form-select", required: true } %>
+              <div class="invalid-feedback">
+                Por favor, selecione o tipo do evento.
+              </div>
             </div>
 
             <div class="col-12 mb-3">
@@ -123,6 +126,15 @@
           event.preventDefault();
           event.stopPropagation();
           alert('A data de término não pode ser anterior à data de início.');
+          return false;
+        }
+        
+        // Validar se o tipo de evento foi selecionado
+        var eventType = document.getElementById('event_event_type').value;
+        if (!eventType || eventType === '') {
+          event.preventDefault();
+          event.stopPropagation();
+          alert('Por favor, selecione o tipo do evento.');
           return false;
         }
         

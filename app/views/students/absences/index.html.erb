@@ -1,59 +1,127 @@
 <% content_for :title, "Minhas Faltas" %>
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-  <h1><i class="fas fa-user-clock"></i> Minhas Faltas</h1>
-  <div class="text-muted">
-    <small>Controle de Frequência</small>
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <div>
+    <h1 class="h2">
+      <i class="fas fa-user-clock text-warning me-2"></i>
+      Minhas Faltas
+    </h1>
+    <p class="text-muted mb-0">Controle de Frequência Escolar</p>
+  </div>
+  <div class="btn-toolbar mb-2 mb-md-0">
+    <div class="btn-group me-2">
+      <%= link_to students_subjects_path, class: "btn btn-sm btn-outline-primary" do %>
+        <i class="fas fa-book"></i> Disciplinas
+      <% end %>
+      <%= link_to students_class_schedules_path, class: "btn btn-sm btn-outline-success" do %>
+        <i class="fas fa-calendar"></i> Horários
+      <% end %>
+    </div>
   </div>
 </div>
 
 <!-- Resumo de Faltas -->
 <div class="row mb-4">
-  <div class="col-md-3">
-    <div class="card text-center bg-warning text-white">
+  <div class="col-xl-3 col-md-6 mb-4">
+    <div class="card card-stat border-left-warning shadow h-100 py-2">
       <div class="card-body">
-        <h3><%= @absences.count %></h3>
-        <small>Total de Faltas</small>
+        <div class="row no-gutters align-items-center">
+          <div class="col mr-2">
+            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+              Total de Faltas
+            </div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800">
+              <%= @absences.count %>
+            </div>
+          </div>
+          <div class="col-auto">
+            <i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i>
+          </div>
+        </div>
       </div>
     </div>
   </div>
-  <div class="col-md-3">
-    <div class="card text-center bg-danger text-white">
+
+  <div class="col-xl-3 col-md-6 mb-4">
+    <div class="card card-stat border-left-danger shadow h-100 py-2">
       <div class="card-body">
-        <h3><%= @absences.where(justified: false).count %></h3>
-        <small>Faltas Injustificadas</small>
+        <div class="row no-gutters align-items-center">
+          <div class="col mr-2">
+            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+              Injustificadas
+            </div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800">
+              <%= @absences.where(justified: false).count %>
+            </div>
+          </div>
+          <div class="col-auto">
+            <i class="fas fa-times-circle fa-2x text-gray-300"></i>
+          </div>
+        </div>
       </div>
     </div>
   </div>
-  <div class="col-md-3">
-    <div class="card text-center bg-success text-white">
+
+  <div class="col-xl-3 col-md-6 mb-4">
+    <div class="card card-stat border-left-success shadow h-100 py-2">
       <div class="card-body">
-        <h3><%= @absences.where(justified: true).count %></h3>
-        <small>Faltas Justificadas</small>
+        <div class="row no-gutters align-items-center">
+          <div class="col mr-2">
+            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+              Justificadas
+            </div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800">
+              <%= @absences.where(justified: true).count %>
+            </div>
+          </div>
+          <div class="col-auto">
+            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+          </div>
+        </div>
       </div>
     </div>
   </div>
-  <div class="col-md-3">
-    <div class="card text-center bg-info text-white">
+
+  <div class="col-xl-3 col-md-6 mb-4">
+    <div class="card card-stat border-left-info shadow h-100 py-2">
       <div class="card-body">
-        <h3><%= @absences.where('created_at >= ?', Date.current.beginning_of_month).count %></h3>
-        <small>Este Mês</small>
+        <div class="row no-gutters align-items-center">
+          <div class="col mr-2">
+            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+              Este Mês
+            </div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800">
+              <%= @absences.where('date >= ?', Date.current.beginning_of_month).count %>
+            </div>
+          </div>
+          <div class="col-auto">
+            <i class="fas fa-calendar fa-2x text-gray-300"></i>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </div>
 
 <!-- Filtros -->
-<div class="card mb-4">
+<div class="card shadow mb-4">
+  <div class="card-header py-3">
+    <h6 class="m-0 font-weight-bold text-primary">
+      <i class="fas fa-filter me-2"></i>
+      Filtros de Pesquisa
+    </h6>
+  </div>
   <div class="card-body">
     <%= form_with url: students_absences_path, method: :get, local: true, class: "row g-3" do |form| %>
       <div class="col-md-3">
+        <label class="form-label text-muted small">Disciplina</label>
         <%= form.select :subject_id, 
                         options_from_collection_for_select(@subjects, :id, :name, params[:subject_id]),
                         { prompt: 'Todas as disciplinas' }, 
                         { class: "form-select" } %>
       </div>
       <div class="col-md-3">
+        <label class="form-label text-muted small">Período</label>
         <%= form.select :period, 
                         options_for_select([
                           ['Todos os períodos', ''], 
@@ -66,6 +134,7 @@
                         {}, { class: "form-select" } %>
       </div>
       <div class="col-md-3">
+        <label class="form-label text-muted small">Status</label>
         <%= form.select :status, 
                         options_for_select([
                           ['Todas', ''], 
@@ -75,51 +144,112 @@
                         {}, { class: "form-select" } %>
       </div>
       <div class="col-md-3">
+        <label class="form-label text-muted small">&nbsp;</label>
         <div class="d-grid">
-          <%= form.submit "Filtrar", class: "btn btn-outline-secondary" %>
+          <%= form.submit "Filtrar", class: "btn btn-primary" %>
         </div>
       </div>
     <% end %>
   </div>
 </div>
 
-<!-- Gráfico de Frequência por Disciplina -->
-<div class="card mb-4">
-  <div class="card-header">
-    <h5><i class="fas fa-chart-bar"></i> Frequência por Disciplina</h5>
+<!-- Faltas por Disciplina -->
+<div class="card shadow mb-4">
+  <div class="card-header py-3">
+    <h6 class="m-0 font-weight-bold text-primary">
+      <i class="fas fa-chart-bar me-2"></i>
+      Faltas por Disciplina
+    </h6>
   </div>
   <div class="card-body">
-    <% @subjects.each do |subject| %>
-      <% data = @attendance_data[subject.id] %>
-      <% next unless data %>
+    <% if @subjects.any? %>
+      <div class="table-responsive">
+        <table class="table table-bordered table-hover">
+          <thead class="table-light">
+            <tr>
+              <th class="text-center" style="min-width: 150px;">Disciplina</th>
+              <th class="text-center">Jan</th>
+              <th class="text-center">Fev</th>
+              <th class="text-center">Mar</th>
+              <th class="text-center">Abr</th>
+              <th class="text-center">Mai</th>
+              <th class="text-center">Jun</th>
+              <th class="text-center">Jul</th>
+              <th class="text-center">Ago</th>
+              <th class="text-center">Set</th>
+              <th class="text-center">Out</th>
+              <th class="text-center">Nov</th>
+              <th class="text-center">Dez</th>
+              <th class="text-center bg-primary text-white" style="min-width: 100px;">Total (%)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @subjects.each do |subject| %>
+              <% attendance_data = @attendance_data[subject.id] %>
+              <% monthly_data = @monthly_absences[subject.id] %>
+              <% next unless attendance_data && monthly_data %>
+              
+              <tr>
+                <!-- Nome da Disciplina -->
+                <td class="fw-bold text-<%= attendance_data[:attendance_rate] >= 75 ? 'success' : attendance_data[:attendance_rate] >= 50 ? 'warning' : 'danger' %>">
+                  <i class="fas fa-book me-1"></i>
+                  <%= subject.name %>
+                </td>
+                
+                <!-- Faltas por mês (Jan-Dez) -->
+                <% (1..12).each do |month_num| %>
+                  <% month_info = monthly_data[:monthly_data].find { |m| m[:date].month == month_num && m[:date].year == Date.current.year } %>
+                  <% count = month_info ? month_info[:count] : 0 %>
+                  <td class="text-center">
+                    <% if count > 0 %>
+                      <span class="badge bg-<%= count > 3 ? 'danger' : count > 1 ? 'warning' : 'primary' %>">
+                        <%= count %>
+                      </span>
+                    <% else %>
+                      <span class="text-muted">-</span>
+                    <% end %>
+                  </td>
+                <% end %>
+                
+                <!-- Percentual Total -->
+                <td class="text-center">
+                  <strong class="text-<%= attendance_data[:attendance_rate] >= 75 ? 'success' : attendance_data[:attendance_rate] >= 50 ? 'warning' : 'danger' %>">
+                    <%= attendance_data[:attendance_rate] %>%
+                  </strong>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
       
-      <div class="mb-3">
-        <div class="d-flex justify-content-between align-items-center mb-1">
-          <span class="fw-medium"><%= subject.name %></span>
-          <span class="text-muted small">
-            <%= data[:attendance_rate] %>% de presença 
-            (<%= data[:present_classes] %>/<%= data[:total_classes] %> aulas)
-          </span>
-        </div>
-        <div class="progress" style="height: 10px;">
-          <div class="progress-bar bg-<%= data[:attendance_rate] >= 75 ? 'success' : data[:attendance_rate] >= 50 ? 'warning' : 'danger' %>" 
-               style="width: <%= data[:attendance_rate] %>%"></div>
-        </div>
-        <% if data[:attendance_rate] < 75 %>
-          <small class="text-danger">
-            <i class="fas fa-exclamation-triangle"></i>
-            Atenção: Frequência abaixo do mínimo (75%)
-          </small>
-        <% end %>
+      <!-- Legenda -->
+      <div class="mt-3">
+        <small class="text-muted">
+          <strong>Legenda:</strong>
+          <span class="badge bg-primary ms-2">1 falta</span>
+          <span class="badge bg-warning ms-1">2-3 faltas</span>
+          <span class="badge bg-danger ms-1">+3 faltas</span>
+          <span class="text-muted ms-2">- = Sem faltas</span>
+        </small>
+      </div>
+    <% else %>
+      <div class="text-center py-4">
+        <i class="fas fa-book fa-3x text-muted mb-3"></i>
+        <h5 class="text-muted">Nenhuma disciplina encontrada</h5>
+        <p class="text-muted">Você não está matriculado em nenhuma disciplina no momento.</p>
       </div>
     <% end %>
   </div>
 </div>
 
 <!-- Lista de Faltas -->
-<div class="card">
-  <div class="card-header">
-    <h5><i class="fas fa-list"></i> Histórico de Faltas</h5>
+<div class="card shadow mb-4">
+  <div class="card-header py-3">
+    <h6 class="m-0 font-weight-bold text-primary">
+      <i class="fas fa-list me-2"></i>
+      Histórico de Faltas
+    </h6>
   </div>
   <div class="card-body">
     <% if @absences.any? %>
@@ -157,7 +287,7 @@
                 </td>
                 <td>
                   <% if absence.subject.teacher %>
-                    <%= absence.subject.teacher.name %>
+                    <%= absence.subject.teacher.full_name %>
                   <% else %>
                     <span class="text-muted">-</span>
                   <% end %>
@@ -236,14 +366,58 @@
    } %>
 
 <% if subjects_with_low_attendance.any? %>
-  <div class="alert alert-warning mt-4">
-    <h6><i class="fas fa-exclamation-triangle"></i> Atenção - Frequência Baixa</h6>
-    <p class="mb-2">As seguintes disciplinas estão com frequência abaixo do mínimo (75%):</p>
-    <ul class="mb-0">
-      <% subjects_with_low_attendance.each do |subject| %>
-        <% data = @attendance_data[subject.id] %>
-        <li><strong><%= subject.name %></strong> - <%= data[:attendance_rate] %>% de presença</li>
-      <% end %>
-    </ul>
+  <div class="card border-warning shadow mt-4">
+    <div class="card-header bg-warning text-white py-3">
+      <h6 class="m-0 font-weight-bold">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        Atenção - Frequência Baixa
+      </h6>
+    </div>
+    <div class="card-body">
+      <p class="mb-2 text-muted">As seguintes disciplinas estão com frequência abaixo do mínimo (75%):</p>
+      <ul class="mb-0">
+        <% subjects_with_low_attendance.each do |subject| %>
+          <% data = @attendance_data[subject.id] %>
+          <li class="mb-1">
+            <strong class="text-warning"><%= subject.name %></strong> - 
+            <span class="text-danger"><%= data[:attendance_rate] %>% de presença</span>
+          </li>
+        <% end %>
+      </ul>
+    </div>
   </div>
 <% end %>
+
+<style>
+  .border-left-primary {
+    border-left: 0.25rem solid #4e73df !important;
+  }
+  .border-left-success {
+    border-left: 0.25rem solid #1cc88a !important;
+  }
+  .border-left-info {
+    border-left: 0.25rem solid #36b9cc !important;
+  }
+  .border-left-warning {
+    border-left: 0.25rem solid #f6c23e !important;
+  }
+  .border-left-danger {
+    border-left: 0.25rem solid #e74a3b !important;
+  }
+  .text-xs {
+    font-size: 0.7rem;
+  }
+  .text-gray-800 {
+    color: #5a5c69 !important;
+  }
+  .text-gray-300 {
+    color: #dddfeb !important;
+  }
+  .card-stat {
+    transition: all 0.3s;
+  }
+  .card-stat:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15) !important;
+  }
+</style>

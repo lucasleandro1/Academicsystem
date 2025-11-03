@@ -83,45 +83,36 @@
         </div>
       </div>
 
-      <!-- Configurações de Horário -->
+      <!-- Dias de Funcionamento -->
       <div class="card mb-4">
         <div class="card-header">
-          <h5 class="mb-0"><i class="fas fa-clock"></i> Configurações de Horário</h5>
+          <h5 class="mb-0"><i class="fas fa-calendar-alt"></i> Dias de Funcionamento</h5>
         </div>
         <div class="card-body">
-          <div class="row">
-            <div class="col-md-6 mb-3">
-              <%= form.label :start_time, "Horário de Início", class: "form-label" %>
-              <%= form.time_field :start_time, class: "form-control" %>
-            </div>
-
-            <div class="col-md-6 mb-3">
-              <%= form.label :end_time, "Horário de Término", class: "form-label" %>
-              <%= form.time_field :end_time, class: "form-control" %>
-            </div>
-
-            <div class="col-12 mb-3">
-              <%= form.label :active_days, "Dias Ativos", class: "form-label" %>
-              <div class="row">
-                <% [
-                  ['Segunda-feira', 'monday'],
-                  ['Terça-feira', 'tuesday'], 
-                  ['Quarta-feira', 'wednesday'],
-                  ['Quinta-feira', 'thursday'],
-                  ['Sexta-feira', 'friday'],
-                  ['Sábado', 'saturday']
-                ].each do |day_name, day_value| %>
-                  <div class="col-md-4 col-6">
-                    <div class="form-check">
-                      <%= form.check_box :active_days, 
-                                        { multiple: true, class: "form-check-input", 
-                                          checked: @classroom.active_days&.include?(day_value) }, 
-                                        day_value, "" %>
-                      <%= form.label "active_days_#{day_value}", day_name, class: "form-check-label" %>
-                    </div>
+          <div class="col-12 mb-3">
+            <%= form.label :active_days, "Dias da Semana *", class: "form-label" %>
+            <div class="row">
+              <% [
+                ['Segunda-feira', 'monday'],
+                ['Terça-feira', 'tuesday'], 
+                ['Quarta-feira', 'wednesday'],
+                ['Quinta-feira', 'thursday'],
+                ['Sexta-feira', 'friday'],
+                ['Sábado', 'saturday']
+              ].each do |day_name, day_value| %>
+                <div class="col-md-4 col-6">
+                  <div class="form-check">
+                    <%= form.check_box :active_days, 
+                                      { multiple: true, class: "form-check-input", 
+                                        checked: @classroom.active_days&.include?(day_value) }, 
+                                      day_value, "" %>
+                    <%= form.label "active_days_#{day_value}", day_name, class: "form-check-label" %>
                   </div>
-                <% end %>
-              </div>
+                </div>
+              <% end %>
+            </div>
+            <div class="form-text">
+              Selecione os dias da semana em que esta turma funciona. Os horários específicos serão definidos na grade de horários.
             </div>
           </div>
         </div>
@@ -152,37 +143,25 @@
         </div>
       </div>
 
-      <!-- Status e Configurações Avançadas -->
+      <!-- Configurações Adicionais -->
       <div class="card mb-4">
         <div class="card-header">
-          <h5 class="mb-0"><i class="fas fa-cog"></i> Configurações Avançadas</h5>
+          <h5 class="mb-0"><i class="fas fa-cog"></i> Configurações Adicionais</h5>
         </div>
         <div class="card-body">
           <div class="row">
             <div class="col-md-6 mb-3">
-              <div class="form-check form-switch">
-                <%= form.check_box :active, class: "form-check-input" %>
-                <%= form.label :active, "Turma Ativa", class: "form-check-label" %>
-              </div>
-              <div class="form-text">
-                Turmas inativas não aparecem nas listagens principais
-              </div>
-            </div>
-
-            <div class="col-md-6 mb-3">
-              <%= form.label :academic_year, "Ano Letivo", class: "form-label" %>
-              <%= form.number_field :academic_year, class: "form-control", min: 2020, max: 2030 %>
-            </div>
-
-            <div class="col-md-6 mb-3">
-              <%= form.label :semester, "Semestre", class: "form-label" %>
+              <%= form.label :semester, "Duração do Curso", class: "form-label" %>
               <%= form.select :semester, 
                               options_for_select([
-                                ['Anual', 'annual'],
+                                ['Curso Anual', 'annual'],
                                 ['1º Semestre', 'first'],
                                 ['2º Semestre', 'second']
                               ], @classroom.semester),
                               {}, { class: "form-select" } %>
+              <div class="form-text">
+                Define se a turma funciona o ano todo ou apenas um semestre
+              </div>
             </div>
           </div>
         </div>
@@ -209,35 +188,6 @@
       </div>
 
     <% end %>
-
-    <!-- Seção de Perigo -->
-    <div class="card border-danger mt-4">
-      <div class="card-header bg-danger text-white">
-        <h5 class="mb-0"><i class="fas fa-exclamation-triangle"></i> Zona de Perigo</h5>
-      </div>
-      <div class="card-body">
-        <p class="text-muted">
-          Ações irreversíveis que afetam permanentemente esta turma.
-        </p>
-        
-        <div class="d-flex gap-2">
-          <%= link_to "#", class: "btn btn-outline-warning", 
-                     data: { confirm: "Tem certeza? Isso desativará a turma." } do %>
-            <i class="fas fa-pause"></i> Desativar Turma
-          <% end %>
-          
-          <%= link_to "#", class: "btn btn-outline-danger", 
-                     data: { confirm: "ATENÇÃO: Esta ação é irreversível! Todos os dados da turma serão perdidos." } do %>
-            <i class="fas fa-trash"></i> Excluir Turma
-          <% end %>
-        </div>
-        
-        <small class="text-muted d-block mt-2">
-          <strong>Desativar:</strong> A turma ficará oculta mas os dados serão preservados.<br>
-          <strong>Excluir:</strong> Remove permanentemente a turma e todos os dados relacionados.
-        </small>
-      </div>
-    </div>
   </div>
 </div>
 

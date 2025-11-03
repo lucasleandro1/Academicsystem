@@ -10,6 +10,35 @@ RSpec.describe Absence, type: :model do
 
   describe "validations" do
     it { should validate_presence_of(:date) }
+
+    describe "justification validation" do
+      let(:school) { create(:school) }
+      let(:classroom) { create(:classroom, school: school) }
+      let(:teacher) { create(:user, :teacher, school: school) }
+      let(:subject) { create(:subject, classroom: classroom, school: school, user: teacher) }
+      let(:student) { create(:user, :student, classroom: classroom, school: school) }
+
+      it "requires justification when justified is true" do
+        absence = build(:absence, subject: subject, student: student, justified: true, justification: nil)
+
+        expect(absence).not_to be_valid
+        expect(absence.errors[:justification]).to include("can't be blank")
+      end
+
+      it "allows justified absence with justification" do
+        absence = build(:absence, subject: subject, student: student, justified: true, justification: "Consulta médica")
+
+        absence.valid?
+        expect(absence.errors[:justification]).to be_empty
+      end
+
+      it "does not require justification when justified is false" do
+        absence = build(:absence, subject: subject, student: student, justified: false, justification: nil)
+
+        absence.valid?
+        expect(absence.errors[:justification]).to be_empty
+      end
+    end
   end
 
   describe "scopes" do
@@ -54,6 +83,56 @@ RSpec.describe Absence, type: :model do
         absence = build(:absence, student: student)
 
         expect(absence).to be_valid
+      end
+    end
+  end
+
+  describe "#class_schedule" do
+    let!(:school) { create(:school) }
+    let!(:classroom) { create(:classroom, school: school) }
+    let!(:teacher) { create(:user, :teacher, school: school) }
+    let!(:subject) { create(:subject, classroom: classroom, school: school, user: teacher) }
+    let!(:monday_schedule) { create(:class_schedule, subject: subject, weekday: 1, classroom: classroom, school: school) } # Monday
+    let!(:tuesday_schedule) { create(:class_schedule, subject: subject, weekday: 2, classroom: classroom, school: school) } # Tuesday
+
+    context "when absence date matches a class schedule weekday" do
+      it "returns the matching class schedule for Monday" do
+        monday_date = Date.new(2025, 10, 28) # This is a past Monday
+        absence = create(:absence, subject: subject, date: monday_date)
+
+        expect(absence.class_schedule).to eq(monday_schedule)
+      end
+
+      it "returns the matching class schedule for Tuesday" do
+        tuesday_date = Date.new(2025, 10, 29) # This is a past Tuesday
+        absence = create(:absence, subject: subject, date: tuesday_date)
+
+        expect(absence.class_schedule).to eq(tuesday_schedule)
+      end
+    end
+
+    context "when no class schedule exists for the weekday" do
+      it "returns nil" do
+        sunday_date = Date.new(2025, 10, 27) # This is a past Sunday
+        absence = create(:absence, subject: subject, date: sunday_date)
+
+        expect(absence.class_schedule).to be_nil
+      end
+    end
+
+    context "when absence has no date" do
+      it "returns nil" do
+        absence = build(:absence, subject: subject, date: nil)
+
+        expect(absence.class_schedule).to be_nil
+      end
+    end
+
+    context "when absence has no subject" do
+      it "returns nil" do
+        absence = build(:absence, subject: nil, date: Date.current)
+
+        expect(absence.class_schedule).to be_nil
       end
     end
   end

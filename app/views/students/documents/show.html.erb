@@ -1,0 +1,144 @@
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1 class="h2">
+    <i class="fas fa-file-<%= get_file_icon(@document.file_type) %> me-2"></i>
+    <%= @document.title %>
+  </h1>
+  <div class="btn-toolbar mb-2 mb-md-0">
+    <%= link_to students_documents_path, class: "btn btn-outline-secondary" do %>
+      <i class="fas fa-arrow-left"></i> Voltar
+    <% end %>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">Detalhes do Documento</h5>
+      </div>
+      <div class="card-body">
+        <div class="row mb-3">
+          <div class="col-sm-4"><strong>Título:</strong></div>
+          <div class="col-sm-8"><%= @document.title %></div>
+        </div>
+
+        <div class="row mb-3">
+          <div class="col-sm-4"><strong>Tipo:</strong></div>
+          <div class="col-sm-8">
+            <span class="badge bg-primary">
+              <%= @document.type_description %>
+            </span>
+          </div>
+        </div>
+
+        <% if @document.description.present? %>
+          <div class="row mb-3">
+            <div class="col-sm-4"><strong>Descrição:</strong></div>
+            <div class="col-sm-8"><%= simple_format(@document.description) %></div>
+          </div>
+        <% end %>
+
+        <div class="row mb-3">
+          <div class="col-sm-4"><strong>Data de Criação:</strong></div>
+          <div class="col-sm-8"><%= @document.created_at.strftime("%d/%m/%Y às %H:%M") %></div>
+        </div>
+
+        <div class="row mb-3">
+          <div class="col-sm-4"><strong>Compartilhamento:</strong></div>
+          <div class="col-sm-8">
+            <span class="badge bg-info">
+              <%= @document.sharing_description %>
+            </span>
+          </div>
+        </div>
+
+        <% if @document.subject.present? %>
+          <div class="row mb-3">
+            <div class="col-sm-4"><strong>Disciplina:</strong></div>
+            <div class="col-sm-8"><%= @document.subject.name %></div>
+          </div>
+        <% end %>
+
+        <% if @document.classroom.present? %>
+          <div class="row mb-3">
+            <div class="col-sm-4"><strong>Turma:</strong></div>
+            <div class="col-sm-8"><%= @document.classroom.name %></div>
+          </div>
+        <% end %>
+
+        <div class="row mb-3">
+          <div class="col-sm-4"><strong>Escola:</strong></div>
+          <div class="col-sm-8"><%= @document.school.name %></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="fas fa-download"></i>
+          Download
+        </h5>
+      </div>
+      <div class="card-body">
+        <% if @document.attachment.attached? || (@document.file_path.present? && File.exist?(@document.file_path)) %>
+          <p class="text-muted mb-3">
+            Clique no botão abaixo para baixar o arquivo.
+          </p>
+          
+          <% if @document.attachment.attached? %>
+            <div class="mb-3">
+              <small class="text-muted">
+                <strong>Nome:</strong> <%= @document.attachment.filename %><br>
+                <strong>Tamanho:</strong> <%= number_to_human_size(@document.attachment.blob.byte_size) %>
+              </small>
+            </div>
+          <% elsif @document.file_size.present? %>
+            <div class="mb-3">
+              <small class="text-muted">
+                <strong>Tamanho:</strong> <%= number_to_human_size(@document.file_size) %>
+              </small>
+            </div>
+          <% end %>
+
+          <%= link_to download_students_document_path(@document), 
+                      class: "btn btn-primary btn-block w-100",
+                      method: :get do %>
+            <i class="fas fa-download"></i> 
+            Baixar Documento
+          <% end %>
+        <% else %>
+          <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle"></i>
+            Arquivo não disponível para download.
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="card mt-3">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="fas fa-info-circle"></i>
+          Informações
+        </h5>
+      </div>
+      <div class="card-body">
+        <p class="mb-2">
+          <i class="fas fa-shield-alt text-success"></i>
+          <small>Este documento foi disponibilizado oficialmente pela escola.</small>
+        </p>
+        <p class="mb-2">
+          <i class="fas fa-eye text-info"></i>
+          <small>Você tem acesso de visualização a este documento.</small>
+        </p>
+        <p class="mb-0">
+          <i class="fas fa-question-circle text-warning"></i>
+          <small>Em caso de dúvidas, entre em contato com a secretaria.</small>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>

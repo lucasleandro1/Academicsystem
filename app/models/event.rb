@@ -1,15 +1,19 @@
 class Event < ApplicationRecord
-  belongs_to :school
+  belongs_to :school, optional: true
 
   validates :title, presence: true
-  validates :start_date, presence: true
-  validates :event_type, inclusion: { in: %w[academico cultural esportivo administrativo reuniao feriado] }, allow_blank: true
+  validates_presence_of :start_date, unless: :event_date
+  validates_presence_of :event_date, unless: :start_date
+  validates :event_type, inclusion: { in: %w[academico cultural esportivo administrativo reuniao feriado general meeting holiday academic celebration training other] }, allow_blank: true
   validate :end_date_after_start_date
   validate :end_time_after_start_time
+  validate :school_or_municipal
 
-  scope :upcoming, -> { where("start_date >= ?", Date.current) }
-  scope :past, -> { where("end_date < ?", Date.current) }
-  scope :current, -> { where("start_date <= ? AND (end_date >= ? OR end_date IS NULL)", Date.current, Date.current) }
+  before_save :sync_date_fields
+
+  scope :upcoming, -> { where("COALESCE(start_date, event_date) >= ?", Date.current) }
+  scope :past, -> { where("COALESCE(start_date, event_date) < ?", Date.current) }
+  scope :current, -> { where("COALESCE(start_date, event_date) = ?", Date.current) }
   scope :municipal, -> { where(is_municipal: true) }
   scope :school_only, -> { where(is_municipal: false) }
   scope :by_type, ->(type) { where(event_type: type) }
@@ -19,18 +23,21 @@ class Event < ApplicationRecord
   end
 
   def upcoming?
-    return false if start_date.nil?
-    start_date >= Date.current
+    date = start_date || event_date
+    return false if date.nil?
+    date >= Date.current
   end
 
   def current?
-    return false if start_date.nil?
-    start_date <= Date.current && (end_date.nil? || end_date >= Date.current)
+    date = start_date || event_date
+    return false if date.nil?
+    date == Date.current
   end
 
   def past?
-    return false if end_date.nil?
-    end_date < Date.current
+    date = start_date || event_date
+    return false if date.nil?
+    date < Date.current
   end
 
   def status
@@ -41,20 +48,24 @@ class Event < ApplicationRecord
   end
 
   def duration_days
-    return 1 if end_date.nil?
-    (end_date - start_date).to_i + 1
+    start_dt = start_date || event_date
+    end_dt = end_date || event_date
+    return 1 if end_dt.nil?
+    (end_dt - start_dt).to_i + 1
   end
 
   def formatted_date
-    if start_date == end_date || end_date.nil?
-      start_date&.strftime("%d/%m/%Y") || "N/A"
+    start_dt = start_date || event_date
+    end_dt = end_date || event_date
+    if start_dt == end_dt || end_dt.nil?
+      start_dt&.strftime("%d/%m/%Y") || "N/A"
     else
       "#{formatted_start_date} a #{formatted_end_date}"
     end
   end
 
   def formatted_start_date
-    start_date&.strftime("%d/%m/%Y") || "N/A"
+    (start_date || event_date)&.strftime("%d/%m/%Y") || "N/A"
   end
 
   def formatted_end_date
@@ -85,19 +96,38 @@ class Event < ApplicationRecord
 
   private
 
-  def end_date_after_start_date
-    return unless start_date && end_date
+  def sync_date_fields
+    # Se start_date foi definido mas event_date não, copiar start_date para event_date
+    if start_date.present? && event_date.blank?
+      self.event_date = start_date
+    # Se event_date foi definido mas start_date não, copiar event_date para start_date e end_date
+    elsif event_date.present? && start_date.blank?
+      self.start_date = event_date
+      self.end_date = event_date if end_date.blank?
+    end
+  end
 
-    if end_date < start_date
+  def end_date_after_start_date
+    start_dt = start_date || event_date
+    return unless start_dt && end_date
+
+    if end_date < start_dt
       errors.add(:end_date, "deve ser posterior à data de início")
     end
   end
 
   def end_time_after_start_time
-    return unless start_time && end_time && (end_date.nil? || start_date == end_date)
+    start_dt = start_date || event_date
+    return unless start_time && end_time && (end_date.nil? || start_dt == end_date)
 
     if end_time <= start_time
       errors.add(:end_time, "deve ser posterior ao horário de início")
+    end
+  end
+
+  def school_or_municipal
+    if school_id.nil? && !is_municipal
+      errors.add(:school, "deve ser selecionada ou o evento deve ser municipal")
     end
   end
 end

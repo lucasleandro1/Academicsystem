@@ -65,4 +65,36 @@ RSpec.describe ClassSchedule, type: :model do
       end
     end
   end
+
+  describe "#period_display" do
+    it "returns 'Manhã' for matutino period" do
+      schedule = build(:class_schedule, period: "matutino")
+      expect(schedule.period_display).to eq("Manhã")
+    end
+
+    it "returns 'Tarde' for vespertino period" do
+      schedule = build(:class_schedule, period: "vespertino")
+      expect(schedule.period_display).to eq("Tarde")
+    end
+
+    it "returns 'Noite' for noturno period" do
+      schedule = build(:class_schedule, period: "noturno")
+      expect(schedule.period_display).to eq("Noite")
+    end
+
+    it "returns '-' for nil period" do
+      schedule = build(:class_schedule, period: nil)
+      expect(schedule.period_display).to eq("-")
+    end
+
+    it "returns '-' for empty period" do
+      schedule = build(:class_schedule, period: "")
+      expect(schedule.period_display).to eq("-")
+    end
+
+    it "returns '-' for unknown period" do
+      schedule = build(:class_schedule, period: "unknown")
+      expect(schedule.period_display).to eq("-")
+    end
+  end
 end

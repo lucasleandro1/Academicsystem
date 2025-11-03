@@ -57,15 +57,17 @@
                 <%= form.label :birth_date, "Data de Nascimento", class: "form-label" %>
                 <%= form.date_field :birth_date, class: "form-control" %>
               </div>
-              <div class="col-md-6 mb-3">
-                <%= form.label :phone, "Telefone", class: "form-label" %>
-                <%= form.text_field :phone, class: "form-control" %>
-              </div>
             </div>
 
-            <div class="mb-3">
-              <%= form.label :guardian_name, "Nome do Responsável", class: "form-label" %>
-              <%= form.text_field :guardian_name, class: "form-control" %>
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <%= form.label :guardian_name, "Nome do Responsável", class: "form-label" %>
+                <%= form.text_field :guardian_name, class: "form-control" %>
+              </div>
+              <div class="col-md-6 mb-3">
+                <%= form.label :guardian_phone, "Telefone do Responsável", class: "form-label" %>
+                <%= form.telephone_field :guardian_phone, class: "form-control" %>
+              </div>
             </div>
           </div>
 

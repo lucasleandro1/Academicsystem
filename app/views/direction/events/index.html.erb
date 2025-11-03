@@ -57,27 +57,31 @@
 </div>
 
 <!-- Estatísticas Rápidas -->
+<% all_events = current_user.school.events %>
 <div class="row mb-4">
   <div class="col-md-3">
     <div class="card text-center">
       <div class="card-body">
         <h3 class="text-primary"><%= @events.count %></h3>
-        <small class="text-muted">Total de Eventos</small>
+        <small class="text-muted">
+          <%= params[:status] == 'completed' ? 'Eventos Concluídos' : 
+              params[:status].present? ? 'Eventos Filtrados' : 'Eventos Ativos' %>
+        </small>
       </div>
     </div>
   </div>
   <div class="col-md-3">
     <div class="card text-center">
       <div class="card-body">
-        <h3 class="text-success"><%= @events.where('start_date >= ?', Date.current).count %></h3>
-        <small class="text-muted">Próximos Eventos</small>
+        <h3 class="text-success"><%= all_events.where("COALESCE(start_date, event_date) > ?", Date.current).count %></h3>
+        <small class="text-muted">Eventos Futuros</small>
       </div>
     </div>
   </div>
   <div class="col-md-3">
     <div class="card text-center">
       <div class="card-body">
-        <h3 class="text-warning"><%= @events.where(start_date: Date.current).count %></h3>
+        <h3 class="text-warning"><%= all_events.where("COALESCE(start_date, event_date) = ?", Date.current).count %></h3>
         <small class="text-muted">Eventos Hoje</small>
       </div>
     </div>
@@ -85,15 +89,25 @@
   <div class="col-md-3">
     <div class="card text-center">
       <div class="card-body">
-        <h3 class="text-info"><%= @events.where("start_date >= ?", Date.current).count %></h3>
-        <small class="text-muted">Em Andamento</small>
+        <h3 class="text-secondary"><%= all_events.where("COALESCE(start_date, event_date) < ?", Date.current).count %></h3>
+        <small class="text-muted">Eventos Concluídos</small>
       </div>
     </div>
   </div>
 </div>
 
+<!-- Alerta sobre filtro padrão -->
+<% unless params[:status].present? %>
+  <div class="alert alert-info alert-dismissible fade show" role="alert">
+    <i class="fas fa-info-circle"></i>
+    <strong>Visualização padrão:</strong> Mostrando apenas eventos ativos (futuros e de hoje). 
+    Use o filtro de status para ver eventos concluídos.
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+<% end %>
+
 <!-- Eventos Próximos (Destaque) -->
-<% upcoming_events = @events.where('start_date >= ? AND start_date <= ?', Date.current, 7.days.from_now).limit(3) %>
+<% upcoming_events = current_user.school.events.where("COALESCE(start_date, event_date) >= ? AND COALESCE(start_date, event_date) <= ?", Date.current, 7.days.from_now).order(Arel.sql("COALESCE(start_date, event_date) ASC")).limit(3) %>
 <% if upcoming_events.any? %>
   <div class="card mb-4 border-warning">
     <div class="card-header bg-warning text-dark">
@@ -293,12 +307,19 @@
             <% if params[:search].present? || params[:event_type].present? || params[:status].present? || params[:start_date].present? || params[:end_date].present? %>
               Não há eventos que correspondam aos filtros selecionados.
             <% else %>
-              Nenhum evento foi criado ainda.
+              Nenhum evento ativo encontrado.
             <% end %>
           </p>
-          <%= link_to new_direction_event_path, class: "btn btn-primary" do %>
-            <i class="fas fa-plus"></i> Criar Primeiro Evento
-          <% end %>
+          <div class="d-flex gap-2 justify-content-center">
+            <%= link_to new_direction_event_path, class: "btn btn-primary" do %>
+              <i class="fas fa-plus"></i> Criar Novo Evento
+            <% end %>
+            <% unless params[:status] == 'completed' %>
+              <%= link_to direction_events_path(status: 'completed'), class: "btn btn-outline-secondary" do %>
+                <i class="fas fa-history"></i> Ver Eventos Concluídos
+              <% end %>
+            <% end %>
+          </div>
         </div>
       </div>
     </div>

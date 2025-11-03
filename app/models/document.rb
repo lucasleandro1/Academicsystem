@@ -32,7 +32,7 @@ class Document < ApplicationRecord
   end
 
   def file_exists?
-    file_path.present? && File.exist?(file_path)
+    attachment.attached? || (file_path.present? && File.exist?(file_path))
   end
 
   def uploader
@@ -40,12 +40,27 @@ class Document < ApplicationRecord
   end
 
   def file_size
-    return 0 unless file_exists?
-    File.size(file_path)
+    if attachment.attached?
+      attachment.blob.byte_size
+    elsif file_path.present? && File.exist?(file_path)
+      File.size(file_path)
+    else
+      0
+    end
   end
 
   def file_size_humanized
     number_to_human_size(file_size)
+  end
+
+  def file_type
+    if attachment.attached?
+      attachment.filename.extension_with_delimiter.downcase.gsub(".", "")
+    elsif file_path.present?
+      File.extname(file_path).downcase.gsub(".", "")
+    else
+      "unknown"
+    end
   end
 
   def type_description

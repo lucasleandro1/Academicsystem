@@ -22,7 +22,7 @@ class Direction::TeachersController < ApplicationController
 
   def show
     @subjects = Subject.where(user_id: @teacher.id)
-    @classrooms = Classroom.joins(:subjects).where(subjects: { user_id: @teacher.id }).distinct
+    @classrooms = Classroom.joins(class_schedules: :subject).where(subjects: { user_id: @teacher.id }).distinct
   end
 
   def new

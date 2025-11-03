@@ -100,58 +100,6 @@
   </div>
 </div>
 
-<!-- Disciplinas -->
-<div class="card mb-4">
-  <div class="card-header">
-    <h5><i class="fas fa-book"></i> Disciplinas</h5>
-  </div>
-  <div class="card-body">
-    <% if @subjects.any? %>
-      <div class="table-responsive">
-        <table class="table table-hover">
-          <thead>
-            <tr>
-              <th>Disciplina</th>
-              <th>Turma</th>
-              <th>Carga Horária</th>
-              <th>Alunos</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            <% @subjects.each do |subject| %>
-              <tr>
-                <td>
-                  <strong><%= subject.name %></strong>
-                </td>
-                <td>
-                  <%= subject.classroom_name %>
-                </td>
-                <td>
-                  <%= subject.workload %>h
-                </td>
-                <td>
-                  <span class="badge bg-info"><%= subject.students.count %> alunos</span>
-                </td>
-                <td>
-                  <%= link_to direction_subject_path(subject), class: "btn btn-sm btn-outline-primary" do %>
-                    <i class="fas fa-eye"></i> Ver
-                  <% end %>
-                </td>
-              </tr>
-            <% end %>
-          </tbody>
-        </table>
-      </div>
-    <% else %>
-      <div class="text-center py-4">
-        <i class="fas fa-book text-muted" style="font-size: 3rem;"></i>
-        <p class="text-muted mt-3">Este professor ainda não possui disciplinas atribuídas.</p>
-      </div>
-    <% end %>
-  </div>
-</div>
-
 <!-- Turmas -->
 <div class="card mb-4">
   <div class="card-header">

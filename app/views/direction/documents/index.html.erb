@@ -111,7 +111,7 @@
 
       <!-- Paginação -->
       <div class="d-flex justify-content-center mt-3">
-        <%= paginate @documents if respond_to?(:paginate) %>
+        <%= paginate @documents %>
       </div>
     <% else %>
       <div class="text-center py-5">

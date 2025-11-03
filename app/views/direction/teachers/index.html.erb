@@ -31,7 +31,7 @@
 
 <!-- Estatísticas Rápidas -->
 <div class="row mb-4">
-  <div class="col-md-3">
+  <div class="col-md-4">
     <div class="card text-center">
       <div class="card-body">
         <h3 class="text-primary"><%= @teachers.count %></h3>
@@ -39,15 +39,7 @@
       </div>
     </div>
   </div>
-  <div class="col-md-3">
-    <div class="card text-center">
-      <div class="card-body">
-        <h3 class="text-success"><%= @teachers.count %></h3>
-        <small class="text-muted">Total de Professores</small>
-      </div>
-    </div>
-  </div>
-  <div class="col-md-3">
+  <div class="col-md-4">
     <div class="card text-center">
       <div class="card-body">
         <h3 class="text-info"><%= @teachers.joins(:teacher_subjects).distinct.count %></h3>
@@ -55,7 +47,7 @@
       </div>
     </div>
   </div>
-  <div class="col-md-3">
+  <div class="col-md-4">
     <div class="card text-center">
       <div class="card-body">
         <h3 class="text-warning"><%= @teachers.where('created_at >= ?', 30.days.ago).count %></h3>

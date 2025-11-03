@@ -183,8 +183,7 @@ const events = [
       start_time: '<%= event.start_time&.strftime("%H:%M") %>',
       end_time: '<%= event.end_time&.strftime("%H:%M") %>',
       event_type: '<%= event.event_type %>',
-      location: '<%= j event.location %>',
-      created_by: '<%= j (event.created_by || "Administração") %>'
+      created_at: '<%= event.formatted_created_at %>'
     }<%= ',' unless index == @events.length - 1 %>
   <% end %>
 ];
@@ -403,12 +402,6 @@ function renderListView() {
             ${formatDate(event.start_date)}
             ${event.start_time ? 'às ' + event.start_time : ''}
           </div>
-          ${event.location ? `
-            <div class="small mt-1">
-              <i class="fas fa-map-marker-alt text-danger"></i>
-              ${event.location}
-            </div>
-          ` : ''}
         </div>
         <div class="card-footer">
           <button class="btn btn-sm btn-outline-primary" onclick="showEventModal(${JSON.stringify(event).replace(/"/g, '&quot;')})">
@@ -489,13 +482,6 @@ function showEventModal(event) {
       </div>
     </div>
     
-    ${event.location ? `
-      <div class="mb-3">
-        <strong>Local:</strong>
-        <p class="mt-1"><i class="fas fa-map-marker-alt text-danger"></i> ${event.location}</p>
-      </div>
-    ` : ''}
-    
     <div class="mb-3">
       <strong>Tipo:</strong>
       <span class="badge bg-${getEventColor(event.event_type)} ms-2">
@@ -504,8 +490,8 @@ function showEventModal(event) {
     </div>
     
     <div class="mb-3">
-      <strong>Criado por:</strong>
-      <p class="mt-1">${event.created_by}</p>
+      <strong>Criado em:</strong>
+      <p class="mt-1">${event.created_at}</p>
     </div>
   `;
   

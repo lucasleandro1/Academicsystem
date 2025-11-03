@@ -49,6 +49,19 @@ class ClassSchedule < ApplicationRecord
     "#{start_time.strftime('%H:%M')} - #{end_time.strftime('%H:%M')}"
   end
 
+  def period_display
+    case period
+    when "matutino"
+      "Manhã"
+    when "vespertino"
+      "Tarde"
+    when "noturno"
+      "Noite"
+    else
+      "-"
+    end
+  end
+
   def display_info
     info = "#{subject.name} - #{weekday_name} #{time_range}"
     info += " (#{class_order}ª aula)" if class_order.present?

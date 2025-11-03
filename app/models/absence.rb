@@ -5,6 +5,7 @@ class Absence < ApplicationRecord
   delegate :school, to: :subject
 
   validates :date, presence: true
+  validates :justification, presence: true, if: :justified?
   validate :student_must_be_student
   validate :student_belongs_to_subject_classroom
   validate :date_cannot_be_future
@@ -13,6 +14,13 @@ class Absence < ApplicationRecord
   scope :unjustified, -> { where(justified: false) }
   scope :recent, -> { order(date: :desc) }
   scope :by_month, ->(month, year) { where(date: Date.new(year, month).beginning_of_month..Date.new(year, month).end_of_month) }
+
+  def class_schedule
+    return nil unless date && subject
+
+    weekday = date.wday
+    ClassSchedule.find_by(subject: subject, weekday: weekday, active: true)
+  end
 
   private
 

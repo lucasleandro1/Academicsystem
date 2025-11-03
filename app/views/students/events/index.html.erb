@@ -1,275 +1,324 @@
 <% content_for :title, "Eventos Escolares" %>
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-  <h1><i class="fas fa-calendar"></i> Eventos Escolares</h1>
-  <div class="text-muted">
-    <small><%= current_user.school.name %></small>
-  </div>
-</div>
-
-<!-- Filtros -->
-<div class="card mb-4">
-  <div class="card-body">
-    <div class="row g-3">
-    <%= form_with url: students_events_path, method: :get, local: true do |form| %>
-      <div class="col-md-3">
-        <%= form.select :period, 
-                        options_for_select([
-                          ['Todos os períodos', ''], 
-                          ['Próximos 7 dias', 'week'], 
-                          ['Próximos 30 dias', 'month'], 
-                          ['Este mês', 'current_month'],
-                          ['Eventos passados', 'past']
-                        ], params[:period]),
-                        {}, { class: "form-select" } %>
-      </div>
-      <div class="col-md-3">
-        <%= form.select :type, 
-                        options_for_select([
-                          ['Todos os tipos', ''], 
-                          ['Acadêmico', 'academic'], 
-                          ['Cultural', 'cultural'], 
-                          ['Esportivo', 'sports'], 
-                          ['Reunião', 'meeting'],
-                          ['Feriado', 'holiday']
-                        ], params[:type]),
-                        {}, { class: "form-select" } %>
-      </div>
-      <div class="col-md-4">
-        <%= form.text_field :search, placeholder: "Buscar eventos...", 
-                           value: params[:search], class: "form-control" %>
-      </div>
-      <div class="col-md-2">
-        <div class="d-grid">
-          <%= form.submit "Filtrar", class: "btn btn-outline-secondary" %>
-        </div>
-      </div>
-      <% end %>
-    </div>
-  </div>
-</div><!-- Cards de Estatísticas -->
-<div class="row mb-4">
-  <div class="col-md-3">
-    <div class="card text-center bg-primary text-white">
-      <div class="card-body">
-        <h3><%= @events.where('start_date >= ?', Date.current).count %></h3>
-        <small>Próximos Eventos</small>
-      </div>
-    </div>
-  </div>
-  <div class="col-md-3">
-    <div class="card text-center bg-success text-white">
-      <div class="card-body">
-        <h3><%= @events.where(start_date: Date.current..Date.current + 7.days).count %></h3>
-        <small>Esta Semana</small>
-      </div>
-    </div>
-  </div>
-  <div class="col-md-3">
-    <div class="card text-center bg-info text-white">
-      <div class="card-body">
-        <h3><%= @events.where(start_date: Date.current.beginning_of_month..Date.current.end_of_month).count %></h3>
-        <small>Este Mês</small>
-      </div>
-    </div>
-  </div>
-  <div class="col-md-3">
-    <div class="card text-center bg-warning text-white">
-      <div class="card-body">
-        <h3><%= @events.count %></h3>
-        <small>Total</small>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Lista de Eventos -->
-<div class="row">
-  <% if @events.any? %>
-    <% @events.order(:start_date).each do |event| %>
-      <div class="col-lg-6 col-md-12 mb-4">
-        <div class="card h-100 <%= 'border-warning' if event.start_date == Date.current %>">
-          <% if event.start_date == Date.current %>
-            <div class="card-header bg-warning text-dark">
-              <small><i class="fas fa-star"></i> Evento de Hoje</small>
-            </div>
-          <% end %>
-          
-          <div class="card-body">
-            <!-- Título e tipo -->
-            <div class="d-flex justify-content-between align-items-start mb-2">
-              <h6 class="card-title mb-0">
-                <i class="fas fa-calendar-check text-primary"></i>
-                <%= event.title %>
-              </h6>
-              <% if event.event_type.present? %>
-                <span class="badge bg-<%= case event.event_type
-                  when 'academic' then 'primary'
-                  when 'cultural' then 'success'
-                  when 'sports' then 'warning'
-                  when 'meeting' then 'info'
-                  when 'holiday' then 'danger'
-                  else 'secondary'
-                  end %>">
-                  <%= event.event_type.humanize %>
-                </span>
-              <% end %>
-            </div>
-
-            <!-- Descrição -->
-            <% if event.description.present? %>
-              <p class="text-muted small mb-3">
-                <%= truncate(event.description, length: 150) %>
-              </p>
-            <% end %>
-
-            <!-- Data e hora -->
-            <div class="mb-3">
-              <div class="row">
-                <div class="col-6">
-                  <small class="text-muted">Data de início:</small>
-                  <br>
-                  <strong>
-                    <%= event.start_date.strftime("%d/%m/%Y") %>
-                    <% if event.start_time.present? %>
-                      às <%= event.start_time.strftime("%H:%M") %>
-                    <% end %>
-                  </strong>
-                </div>
-                <div class="col-6">
-                  <small class="text-muted">
-                    <% if event.end_date == event.start_date %>
-                      <% if event.end_time.present? %>
-                        Término:
-                      <% else %>
-                        Evento de um dia
-                      <% end %>
-                    <% else %>
-                      Data de término:
-                    <% end %>
-                  </small>
-                  <br>
-                  <strong>
-                    <% if event.end_date != event.start_date %>
-                      <%= event.end_date.strftime("%d/%m/%Y") %>
-                    <% end %>
-                    <% if event.end_time.present? %>
-                      <%= event.end_time.strftime("%H:%M") %>
-                    <% end %>
-                  </strong>
-                </div>
-              </div>
-            </div>
-
-            <!-- Local -->
-            <% if event.location.present? %>
-              <div class="mb-2">
-                <small class="text-muted">Local:</small>
-                <br>
-                <i class="fas fa-map-marker-alt text-danger"></i>
-                <%= event.location %>
-              </div>
-            <% end %>
-
-            <!-- Status do evento -->
-            <div class="mb-2">
-              <% if event.start_date > Date.current %>
-                <span class="badge bg-success">
-                  <i class="fas fa-clock"></i>
-                  Em <%= distance_of_time_in_words(Date.current, event.start_date) %>
-                </span>
-              <% elsif event.start_date == Date.current %>
-                <span class="badge bg-warning">
-                  <i class="fas fa-star"></i> Hoje
-                </span>
-              <% elsif event.end_date && event.end_date >= Date.current %>
-                <span class="badge bg-info">
-                  <i class="fas fa-play"></i> Em andamento
-                </span>
-              <% else %>
-                <span class="badge bg-secondary">
-                  <i class="fas fa-check"></i> Finalizado
-                </span>
-              <% end %>
-            </div>
-
-            <!-- Duração do evento -->
-            <% if event.end_date && event.end_date != event.start_date %>
-              <div class="text-muted small">
-                <i class="fas fa-calendar"></i>
-                Duração: <%= pluralize((event.end_date - event.start_date).to_i + 1, 'dia') %>
-              </div>
-            <% end %>
-          </div>
-
-          <div class="card-footer">
-            <div class="d-flex justify-content-between align-items-center">
-              <small class="text-muted">
-                <i class="fas fa-user"></i>
-                Criado por: <%= event.created_by || 'Administração' %>
-              </small>
-              <% if event.start_date >= Date.current %>
-                <button class="btn btn-sm btn-outline-primary" onclick="addToCalendar('<%= event.title %>', '<%= event.start_date %>', '<%= event.end_date %>')">
-                  <i class="fas fa-calendar-plus"></i> Adicionar
-                </button>
-              <% end %>
-            </div>
-          </div>
-        </div>
-      </div>
-    <% end %>
-  <% else %>
+<div class="container-fluid py-4">
+  <div class="row">
     <div class="col-12">
-      <div class="card">
-        <div class="card-body text-center py-5">
-          <i class="fas fa-calendar fa-3x text-muted mb-3"></i>
-          <h5 class="text-muted">Nenhum evento encontrado</h5>
-          <p class="text-muted">
-            Não há eventos programados no momento ou nenhum evento corresponde aos filtros selecionados.
+      <!-- Page Header -->
+      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <div>
+          <h1 class="h2">
+            <i class="fas fa-calendar text-primary me-2"></i>
+            Eventos Escolares
+          </h1>
+          <p class="text-muted mb-0">
+            Acompanhe todos os eventos e atividades da escola.
           </p>
         </div>
-      </div>
-    </div>
-  <% end %>
-</div>
-
-<!-- Próximos eventos em destaque -->
-<% upcoming_events = @events.where('start_date >= ?', Date.current).limit(3) %>
-<% if upcoming_events.any? && params[:period] != 'past' %>
-  <div class="card mt-4">
-    <div class="card-header">
-      <h5><i class="fas fa-calendar-check"></i> Próximos Eventos em Destaque</h5>
-    </div>
-    <div class="card-body">
-      <div class="timeline">
-        <% upcoming_events.each do |event| %>
-          <div class="timeline-item">
-            <div class="timeline-marker bg-primary">
-              <i class="fas fa-calendar text-white"></i>
+        <div class="btn-toolbar mb-2 mb-md-0">
+          <div class="btn-group me-2">
+            <%= link_to students_events_path(period: 'current_month'), class: "btn btn-sm btn-outline-primary" do %>
+              <i class="fas fa-calendar-alt"></i> Este Mês
+            <% end %>
+            <%= link_to students_class_schedules_path, class: "btn btn-sm btn-outline-success" do %>
+              <i class="fas fa-clock"></i> Horários
+            <% end %>
+          </div>
+        </div>
+      </div>      <!-- Cards de Estatísticas -->
+      <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+          <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+              <div class="row no-gutters align-items-center">
+                <div class="col mr-2">
+                  <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                    Próximos Eventos
+                  </div>
+                  <div class="h5 mb-0 font-weight-bold text-gray-800">
+                    <%= @events.where('start_date >= ?', Date.current).count %>
+                  </div>
+                </div>
+                <div class="col-auto">
+                  <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                </div>
+              </div>
             </div>
-            <div class="timeline-content">
-              <h6 class="mb-1"><%= event.title %></h6>
-              <p class="text-muted small mb-1">
-                <%= event.start_date.strftime("%d/%m/%Y") %>
-                <% if event.start_time.present? %>
-                  às <%= event.start_time.strftime("%H:%M") %>
-                <% end %>
-                <% if event.location.present? %>
-                  - <%= event.location %>
-                <% end %>
+          </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+          <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+              <div class="row no-gutters align-items-center">
+                <div class="col mr-2">
+                  <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                    Esta Semana
+                  </div>
+                  <div class="h5 mb-0 font-weight-bold text-gray-800">
+                    <%= @events.where(start_date: Date.current..Date.current + 7.days).count %>
+                  </div>
+                </div>
+                <div class="col-auto">
+                  <i class="fas fa-calendar-week fa-2x text-gray-300"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+          <div class="card border-left-info shadow h-100 py-2">
+            <div class="card-body">
+              <div class="row no-gutters align-items-center">
+                <div class="col mr-2">
+                  <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                    Este Mês
+                  </div>
+                  <div class="h5 mb-0 font-weight-bold text-gray-800">
+                    <%= @events.where(start_date: Date.current.beginning_of_month..Date.current.end_of_month).count %>
+                  </div>
+                </div>
+                <div class="col-auto">
+                  <i class="fas fa-calendar-alt fa-2x text-gray-300"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+          <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+              <div class="row no-gutters align-items-center">
+                <div class="col mr-2">
+                  <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                    Total de Eventos
+                  </div>
+                  <div class="h5 mb-0 font-weight-bold text-gray-800">
+                    <%= @events.count %>
+                  </div>
+                </div>
+                <div class="col-auto">
+                  <i class="fas fa-calendar-check fa-2x text-gray-300"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Events Card -->
+      <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+          <h6 class="m-0 font-weight-bold text-primary">
+            <i class="fas fa-list"></i> Lista de Eventos
+          </h6>
+          
+          <!-- Filtros -->
+          <div class="d-flex align-items-center">
+            <%= form_with url: students_events_path, method: :get, local: true, class: "d-flex align-items-center" do |form| %>
+              <%= form.select :period, 
+                              options_for_select([
+                                ['Todos os períodos', ''], 
+                                ['Próximos 7 dias', 'week'], 
+                                ['Próximos 30 dias', 'month'], 
+                                ['Este mês', 'current_month'],
+                                ['Eventos passados', 'past']
+                              ], params[:period]),
+                              {}, { class: "form-select form-select-sm me-2", style: "width: 150px;" } %>
+              <%= form.select :type, 
+                              options_for_select([
+                                ['Todos os tipos', ''], 
+                                ['Acadêmico', 'academic'], 
+                                ['Cultural', 'cultural'], 
+                                ['Esportivo', 'sports'], 
+                                ['Reunião', 'meeting'],
+                                ['Feriado', 'holiday']
+                              ], params[:type]),
+                              {}, { class: "form-select form-select-sm me-2", style: "width: 120px;" } %>
+              <%= form.text_field :search, placeholder: "Buscar...", 
+                                 value: params[:search], class: "form-control form-control-sm me-2", style: "width: 150px;" %>
+              <%= form.submit "Filtrar", class: "btn btn-sm btn-primary" %>
+            <% end %>
+          </div>
+        </div>
+        
+        <div class="card-body">
+          <% if @events.any? %>
+            <div class="row">
+              <% @events.order(:start_date).each do |event| %>
+                <div class="col-lg-6 col-md-12 mb-4">
+                  <div class="card shadow-sm h-100 <%= 'border-warning' if event.start_date == Date.current %>">
+                    <% if event.start_date == Date.current %>
+                      <div class="card-header bg-warning text-dark py-2">
+                        <small><i class="fas fa-star"></i> Evento de Hoje</small>
+                      </div>
+                    <% end %>
+                    
+                    <div class="card-body">
+                      <!-- Título e tipo -->
+                      <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h6 class="card-title mb-0 text-primary">
+                          <i class="fas fa-calendar-check me-1"></i>
+                          <%= event.title %>
+                        </h6>
+                        <% if event.event_type.present? %>
+                          <span class="badge bg-<%= case event.event_type
+                            when 'academic' then 'primary'
+                            when 'cultural' then 'success'
+                            when 'sports' then 'warning'
+                            when 'meeting' then 'info'
+                            when 'holiday' then 'danger'
+                            else 'secondary'
+                            end %>">
+                            <%= event.event_type.humanize %>
+                          </span>
+                        <% end %>
+                      </div>
+
+                      <!-- Descrição -->
+                      <% if event.description.present? %>
+                        <p class="text-muted small mb-3">
+                          <%= truncate(event.description, length: 120) %>
+                        </p>
+                      <% end %>
+
+                      <!-- Data e hora -->
+                      <div class="row mb-3">
+                        <div class="col-6">
+                          <div class="text-center p-2 bg-light rounded">
+                            <small class="text-muted d-block">Início</small>
+                            <strong class="d-block">
+                              <%= event.start_date.strftime("%d/%m") %>
+                            </strong>
+                            <% if event.start_time.present? %>
+                              <small class="text-primary">
+                                <%= event.start_time.strftime("%H:%M") %>
+                              </small>
+                            <% end %>
+                          </div>
+                        </div>
+                        <% if event.end_date && event.end_date != event.start_date %>
+                          <div class="col-6">
+                            <div class="text-center p-2 bg-light rounded">
+                              <small class="text-muted d-block">Fim</small>
+                              <strong class="d-block">
+                                <%= event.end_date.strftime("%d/%m") %>
+                              </strong>
+                              <% if event.end_time.present? %>
+                                <small class="text-primary">
+                                  <%= event.end_time.strftime("%H:%M") %>
+                                </small>
+                              <% end %>
+                            </div>
+                          </div>
+                        <% elsif event.end_time.present? %>
+                          <div class="col-6">
+                            <div class="text-center p-2 bg-light rounded">
+                              <small class="text-muted d-block">Término</small>
+                              <strong class="d-block text-primary">
+                                <%= event.end_time.strftime("%H:%M") %>
+                              </strong>
+                            </div>
+                          </div>
+                        <% end %>
+                      </div>
+
+                      <!-- Status do evento -->
+                      <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                          <% if event.start_date > Date.current %>
+                            <span class="badge bg-success">
+                              <i class="fas fa-clock"></i>
+                              Em <%= distance_of_time_in_words(Date.current, event.start_date) %>
+                            </span>
+                          <% elsif event.start_date == Date.current %>
+                            <span class="badge bg-warning">
+                              <i class="fas fa-star"></i> Hoje
+                            </span>
+                          <% elsif event.end_date && event.end_date >= Date.current %>
+                            <span class="badge bg-info">
+                              <i class="fas fa-play"></i> Em andamento
+                            </span>
+                          <% else %>
+                            <span class="badge bg-secondary">
+                              <i class="fas fa-check"></i> Finalizado
+                            </span>
+                          <% end %>
+                        </div>
+                        <% if event.start_date >= Date.current %>
+                          <button class="btn btn-sm btn-outline-primary" onclick="addToCalendar('<%= event.title %>', '<%= event.start_date %>', '<%= event.end_date %>')">
+                            <i class="fas fa-calendar-plus"></i>
+                          </button>
+                        <% end %>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          <% else %>
+            <div class="text-center py-5">
+              <i class="fas fa-calendar fa-3x text-muted mb-3"></i>
+              <h5 class="text-muted">Nenhum evento encontrado</h5>
+              <p class="text-muted mb-0">
+                Não há eventos programados no momento ou nenhum evento corresponde aos filtros selecionados.
               </p>
-              <% if event.description.present? %>
-                <p class="text-muted small mb-0">
-                  <%= truncate(event.description, length: 100) %>
-                </p>
+            </div>
+          <% end %>
+        </div>
+      </div>
+
+      <!-- Próximos eventos em destaque -->
+      <% upcoming_events = @events.where('start_date >= ?', Date.current).limit(5) %>
+      <% if upcoming_events.any? && params[:period] != 'past' %>
+        <div class="card shadow mb-4">
+          <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+              <i class="fas fa-star"></i> Próximos Eventos em Destaque
+            </h6>
+          </div>
+          <div class="card-body">
+            <div class="timeline">
+              <% upcoming_events.each do |event| %>
+                <div class="timeline-item">
+                  <div class="timeline-marker bg-primary">
+                    <i class="fas fa-calendar text-white"></i>
+                  </div>
+                  <div class="timeline-content">
+                    <div class="d-flex justify-content-between align-items-start">
+                      <div>
+                        <h6 class="mb-1 text-primary"><%= event.title %></h6>
+                        <p class="text-muted small mb-1">
+                          <i class="fas fa-clock me-1"></i>
+                          <%= event.start_date.strftime("%d/%m/%Y") %>
+                          <% if event.start_time %>
+                            às <%= event.start_time.strftime("%H:%M") %>
+                          <% end %>
+                        </p>
+                        <% if event.description.present? %>
+                          <p class="text-muted small mb-0">
+                            <%= truncate(event.description, length: 80) %>
+                          </p>
+                        <% end %>
+                      </div>
+                      <% if event.event_type.present? %>
+                        <span class="badge bg-<%= case event.event_type
+                          when 'academic' then 'primary'
+                          when 'cultural' then 'success'
+                          when 'sports' then 'warning'
+                          when 'meeting' then 'info'
+                          when 'holiday' then 'danger'
+                          else 'secondary'
+                          end %>">
+                          <%= event.event_type.humanize %>
+                        </span>
+                      <% end %>
+                    </div>
+                  </div>
+                </div>
               <% end %>
             </div>
           </div>
-        <% end %>
-      </div>
-    </div>
-  </div>
-<% end %>
+        </div>
+      <% end %>
 
 <script>
 function addToCalendar(title, startDate, endDate) {
@@ -295,6 +344,21 @@ function addToCalendar(title, startDate, endDate) {
 </script>
 
 <style>
+/* Bordas coloridas para os cards de estatística */
+.border-left-primary {
+  border-left: 0.25rem solid #4e73df !important;
+}
+.border-left-success {
+  border-left: 0.25rem solid #1cc88a !important;
+}
+.border-left-info {
+  border-left: 0.25rem solid #36b9cc !important;
+}
+.border-left-warning {
+  border-left: 0.25rem solid #f6c23e !important;
+}
+
+/* Timeline styles */
 .timeline {
   position: relative;
   padding-left: 2rem;
@@ -330,41 +394,33 @@ function addToCalendar(title, startDate, endDate) {
 .timeline-content {
   margin-left: 0.5rem;
 }
+
+/* Utility classes */
+.text-xs {
+  font-size: 0.7rem;
+}
+
+.font-weight-bold {
+  font-weight: 700;
+}
+
+.text-gray-300 {
+  color: #dddfeb !important;
+}
+
+.text-gray-800 {
+  color: #5a5c69 !important;
+}
+
+.shadow {
+  box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15) !important;
+}
+
+.shadow-sm {
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+}
 </style>
 
-<!-- Calendário de Eventos -->
-    <div class="row mt-4">
-      <div class="col-12">
-        <h4>Calendário do Mês</h4>
-        <div class="card">
-          <div class="card-body">
-            <div class="table-responsive">
-              <table class="table table-bordered table-sm">
-                <thead>
-                  <tr class="table-light">
-                    <th>Dom</th>
-                    <th>Seg</th>
-                    <th>Ter</th>
-                    <th>Qua</th>
-                    <th>Qui</th>
-                    <th>Sex</th>
-                    <th>Sáb</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <!-- Aqui seria implementado o calendário -->
-                  <tr>
-                    <td colspan="7" class="text-center text-muted">
-                      Calendário em desenvolvimento
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
-
   </div>
 </div>

@@ -153,7 +153,11 @@ Rails.application.routes.draw do
     resources :subjects, only: [ :index, :show ]
     resources :absences, only: [ :index ]
     resources :class_schedules, only: [ :index ]
-    resources :documents, only: [ :index, :show ]
+    resources :documents, only: [ :index, :show ] do
+      member do
+        get :download
+      end
+    end
     resources :events, only: [ :index, :show ]
     root to: "dashboard#index"
   end

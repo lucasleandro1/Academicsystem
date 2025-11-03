@@ -31,8 +31,14 @@ class Admin::EventsController < ApplicationController
   def create
     @event = Event.new(event_params)
 
+    # Se for um evento municipal, não associar a uma escola específica
+    if params[:event][:is_municipal] == "1"
+      @event.school_id = nil
+      @event.is_municipal = true
+    end
+
     if @event.save
-      # Se for um evento municipal (sem escola específica), criar para todas as escolas
+      # Se for um evento municipal, criar para todas as escolas
       if params[:event][:is_municipal] == "1"
         School.find_each do |school|
           Event.create!(
