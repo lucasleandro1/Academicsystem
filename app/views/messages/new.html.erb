@@ -1,42 +1,212 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-  <h1 class="h2">Nova Mensagem</h1>
+  <h1 class="h2">
+    <i class="fas fa-paper-plane"></i>
+    Nova Mensagem
+  </h1>
+  <%= link_to messages_path, class: "btn btn-outline-secondary" do %>
+    <i class="fas fa-arrow-left"></i> Voltar
+  <% end %>
 </div>
 
-<div class="row">
+<div class="row justify-content-center">
   <div class="col-md-8">
-    <%= form_with model: @message, local: true, class: "row g-3" do |form| %>
-      <% if @message.errors.any? %>
-        <div class="alert alert-danger">
-          <h6><%= pluralize(@message.errors.count, "erro") %> impediram que a mensagem fosse enviada:</h6>
-          <ul class="mb-0">
-            <% @message.errors.each do |error| %>
-              <li><%= error.full_message %></li>
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="fas fa-edit"></i>
+          Enviar Mensagem Individual
+        </h5>
+      </div>
+      <div class="card-body">
+        <%= form_with model: @message, local: true do |form| %>
+          <% if flash[:alert] %>
+            <div class="alert alert-danger">
+              <i class="fas fa-exclamation-triangle"></i>
+              <%= flash[:alert] %>
+            </div>
+          <% end %>
+          
+          <% if @message&.errors&.any? %>
+            <div class="alert alert-danger">
+              <h6><i class="fas fa-times-circle"></i> Erros encontrados:</h6>
+              <ul class="mb-0">
+                <% @message.errors.full_messages.each do |error_message| %>
+                  <li><%= error_message %></li>
+                <% end %>
+              </ul>
+            </div>
+          <% end %>
+
+          <div class="mb-3">
+            <%= form.label :recipient_id, "Destinatário", class: "form-label" %>
+            <i class="fas fa-info-circle text-muted" 
+               data-bs-toggle="tooltip" 
+               title="Apenas usuários autorizados pela hierarquia são exibidos"></i>
+            
+            <% grouped_options = recipient_options_grouped(current_user) %>
+            <% if grouped_options.any? %>
+              <%= form.select :recipient_id, 
+                             grouped_options_for_select(grouped_options, params[:reply_to]), 
+                             { prompt: "Selecione o destinatário..." }, 
+                             { class: "form-select recipient-select", required: true } %>
+            <% else %>
+              <div class="alert alert-info mt-2">
+                <i class="fas fa-info-circle"></i>
+                Não há destinatários disponíveis para seu perfil no momento.
+              </div>
             <% end %>
-          </ul>
+          </div>
+
+          <div class="mb-3">
+            <%= form.label :subject, "Assunto", class: "form-label" %>
+            <%= form.text_field :subject, class: "form-control", 
+                               placeholder: "Digite o assunto da mensagem", required: true %>
+          </div>
+
+          <div class="mb-3">
+            <%= form.label :body, "Mensagem", class: "form-label" %>
+            <%= form.text_area :body, rows: 8, class: "form-control", 
+                              placeholder: "Digite sua mensagem aqui...", required: true %>
+          </div>
+
+          <div class="d-flex justify-content-between">
+            <%= link_to "Cancelar", messages_path, class: "btn btn-secondary" %>
+            <%= form.submit "Enviar Mensagem", class: "btn btn-primary", 
+                           data: { disable_with: "Enviando..." } %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Opções de Envio em Massa (se disponível) -->
+    <% broadcast_opts = broadcast_options(current_user) %>
+    <% if broadcast_opts.any? %>
+      <div class="card mt-4">
+        <div class="card-header">
+          <h5 class="mb-0">
+            <i class="fas fa-bullhorn"></i>
+            Envio em Massa
+          </h5>
+          <small class="text-muted">Para enviar comunicados para grupos específicos</small>
         </div>
-      <% end %>
-
-      <div class="col-12">
-        <%= form.label :recipient_id, "Destinatário", class: "form-label" %>
-        <%= form.collection_select :recipient_id, @recipients, :id, :full_name, 
-                                   { prompt: "Selecione o destinatário" }, 
-                                   { class: "form-select", required: true } %>
-      </div>
-
-      <div class="col-12">
-        <%= form.label :subject, "Assunto", class: "form-label" %>
-        <%= form.text_field :subject, class: "form-control", required: true %>
-      </div>
-
-      <div class="col-12">
-        <%= form.label :body, "Mensagem", class: "form-label" %>
-        <%= form.text_area :body, rows: 8, class: "form-control", required: true %>
-      </div>
-
-      <div class="col-12">
-        <%= form.submit "Enviar Mensagem", class: "btn btn-primary" %>
-        <%= link_to "Cancelar", messages_path, class: "btn btn-secondary" %>
+        <div class="card-body">
+          <div class="row">
+            <% broadcast_opts.each do |option| %>
+              <div class="col-md-6 mb-3">
+                <button type="button" 
+                        class="btn btn-outline-<%= option[:color] %> w-100 broadcast-btn h-100" 
+                        data-bs-toggle="modal" 
+                        data-bs-target="#broadcast<%= option[:key].camelize %>Modal">
+                  <div class="text-center py-2">
+                    <i class="<%= option[:icon] %> fa-2x mb-2"></i><br>
+                    <strong><%= option[:title] %></strong><br>
+                    <small class="text-muted"><%= option[:description] %></small>
+                  </div>
+                </button>
+              </div>
+            <% end %>
+          </div>
+        </div>
       </div>
     <% end %>
   </div>
 </div>
+
+<style>
+.recipient-select {
+  font-size: 0.95rem;
+}
+
+.recipient-select option {
+  padding: 8px;
+}
+
+.broadcast-btn {
+  min-height: 120px;
+  transition: transform 0.2s;
+}
+
+.broadcast-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+</style>
+
+<script>
+<!-- Modais para Broadcast -->
+<% broadcast_options(current_user).each do |option| %>
+  <div class="modal fade" id="broadcast<%= option[:key].camelize %>Modal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="<%= option[:icon] %>"></i>
+            <%= option[:title] %>
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p class="text-muted"><%= option[:description] %></p>
+          
+          <%= form_with url: messages_path, method: :post, local: true, id: "broadcastForm#{option[:key].camelize}" do |form| %>
+            <%= hidden_field_tag :broadcast_type, option[:key] %>
+            
+            <% if option[:key] == 'by_school' %>
+              <div class="mb-3">
+                <%= label_tag :school_id, "Escola", class: "form-label" %>
+                <%= select_tag :school_id, schools_for_broadcast_select(current_user), 
+                               { prompt: "Selecione a escola...", class: "form-select", required: true } %>
+              </div>
+            <% elsif option[:key] == 'by_classroom' %>
+              <div class="mb-3">
+                <%= label_tag :classroom_id, "Turma", class: "form-label" %>
+                <%= select_tag :classroom_id, classrooms_for_broadcast_select(current_user), 
+                               { prompt: "Selecione a turma...", class: "form-select", required: true } %>
+              </div>
+            <% end %>
+            
+            <div class="mb-3">
+              <%= form.label :subject, "Assunto", class: "form-label" %>
+              <%= form.text_field :subject, class: "form-control", 
+                                 placeholder: "Assunto do comunicado", required: true %>
+            </div>
+            
+            <div class="mb-3">
+              <%= form.label :body, "Mensagem", class: "form-label" %>
+              <%= form.text_area :body, rows: 6, class: "form-control", 
+                                placeholder: "Conteúdo do comunicado...", required: true %>
+            </div>
+          <% end %>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" form="broadcastForm<%= option[:key].camelize %>" 
+                  class="btn btn-<%= option[:color] %>">
+            <i class="fas fa-paper-plane"></i> Enviar Comunicado
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Inicializar tooltips
+  var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+  var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+    return new bootstrap.Tooltip(tooltipTriggerEl)
+  })
+  
+  // Melhorar a experiência do select
+  const recipientSelect = document.querySelector('.recipient-select');
+  if (recipientSelect) {
+    recipientSelect.addEventListener('change', function() {
+      if (this.value) {
+        this.classList.add('is-valid');
+        this.classList.remove('is-invalid');
+      }
+    });
+  }
+});
+</script>

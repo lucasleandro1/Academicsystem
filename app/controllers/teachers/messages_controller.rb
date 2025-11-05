@@ -21,9 +21,7 @@ class Teachers::MessagesController < ApplicationController
 
   def new
     @message = current_user.sent_messages.build
-    @students = available_students
-    @classrooms = available_classrooms
-    @directions = available_directions
+    @recipient_service = MessageRecipientService.new(current_user)
   end
 
   def create
@@ -33,9 +31,7 @@ class Teachers::MessagesController < ApplicationController
     if @message.save
       redirect_to teachers_messages_path, notice: "Mensagem enviada com sucesso."
     else
-      @students = available_students
-      @classrooms = available_classrooms
-      @directions = available_directions
+      @recipient_service = MessageRecipientService.new(current_user)
       render :new
     end
   end
@@ -109,12 +105,12 @@ class Teachers::MessagesController < ApplicationController
     current_user.sent_messages.create(
       recipient: recipient,
       subject: subject,
-      content: content,
+      body: content,
       school: current_user.school
     )
   end
 
   def message_params
-    params.require(:message).permit(:recipient_id, :subject, :content)
+    params.require(:message).permit(:recipient_id, :subject, :body)
   end
 end

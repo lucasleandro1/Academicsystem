@@ -1,0 +1,170 @@
+<% content_for :title, @message.subject %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1>
+    <i class="fas fa-envelope-open"></i>
+    Mensagem
+  </h1>
+  <div>
+    <%= link_to students_messages_path, class: "btn btn-outline-secondary me-2" do %>
+      <i class="fas fa-arrow-left"></i> Voltar
+    <% end %>
+    
+
+  </div>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-md-10">
+    <div class="card">
+      <div class="card-header">
+        <div class="row align-items-center">
+          <div class="col">
+            <div class="d-flex align-items-center">
+              <% if @message.recipient == current_user %>
+                <% sender = @message.sender %>
+                <i class="<%= message_recipient_icon(sender) %> fa-2x text-primary me-3"></i>
+                <div>
+                  <h5 class="mb-0">
+                    <%= sender.full_name %>
+                    <span class="<%= message_recipient_badge_class(sender) %> ms-2">
+                      <%= sender.user_type.humanize %>
+                    </span>
+                  </h5>
+                  <small class="text-muted">
+                    <i class="fas fa-clock"></i>
+                    Enviada <%= time_ago_in_words(@message.created_at) %> atrás
+                    (<%= @message.created_at.strftime("%d/%m/%Y às %H:%M") %>)
+                  </small>
+                </div>
+              <% else %>
+                <% recipient = @message.recipient %>
+                <i class="<%= message_recipient_icon(recipient) %> fa-2x text-success me-3"></i>
+                <div>
+                  <h5 class="mb-0">
+                    Para: <%= recipient.full_name %>
+                    <span class="<%= message_recipient_badge_class(recipient) %> ms-2">
+                      <%= recipient.user_type.humanize %>
+                    </span>
+                  </h5>
+                  <small class="text-muted">
+                    <i class="fas fa-clock"></i>
+                    Enviada <%= time_ago_in_words(@message.created_at) %> atrás
+                    (<%= @message.created_at.strftime("%d/%m/%Y às %H:%M") %>)
+                  </small>
+                </div>
+              <% end %>
+            </div>
+          </div>
+          <div class="col-auto">
+            <% if @message.recipient == current_user %>
+              <% if @message.read? %>
+                <span class="badge bg-success">
+                  <i class="fas fa-check-double"></i> Lida
+                </span>
+              <% else %>
+                <span class="badge bg-warning">
+                  <i class="fas fa-envelope"></i> Nova
+                </span>
+              <% end %>
+            <% else %>
+              <% if @message.read? %>
+                <span class="badge bg-success">
+                  <i class="fas fa-check-double"></i> Lida pelo destinatário
+                </span>
+              <% else %>
+                <span class="badge bg-info">
+                  <i class="fas fa-paper-plane"></i> Enviada
+                </span>
+              <% end %>
+            <% end %>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card-body">
+        <div class="mb-3">
+          <h4 class="card-title">
+            <i class="fas fa-tag text-muted me-2"></i>
+            <%= @message.subject %>
+          </h4>
+        </div>
+        
+        <div class="message-body">
+          <%= simple_format(@message.body, class: "lead") %>
+        </div>
+      </div>
+      
+      <div class="card-footer">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <small class="text-muted">
+              <i class="fas fa-school"></i>
+              <%= @message.school.name %>
+            </small>
+          </div>
+          
+          <div class="btn-group" role="group">
+
+            
+            <%= link_to students_message_path(@message), 
+                       method: :delete, 
+                       class: "btn btn-sm btn-outline-danger",
+                       confirm: "Tem certeza que deseja excluir esta mensagem?" do %>
+              <i class="fas fa-trash"></i> Excluir
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Dicas contextuais -->
+    <% if @message.recipient == current_user %>
+      <div class="card mt-3">
+        <div class="card-body bg-light">
+          <h6 class="card-title">
+            <i class="fas fa-lightbulb text-warning"></i>
+            Dicas de Resposta
+          </h6>
+          <div class="row">
+            <% if @message.sender.teacher? %>
+              <div class="col-md-6">
+                <ul class="small mb-0">
+                  <li>Seja claro e objetivo em sua resposta</li>
+                  <li>Agradeça pela atenção do professor</li>
+                  <li>Se for uma dúvida, seja específico</li>
+                </ul>
+              </div>
+            <% elsif @message.sender.direction? %>
+              <div class="col-md-6">
+                <ul class="small mb-0">
+                  <li>Mantenha um tom formal e respeitoso</li>
+                  <li>Forneça todas as informações solicitadas</li>
+                  <li>Se precisar de reunião, sugira horários</li>
+                </ul>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<style>
+.message-body {
+  background-color: #f8f9fa;
+  border-left: 4px solid #007bff;
+  padding: 1.5rem;
+  border-radius: 0.375rem;
+  margin: 1rem 0;
+}
+
+.card-footer {
+  background-color: rgba(0,0,0,0.03);
+}
+
+.badge {
+  font-size: 0.8em;
+}
+</style>

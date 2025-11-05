@@ -28,13 +28,22 @@
 
           <div class="mb-3">
             <%= form.label :recipient_id, "Destinatário", class: "form-label" %>
-            <%= form.select :recipient_id, 
-                           grouped_options_for_select([
-                             ["Professores", options_from_collection_for_select(@teachers, :id, :full_name)],
-                             ["Alunos", options_from_collection_for_select(@students, :id, :full_name)]
-                           ], params[:reply_to]), 
-                           { prompt: "Selecione o destinatário" }, 
-                           { class: "form-select" } %>
+            <i class="fas fa-info-circle text-muted" 
+               data-bs-toggle="tooltip" 
+               title="Apenas usuários de sua escola são exibidos"></i>
+            
+            <% grouped_options = recipient_options_grouped(current_user) %>
+            <% if grouped_options.any? %>
+              <%= form.select :recipient_id, 
+                             grouped_options_for_select(grouped_options), 
+                             { prompt: "Selecione o destinatário..." }, 
+                             { class: "form-select recipient-select", required: true } %>
+            <% else %>
+              <div class="alert alert-info mt-2">
+                <i class="fas fa-info-circle"></i>
+                Não há destinatários disponíveis na sua escola no momento.
+              </div>
+            <% end %>
           </div>
 
           <div class="mb-3">
@@ -63,34 +72,20 @@
       </div>
       <div class="card-body">
         <div class="row">
-          <div class="col-md-6 mb-3">
-            <button type="button" class="btn btn-outline-primary w-100" data-bs-toggle="modal" data-bs-target="#broadcastAllModal">
-              <i class="fas fa-users"></i><br>
-              <strong>Para Todos</strong><br>
-              <small>Professores e Alunos</small>
-            </button>
-          </div>
-          <div class="col-md-6 mb-3">
-            <button type="button" class="btn btn-outline-success w-100" data-bs-toggle="modal" data-bs-target="#broadcastTeachersModal">
-              <i class="fas fa-chalkboard-teacher"></i><br>
-              <strong>Para Professores</strong><br>
-              <small>Apenas corpo docente</small>
-            </button>
-          </div>
-          <div class="col-md-6 mb-3">
-            <button type="button" class="btn btn-outline-info w-100" data-bs-toggle="modal" data-bs-target="#broadcastStudentsModal">
-              <i class="fas fa-user-graduate"></i><br>
-              <strong>Para Alunos</strong><br>
-              <small>Apenas estudantes</small>
-            </button>
-          </div>
-          <div class="col-md-6 mb-3">
-            <button type="button" class="btn btn-outline-warning w-100" data-bs-toggle="modal" data-bs-target="#broadcastClassroomModal">
-              <i class="fas fa-users-class"></i><br>
-              <strong>Para Turma</strong><br>
-              <small>Turma específica</small>
-            </button>
-          </div>
+          <% broadcast_options(current_user).each do |option| %>
+            <div class="col-md-6 mb-3">
+              <button type="button" 
+                      class="btn btn-outline-<%= option[:color] %> w-100 broadcast-btn h-100" 
+                      data-bs-toggle="modal" 
+                      data-bs-target="#broadcast<%= option[:key].camelize %>Modal">
+                <div class="text-center py-3">
+                  <i class="<%= option[:icon] %> fa-2x mb-2"></i><br>
+                  <strong><%= option[:title] %></strong><br>
+                  <small><%= option[:description] %></small>
+                </div>
+              </button>
+            </div>
+          <% end %>
         </div>
       </div>
     </div>

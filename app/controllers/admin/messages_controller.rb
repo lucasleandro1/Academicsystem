@@ -11,6 +11,7 @@ class Admin::MessagesController < ApplicationController
   def new
     @message = Message.new
     @broadcast_type = params[:broadcast_type]
+    @recipient_service = MessageRecipientService.new(current_user)
   end
 
   def create
@@ -19,10 +20,19 @@ class Admin::MessagesController < ApplicationController
     if params[:broadcast_type].present?
       handle_broadcast_message
     else
+      # Para admin, definir school com base no recipient
+      if @message.recipient_id.present?
+        recipient = User.find(@message.recipient_id)
+        @message.school = recipient.school if recipient.school.present?
+      end
+
+      # Fallback para school_id nos parâmetros
       @message.school_id = params[:message][:school_id] if params[:message][:school_id].present?
+
       if @message.save
         redirect_to admin_messages_path, notice: "Mensagem enviada com sucesso."
       else
+        @recipient_service = MessageRecipientService.new(current_user)
         render :new
       end
     end

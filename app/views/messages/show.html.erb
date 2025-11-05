@@ -1,7 +1,6 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
   <h1 class="h2">Mensagem</h1>
   <div class="btn-toolbar mb-2 mb-md-0">
-    <%= link_to "Responder", new_message_path(reply_to: @message.id), class: "btn btn-sm btn-primary" %>
     <%= link_to "Voltar", messages_path, class: "btn btn-sm btn-outline-secondary" %>
   </div>
 </div>
@@ -27,22 +26,6 @@
       </div>
     </div>
 
-    <% if @message.parent_id.present? %>
-      <div class="mt-4">
-        <h6>Mensagem Original:</h6>
-        <div class="card bg-light">
-          <div class="card-body">
-            <div class="mb-2">
-              <strong>De:</strong> <%= @message.parent.sender.full_name %> - 
-              <%= @message.parent.created_at.strftime("%d/%m/%Y às %H:%M") %>
-            </div>
-            <div class="mb-2">
-              <strong>Assunto:</strong> <%= @message.parent.subject %>
-            </div>
-            <%= simple_format(@message.parent.body) %>
-          </div>
-        </div>
-      </div>
-    <% end %>
+    <!-- Funcionalidade de resposta com parent_id será implementada futuramente -->
   </div>
 </div>

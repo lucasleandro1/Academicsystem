@@ -14,17 +14,30 @@ class MessagesController < ApplicationController
 
   def new
     @message = Message.new
-    @recipients = available_recipients
+    @recipient_service = MessageRecipientService.new(current_user)
   end
 
   def create
     @message = current_user.sent_messages.build(message_params)
-    @message.school = current_user.school
+
+    # Determinar a escola da mensagem
+    if current_user.school
+      @message.school = current_user.school
+    elsif params[:message][:school_id].present?
+      @message.school_id = params[:message][:school_id]
+    else
+      # Para admin sem escola específica, usar a escola do destinatário
+      recipient = User.find_by(id: params[:message][:recipient_id])
+      @message.school = recipient&.school if recipient
+    end
 
     if @message.save
       redirect_to messages_path, notice: "Mensagem enviada com sucesso."
     else
-      @recipients = available_recipients
+      Rails.logger.error "Message creation failed for user #{current_user.id}: #{@message.errors.full_messages.join(', ')}"
+      Rails.logger.error "Message attributes: #{@message.attributes.inspect}"
+      @recipient_service = MessageRecipientService.new(current_user)
+      flash.now[:alert] = "Erro ao enviar mensagem: #{@message.errors.full_messages.join(', ')}"
       render :new
     end
   end
@@ -48,26 +61,7 @@ class MessagesController < ApplicationController
   end
 
   def available_recipients
-    case current_user.user_type
-    when "admin"
-      User.where.not(id: current_user.id)
-    when "direction"
-      current_user.school.users.where.not(id: current_user.id)
-    when "teacher"
-      # Professores podem enviar para direção e alunos de suas turmas
-      classroom_ids = current_user.teacher_subjects.pluck(:classroom_id)
-      student_ids = User.where(classroom_id: classroom_ids, user_type: "student").pluck(:id)
-      direction_ids = current_user.school.directions.pluck(:id)
-      User.where(id: student_ids + direction_ids)
-    when "student"
-      # Alunos podem enviar para professores de suas matérias e direção
-      return User.none unless current_user.classroom
-
-      teacher_ids = current_user.classroom.subjects.pluck(:user_id)
-      direction_ids = current_user.school.directions.pluck(:id)
-      User.where(id: teacher_ids + direction_ids)
-    else
-      User.none
-    end
+    service = MessageRecipientService.new(current_user)
+    service.available_recipients_list
   end
 end

@@ -78,11 +78,11 @@
                   </h6>
                   <small class="text-muted"><%= time_ago_in_words(message.created_at) %> atrás</small>
                 </div>
-                <p class="mb-1"><%= truncate(message.content, length: 100) %></p>
+                <p class="mb-1"><%= truncate(message.body, length: 100) %></p>
                 <div class="d-flex justify-content-between align-items-center">
                   <small class="text-muted">
                     <i class="fas fa-user"></i> <%= message.sender.full_name %>
-                    (<%= message.sender.profile.humanize %>)
+                    (<%= message.sender.user_type_humanized %>)
                   </small>
                   <%= link_to teachers_message_path(message), class: "btn btn-sm btn-outline-primary" do %>
                     <i class="fas fa-eye"></i> Ler
@@ -114,11 +114,11 @@
                   <h6 class="mb-1"><%= message.subject %></h6>
                   <small class="text-muted"><%= message.created_at.strftime("%d/%m/%Y %H:%M") %></small>
                 </div>
-                <p class="mb-1"><%= truncate(message.content, length: 100) %></p>
+                <p class="mb-1"><%= truncate(message.body, length: 100) %></p>
                 <div class="d-flex justify-content-between align-items-center">
                   <small class="text-muted">
                     <i class="fas fa-user"></i> Para: <%= message.recipient.full_name %>
-                    (<%= message.recipient.profile.humanize %>)
+                    (<%= message.recipient.user_type_humanized %>)
                   </small>
                   <div>
                     <% if message.read? %>

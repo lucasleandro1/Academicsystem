@@ -54,113 +54,73 @@
 
           <!-- Lista de Mensagens -->
           <div class="messages-list">
-            <% messages = [
-              {
-                id: 1,
-                sender_name: "Prof. João Silva",
-                sender_type: "teacher",
-                subject: "Prova de Matemática - Próxima Semana",
-                preview: "Prezados alunos, gostaria de informar que a prova de matemática será...",
-                sent_at: "2 horas atrás",
-                read: false,
-                important: true
-              },
-              {
-                id: 2,
-                sender_name: "Direção",
-                sender_type: "direction",
-                subject: "Reunião de Pais - Convocação",
-                preview: "Informamos que haverá reunião de pais no próximo sábado às 14h...",
-                sent_at: "1 dia atrás",
-                read: false,
-                important: false
-              },
-              {
-                id: 3,
-                sender_name: "Profa. Ana Costa",
-                sender_type: "teacher",
-                subject: "Material de Apoio - Português",
-                preview: "Disponibilizei novos materiais de apoio para a disciplina de português...",
-                sent_at: "3 dias atrás",
-                read: true,
-                important: false
-              }
-            ] %>
+            <% messages = (@received_messages + @sent_messages).sort_by(&:created_at).reverse %>
 
             <% if messages.any? %>
               <div class="list-group">
                 <% messages.each do |message| %>
-                  <a href="<%= students_message_path(message[:id]) %>" class="list-group-item list-group-item-action <%= 'list-group-item-light' unless message[:read] %>">
+                  <% is_received = message.recipient == current_user %>
+                  <% other_user = is_received ? message.sender : message.recipient %>
+                  
+                  <a href="<%= students_message_path(message) %>" class="list-group-item list-group-item-action <%= 'list-group-item-light' if is_received && !message.read? %>">
                     <div class="d-flex w-100 justify-content-between align-items-start">
                       <div class="flex-grow-1">
                         <div class="d-flex align-items-center mb-1">
-                          <% if message[:important] %>
-                            <i class="fas fa-exclamation-circle text-danger me-2"></i>
+                          <% if is_received %>
+                            <i class="fas fa-arrow-down text-success me-2"></i>
+                          <% else %>
+                            <i class="fas fa-arrow-up text-primary me-2"></i>
                           <% end %>
                           
-                          <% case message[:sender_type] %>
-                          <% when 'teacher' %>
-                            <i class="fas fa-chalkboard-teacher text-primary me-2"></i>
-                          <% when 'direction' %>
-                            <i class="fas fa-user-tie text-warning me-2"></i>
-                          <% when 'admin' %>
-                            <i class="fas fa-cog text-info me-2"></i>
-                          <% end %>
+                          <i class="<%= message_recipient_icon(other_user) %> me-2"></i>
                           
-                          <h6 class="mb-0 <%= 'fw-bold' unless message[:read] %>">
-                            <%= message[:sender_name] %>
+                          <h6 class="mb-0 <%= 'fw-bold' if is_received && !message.read? %>">
+                            <% if is_received %>
+                              De: <%= other_user.full_name %>
+                            <% else %>
+                              Para: <%= other_user.full_name %>
+                            <% end %>
                           </h6>
                           
-                          <% unless message[:read] %>
-                            <span class="badge bg-primary ms-2">Nova</span>
+                          <span class="<%= message_recipient_badge_class(other_user) %> ms-2">
+                            <%= other_user.user_type.humanize %>
+                          </span>
+                          
+                          <% if is_received && !message.read? %>
+                            <span class="badge bg-danger ms-2">Nova</span>
                           <% end %>
                         </div>
                         
-                        <h6 class="mb-1 <%= 'fw-bold' unless message[:read] %>">
-                          <%= message[:subject] %>
+                        <h6 class="mb-1 <%= 'fw-bold' if is_received && !message.read? %>">
+                          <%= message.subject %>
                         </h6>
                         
-                        <p class="mb-1 text-muted">
-                          <%= message[:preview] %>
+                        <p class="mb-1 text-muted small">
+                          <%= truncate(message.body, length: 100) %>
                         </p>
                       </div>
                       
                       <div class="text-end">
                         <small class="text-muted">
                           <i class="fas fa-clock me-1"></i>
-                          <%= message[:sent_at] %>
+                          <%= time_ago_in_words(message.created_at) %> atrás
                         </small>
                         <div class="mt-2">
-                          <div class="dropdown">
-                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" onclick="event.stopPropagation();">
-                              <i class="fas fa-ellipsis-v"></i>
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-end">
-                              <li>
-                                <a class="dropdown-item" href="<%= students_message_path(message[:id]) %>">
-                                  <i class="fas fa-eye"></i> Visualizar
-                                </a>
-                              </li>
-                              <% unless message[:read] %>
-                                <li>
-                                  <a class="dropdown-item" href="#" onclick="markAsRead(<%= message[:id] %>); event.preventDefault();">
-                                    <i class="fas fa-check"></i> Marcar como lida
-                                  </a>
-                                </li>
-                              <% end %>
-                              <li>
-                                <a class="dropdown-item" href="#" onclick="replyMessage(<%= message[:id] %>); event.preventDefault();">
-                                  <i class="fas fa-reply"></i> Responder
-                                </a>
-                              </li>
-                              <li><hr class="dropdown-divider"></li>
-                              <li>
-                                <a class="dropdown-item text-danger" href="#" onclick="deleteMessage(<%= message[:id] %>); event.preventDefault();">
-                                  <i class="fas fa-trash"></i> Excluir
-                                </a>
-                              </li>
-                            </ul>
-                          </div>
+                          <% if is_received && message.read? %>
+                            <small class="text-success">
+                              <i class="fas fa-check-double"></i> Lida
+                            </small>
+                          <% elsif !is_received %>
+                            <% if message.read? %>
+                              <small class="text-success">
+                                <i class="fas fa-check-double"></i> Lida pelo destinatário
+                              </small>
+                            <% else %>
+                              <small class="text-muted">
+                                <i class="fas fa-check"></i> Enviada
+                              </small>
+                            <% end %>
+                          <% end %>
                         </div>
                       </div>
                     </div>

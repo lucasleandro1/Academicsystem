@@ -25,10 +25,22 @@
 
           <div class="mb-3">
             <%= form.label :recipient_id, "Destinatário", class: "form-label" %>
-            <%= form.select :recipient_id, 
-                options_from_collection_for_select(@students, :id, :full_name), 
-                { prompt: "Selecione um aluno" }, 
-                { class: "form-select" } %>
+            <i class="fas fa-info-circle text-muted" 
+               data-bs-toggle="tooltip" 
+               title="Apenas alunos de suas turmas e membros da direção são exibidos"></i>
+            
+            <% grouped_options = recipient_options_grouped(current_user) %>
+            <% if grouped_options.any? %>
+              <%= form.select :recipient_id, 
+                             grouped_options_for_select(grouped_options), 
+                             { prompt: "Selecione o destinatário..." }, 
+                             { class: "form-select recipient-select", required: true } %>
+            <% else %>
+              <div class="alert alert-info mt-2">
+                <i class="fas fa-info-circle"></i>
+                Não há destinatários disponíveis. Verifique se você tem turmas atribuídas.
+              </div>
+            <% end %>
           </div>
 
           <div class="mb-3">
@@ -37,8 +49,8 @@
           </div>
 
           <div class="mb-3">
-            <%= form.label :content, "Mensagem", class: "form-label" %>
-            <%= form.text_area :content, class: "form-control", rows: 6, placeholder: "Digite sua mensagem..." %>
+            <%= form.label :body, "Mensagem", class: "form-label" %>
+            <%= form.text_area :body, class: "form-control", rows: 6, placeholder: "Digite sua mensagem..." %>
           </div>
 
           <div class="d-grid gap-2 d-md-flex justify-content-md-end">
@@ -54,37 +66,41 @@
 
   <div class="col-md-4">
     <!-- Envio em Lote -->
-    <div class="card mb-3">
-      <div class="card-header">
-        <h6><i class="fas fa-users"></i> Envio em Lote</h6>
-      </div>
-      <div class="card-body">
-        <p class="small">Envie mensagens para grupos específicos:</p>
-        
-        <!-- Enviar para Turma -->
-        <div class="mb-3">
-          <label class="form-label">Enviar para Turma:</label>
-          <select class="form-select" id="classroom-select">
-            <option value="">Selecione uma turma</option>
-            <% @classrooms.each do |classroom| %>
-              <option value="<%= classroom.id %>"><%= classroom.name %></option>
-            <% end %>
-          </select>
-          <div class="mt-2">
-            <button type="button" class="btn btn-sm btn-outline-primary w-100" id="send-to-classroom">
-              <i class="fas fa-users"></i> Enviar para Turma
-            </button>
-          </div>
+    <% broadcast_opts = broadcast_options(current_user) %>
+    <% if broadcast_opts.any? %>
+      <div class="card mb-3">
+        <div class="card-header">
+          <h6><i class="fas fa-users"></i> Envio em Lote</h6>
         </div>
-
-        <!-- Enviar para Direção -->
-        <div class="mb-3">
-          <button type="button" class="btn btn-sm btn-outline-info w-100" id="send-to-direction">
-            <i class="fas fa-user-tie"></i> Enviar para Direção
-          </button>
+        <div class="card-body">
+          <p class="small">Envie mensagens para grupos específicos:</p>
+          
+          <% broadcast_opts.each do |option| %>
+            <div class="mb-2">
+              <button type="button" 
+                      class="btn btn-outline-<%= option[:color] %> w-100 broadcast-trigger" 
+                      data-key="<%= option[:key] %>"
+                      data-title="<%= option[:title] %>"
+                      data-description="<%= option[:description] %>">
+                <i class="<%= option[:icon] %>"></i> <%= option[:title] %>
+              </button>
+            </div>
+          <% end %>
+          
+          <% if broadcast_opts.any? { |opt| opt[:key] == 'by_classroom' } %>
+            <div class="mt-3">
+              <label class="form-label small">Turma específica:</label>
+              <select class="form-select form-select-sm" id="classroom-select">
+                <option value="">Selecione uma turma</option>
+                <% classrooms_for_broadcast_select(current_user).each do |classroom| %>
+                  <%= content_tag :option, classroom[0], value: classroom[1] %>
+                <% end %>
+              </select>
+            </div>
+          <% end %>
         </div>
       </div>
-    </div>
+    <% end %>
 
     <!-- Modelos de Mensagem -->
     <div class="card">

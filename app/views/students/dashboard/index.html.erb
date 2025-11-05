@@ -293,7 +293,7 @@
                     <span class="badge bg-primary ms-1">Nova</span>
                   <% end %>
                 </h6>
-                <p class="mb-1 small"><%= truncate(message.content, length: 60) %></p>
+                <p class="mb-1 small"><%= truncate(message.body, length: 60) %></p>
                 <small class="text-muted"><%= time_ago_in_words(message.created_at) %> atrás</small>
               </div>
             </div>

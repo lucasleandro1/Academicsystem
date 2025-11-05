@@ -70,4 +70,19 @@ class User < ApplicationRecord
     return nil unless birth_date
     ((Date.current - birth_date) / 365).to_i
   end
+
+  def user_type_humanized
+    case user_type
+    when "admin"
+      "Administrador"
+    when "direction"
+      "Direção"
+    when "teacher"
+      "Professor"
+    when "student"
+      "Aluno"
+    else
+      user_type.humanize
+    end
+  end
 end

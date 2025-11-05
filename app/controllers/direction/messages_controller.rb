@@ -17,9 +17,7 @@ class Direction::MessagesController < ApplicationController
   def new
     @school = current_user.school
     @message = Message.new
-    @teachers = @school.teachers
-    @students = @school.students
-    @classrooms = @school.classrooms.includes(:students)
+    @recipient_service = MessageRecipientService.new(current_user)
   end
 
   def create
@@ -29,9 +27,7 @@ class Direction::MessagesController < ApplicationController
     if @message.save
       redirect_to direction_messages_path, notice: "Mensagem enviada com sucesso."
     else
-      @teachers = current_user.school.teachers
-      @students = current_user.school.students
-      @classrooms = current_user.school.classrooms.includes(:students)
+      @recipient_service = MessageRecipientService.new(current_user)
       render :new
     end
   end

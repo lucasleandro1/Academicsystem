@@ -1,0 +1,244 @@
+<% content_for :title, "Nova Mensagem" %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1>
+    <i class="fas fa-paper-plane"></i>
+    Nova Mensagem
+  </h1>
+  <%= link_to students_messages_path, class: "btn btn-outline-secondary" do %>
+    <i class="fas fa-arrow-left"></i> Voltar
+  <% end %>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="fas fa-edit"></i>
+          Enviar Mensagem
+        </h5>
+        <small class="text-muted">
+          Você pode enviar mensagens para seus professores e para a direção da escola
+        </small>
+      </div>
+      <div class="card-body">
+        <%= form_with model: [:students, @message], local: true do |form| %>
+          <% if @message.errors.any? %>
+            <div class="alert alert-danger">
+              <h6>Erros encontrados:</h6>
+              <ul class="mb-0">
+                <% @message.errors.full_messages.each do |message| %>
+                  <li><%= message %></li>
+                <% end %>
+              </ul>
+            </div>
+          <% end %>
+
+          <div class="mb-3">
+            <%= form.label :recipient_id, "Destinatário", class: "form-label" %>
+            <i class="fas fa-info-circle text-muted" 
+               data-bs-toggle="tooltip" 
+               title="Apenas seus professores e membros da direção são exibidos"></i>
+            
+            <% grouped_options = recipient_options_grouped(current_user) %>
+            <% if grouped_options.any? %>
+              <%= form.select :recipient_id, 
+                             grouped_options_for_select(grouped_options), 
+                             { prompt: "Selecione o destinatário..." }, 
+                             { class: "form-select recipient-select", required: true } %>
+            <% else %>
+              <div class="alert alert-info mt-2">
+                <i class="fas fa-info-circle"></i>
+                Não há destinatários disponíveis. Verifique se você está matriculado em uma turma.
+              </div>
+            <% end %>
+          </div>
+
+          <div class="mb-3">
+            <%= form.label :subject, "Assunto", class: "form-label" %>
+            <%= form.text_field :subject, class: "form-control", 
+                               placeholder: "Digite o assunto da mensagem", required: true %>
+          </div>
+
+          <div class="mb-3">
+            <%= form.label :body, "Mensagem", class: "form-label" %>
+            <%= form.text_area :body, rows: 8, class: "form-control", 
+                              placeholder: "Digite sua mensagem aqui...", required: true %>
+          </div>
+
+          <div class="d-flex justify-content-between">
+            <%= link_to "Cancelar", students_messages_path, class: "btn btn-secondary" %>
+            <%= form.submit "Enviar Mensagem", class: "btn btn-primary", 
+                           data: { disable_with: "Enviando..." } %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Dicas para o Estudante -->
+    <div class="card mt-4">
+      <div class="card-header">
+        <h6 class="mb-0">
+          <i class="fas fa-lightbulb text-warning"></i>
+          Dicas de Comunicação
+        </h6>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6">
+            <h6 class="text-primary">
+              <i class="fas fa-chalkboard-teacher"></i>
+              Para Professores
+            </h6>
+            <ul class="small">
+              <li>Tire dúvidas sobre matérias</li>
+              <li>Solicite feedback sobre atividades</li>
+              <li>Informe sobre dificuldades</li>
+              <li>Peça orientação para estudos</li>
+            </ul>
+          </div>
+          <div class="col-md-6">
+            <h6 class="text-info">
+              <i class="fas fa-user-tie"></i>
+              Para Direção
+            </h6>
+            <ul class="small">
+              <li>Questões administrativas</li>
+              <li>Sugestões para a escola</li>
+              <li>Problemas estruturais</li>
+              <li>Solicitações especiais</li>
+            </ul>
+          </div>
+        </div>
+        
+        <div class="alert alert-light mt-3">
+          <i class="fas fa-info-circle text-primary"></i>
+          <strong>Lembre-se:</strong> Seja respeitoso e claro em suas mensagens. 
+          Use um tom formal e explique bem sua situação.
+        </div>
+      </div>
+    </div>
+
+    <!-- Modelos de Mensagem para Estudantes -->
+    <div class="card mt-3">
+      <div class="card-header">
+        <h6 class="mb-0">
+          <i class="fas fa-file-alt"></i>
+          Modelos de Mensagem
+        </h6>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-4 mb-2">
+            <button type="button" class="btn btn-outline-info btn-sm w-100 template-btn" 
+                    data-subject="Dúvida sobre Matéria" 
+                    data-body="Prezado(a) Professor(a),
+
+Tenho uma dúvida sobre o conteúdo da aula de [DATA/ASSUNTO].
+
+Poderia me explicar melhor [DETALHE DA DÚVIDA]?
+
+Obrigado(a) pela atenção.
+
+Atenciosamente,
+<%= current_user.full_name %>">
+              <i class="fas fa-question-circle"></i><br>
+              Dúvida
+            </button>
+          </div>
+          
+          <div class="col-md-4 mb-2">
+            <button type="button" class="btn btn-outline-warning btn-sm w-100 template-btn"
+                    data-subject="Justificativa de Falta"
+                    data-body="Prezado(a) Professor(a),
+
+Venho por meio desta justificar minha ausência na aula do dia [DATA] devido a [MOTIVO].
+
+Gostaria de saber se há algum conteúdo ou atividade que preciso recuperar.
+
+Aguardo orientações.
+
+Atenciosamente,
+<%= current_user.full_name %>">
+              <i class="fas fa-calendar-times"></i><br>
+              Justificativa
+            </button>
+          </div>
+          
+          <div class="col-md-4 mb-2">
+            <button type="button" class="btn btn-outline-success btn-sm w-100 template-btn"
+                    data-subject="Solicitação de Orientação"
+                    data-body="Prezado(a) Professor(a),
+
+Gostaria de solicitar uma orientação sobre [ASSUNTO/MATÉRIA].
+
+Estou com dificuldades em [DETALHE DA DIFICULDADE] e gostaria de agendar um horário para conversarmos.
+
+Fico no aguardo de sua disponibilidade.
+
+Atenciosamente,
+<%= current_user.full_name %>">
+              <i class="fas fa-hands-helping"></i><br>
+              Orientação
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.recipient-select {
+  font-size: 0.95rem;
+}
+
+.template-btn {
+  min-height: 80px;
+  transition: transform 0.2s;
+}
+
+.template-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Inicializar tooltips
+  var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+  var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+    return new bootstrap.Tooltip(tooltipTriggerEl)
+  })
+
+  // Modelos rápidos
+  document.querySelectorAll('.template-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const subjectField = document.getElementById('message_subject');
+      const bodyField = document.getElementById('message_body');
+      
+      if (subjectField && bodyField) {
+        subjectField.value = this.dataset.subject;
+        bodyField.value = this.dataset.body;
+        
+        // Focar no campo de assunto para o usuário personalizar
+        subjectField.focus();
+        subjectField.select();
+      }
+    });
+  });
+  
+  // Melhorar a experiência do select
+  const recipientSelect = document.querySelector('.recipient-select');
+  if (recipientSelect) {
+    recipientSelect.addEventListener('change', function() {
+      if (this.value) {
+        this.classList.add('is-valid');
+        this.classList.remove('is-invalid');
+      }
+    });
+  }
+});
+</script>

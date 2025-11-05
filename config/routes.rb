@@ -159,6 +159,7 @@ Rails.application.routes.draw do
       end
     end
     resources :events, only: [ :index, :show ]
+    resources :messages, only: [ :index, :new, :create, :show, :destroy ]
     root to: "dashboard#index"
   end
 end
