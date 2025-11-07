@@ -87,6 +87,52 @@
             <div class="form-text">Selecione a escola específica para este documento.</div>
           </div>
 
+          <!-- Compartilhamento -->
+          <div class="mb-4">
+            <h6 class="text-muted border-bottom pb-2">Opções de Compartilhamento</h6>
+            
+            <div class="mb-3">
+              <%= form.label :sharing_type, "Compartilhar com", class: "form-label" %>
+              <%= form.select :sharing_type, [
+                ['Todas as escolas da rede', 'all_students'],
+                ['Escola específica', 'specific_classroom'],
+                ['Professor específico', 'specific_user'],
+                ['Aluno específico', 'specific_user']
+              ], { selected: @document.sharing_type || 'all_students' }, { class: "form-select", id: "sharing_type_select" } %>
+              <small class="form-text text-muted">Escolha com quem deseja compartilhar este documento</small>
+            </div>
+
+            <div class="mb-3" id="user_select_div" style="display: <%= @target_user ? 'block' : 'none' %>;">
+              <%= form.label :target_user_id, "Anexar para Usuário", class: "form-label" %>
+              
+              <div class="row">
+                <div class="col-md-6">
+                  <label class="form-label">Professores</label>
+                  <%= form.select :target_user_id, 
+                      options_from_collection_for_select(@teachers || [], :id, :full_name, @target_user&.id), 
+                      { prompt: "Escolha um professor" }, 
+                      { class: "form-select", id: "teacher_select" } %>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Alunos</label>
+                  <%= form.select :target_user_id, 
+                      options_from_collection_for_select(@students || [], :id, :full_name, @target_user&.id), 
+                      { prompt: "Escolha um aluno" }, 
+                      { class: "form-select", id: "student_select" } %>
+                </div>
+              </div>
+              
+              <small class="form-text text-muted">Este documento será anexado especificamente para o usuário selecionado</small>
+            </div>
+
+            <% if @target_user %>
+              <div class="alert alert-info">
+                <i class="fas fa-user"></i>
+                Anexando documento para: <strong><%= @target_user.full_name %></strong> (<%= @target_user.user_type.humanize %>)
+              </div>
+            <% end %>
+          </div>
+
           <div class="mb-4">
             <%= form.label :description, "Descrição", class: "form-label" %>
             <%= form.text_area :description, rows: 4, class: "form-control", 
@@ -205,5 +251,43 @@ document.addEventListener('DOMContentLoaded', function() {
       this.value = '';
     }
   });
+
+  // Controle de compartilhamento
+  const sharingTypeSelect = document.getElementById('sharing_type_select');
+  const userDiv = document.getElementById('user_select_div');
+  const teacherSelect = document.getElementById('teacher_select');
+  const studentSelect = document.getElementById('student_select');
+
+  function toggleFields() {
+    const selectedValue = sharingTypeSelect.value;
+    
+    // Esconder campo de usuário primeiro
+    userDiv.style.display = 'none';
+    
+    // Mostrar o campo relevante
+    if (selectedValue === 'specific_user') {
+      userDiv.style.display = 'block';
+    }
+  }
+
+  // Sincronizar seleção entre professores e alunos
+  if (teacherSelect && studentSelect) {
+    teacherSelect.addEventListener('change', function() {
+      if (this.value) {
+        studentSelect.value = '';
+      }
+    });
+
+    studentSelect.addEventListener('change', function() {
+      if (this.value) {
+        teacherSelect.value = '';
+      }
+    });
+  }
+
+  if (sharingTypeSelect) {
+    sharingTypeSelect.addEventListener('change', toggleFields);
+    toggleFields(); // Executar na inicialização
+  }
 });
 </script>

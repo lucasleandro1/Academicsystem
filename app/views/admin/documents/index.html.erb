@@ -1,13 +1,9 @@
 <% content_for :title, "GED Municipal - Administrador" %>
 
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-  <div>
-    <h1 class="h2">
-      <i class="fas fa-file-archive text-success me-2"></i>
-      Gestão Eletrônica de Documentos (GED)
-    </h1>
-    <p class="text-muted mb-0">Gerencie documentos oficiais da rede municipal de ensino.</p>
-  </div>
+  <h1 class="h2">
+    <i class="fas fa-folder-open"></i> Gestão Eletrônica de Documentos
+  </h1>
   <div class="btn-toolbar mb-2 mb-md-0">
     <%= link_to new_admin_document_path, class: "btn btn-primary" do %>
       <i class="fas fa-plus"></i> Novo Documento
@@ -15,136 +11,399 @@
   </div>
 </div>
 
-<!-- Filtros -->
-<div class="card mb-4">
-  <div class="card-body">
-    <%= form_with url: admin_documents_path, method: :get, local: true, class: "row g-3" do |form| %>
-      <div class="col-md-3">
-        <%= form.text_field :search, placeholder: "Buscar documentos...", 
-                           value: params[:search], class: "form-control" %>
+<!-- Estatísticas -->
+<div class="row mb-4">
+  <div class="col-md-3">
+    <div class="card text-center">
+      <div class="card-body">
+        <h4 class="text-primary"><%= @documents.count %></h4>
+        <small class="text-muted">Total de Documentos</small>
       </div>
-      <div class="col-md-3">
-        <%= form.select :document_type, 
-                       options_for_select([
-                         ['Todos os tipos', ''],
-                         ['Boletim', 'boletim'],
-                         ['Histórico', 'historico'],
-                         ['Comunicado', 'comunicado'],
-                         ['Regulamento', 'regulamento'],
-                         ['Circular', 'circular'],
-                         ['Ata', 'ata'],
-                         ['Certificado', 'certificado'],
-                         ['Declaração', 'declaracao'],
-                         ['Outros', 'outros']
-                       ], params[:document_type]),
-                       {}, { class: "form-select" } %>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center">
+      <div class="card-body">
+        <h4 class="text-success"><%= @documents.where(is_municipal: true).count %></h4>
+        <small class="text-muted">Documentos Municipais</small>
       </div>
-      <div class="col-md-3">
-        <%= form.select :school_id, 
-                       options_from_collection_for_select(@schools, :id, :name, params[:school_id]),
-                       { prompt: "Todas as escolas" }, 
-                       { class: "form-select" } %>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center">
+      <div class="card-body">
+        <h4 class="text-info"><%= @schools.count %></h4>
+        <small class="text-muted">Escolas Atendidas</small>
       </div>
-      <div class="col-md-3">
-        <%= form.submit "Buscar", class: "btn btn-outline-primary" %>
-        <%= link_to "Limpar", admin_documents_path, class: "btn btn-outline-secondary" %>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center">
+      <div class="card-body">
+        <h4 class="text-warning"><%= @documents.where(sharing_type: 'specific_user').count %></h4>
+        <small class="text-muted">Documentos Específicos</small>
       </div>
-    <% end %>
+    </div>
   </div>
 </div>
 
-<!-- Lista de Documentos -->
-<div class="card">
-  <div class="card-header">
-    <h6 class="mb-0">
-      <i class="fas fa-folder-open me-2"></i>
-      Documentos Cadastrados (<%= @documents.count %>)
-    </h6>
-  </div>
-  <div class="card-body">
-    <% if @documents.any? %>
-      <div class="table-responsive">
-        <table class="table table-hover">
-          <thead>
-            <tr>
-              <th>Documento</th>
-              <th>Tipo</th>
-              <th>Anexo</th>
-              <th>Escola</th>
-              <th>Municipal</th>
-              <th>Data</th>
-              <th width="150">Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            <% @documents.each do |document| %>
-              <tr>
-                <td>
-                  <i class="fas fa-file-alt text-muted me-2"></i>
-                  <strong><%= document.title %></strong>
-                  <% if document.description.present? %>
-                    <br><small class="text-muted"><%= truncate(document.description, length: 60) %></small>
-                  <% end %>
-                </td>
-                <td>
-                  <span class="badge bg-info"><%= document.document_type&.humanize || "N/A" %></span>
-                </td>
-                <td class="text-center">
-                  <% if document.attachment.attached? %>
-                    <i class="fas fa-paperclip text-success" title="Arquivo anexado (Active Storage)"></i>
-                  <% elsif document.file_path.present? %>
-                    <i class="fas fa-file text-warning" title="Arquivo legado"></i>
-                  <% else %>
-                    <i class="fas fa-file-slash text-muted" title="Sem anexo"></i>
-                  <% end %>
-                </td>
-                <td>
-                  <%= document.school.name %>
-                </td>
-                <td>
-                  <% if document.municipal? %>
-                    <span class="badge bg-warning">Sim</span>
-                  <% else %>
-                    <span class="badge bg-light text-dark">Não</span>
-                  <% end %>
-                </td>
-                <td>
-                  <%= document.created_at.strftime("%d/%m/%Y") %>
-                </td>
-                <td>
-                  <div class="btn-group btn-group-sm">
-                    <%= link_to admin_document_path(document), class: "btn btn-outline-info", title: "Ver" do %>
-                      <i class="fas fa-eye"></i>
-                    <% end %>
-                    <% if document.file_path.present? %>
-                      <%= link_to download_admin_document_path(document), class: "btn btn-outline-success", title: "Download" do %>
-                        <i class="fas fa-download"></i>
-                      <% end %>
-                    <% end %>
-                    <%= link_to edit_admin_document_path(document), class: "btn btn-outline-warning", title: "Editar" do %>
-                      <i class="fas fa-edit"></i>
-                    <% end %>
-                    <%= link_to admin_document_path(document), method: :delete, 
-                               class: "btn btn-outline-danger", title: "Excluir",
-                               confirm: "Tem certeza que deseja excluir este documento?" do %>
-                      <i class="fas fa-trash"></i>
-                    <% end %>
-                  </div>
-                </td>
-              </tr>
+<!-- Tabs -->
+<ul class="nav nav-tabs" id="documentsTab" role="tablist">
+  <li class="nav-item" role="presentation">
+    <button class="nav-link active" id="all-docs-tab" data-bs-toggle="tab" data-bs-target="#all-docs" type="button" role="tab">
+      <i class="fas fa-list"></i> Todos os Documentos
+    </button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="municipal-docs-tab" data-bs-toggle="tab" data-bs-target="#municipal-docs" type="button" role="tab">
+      <i class="fas fa-building"></i> Documentos Municipais
+    </button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="school-docs-tab" data-bs-toggle="tab" data-bs-target="#school-docs" type="button" role="tab">
+      <i class="fas fa-school"></i> Por Escola
+    </button>
+  </li>
+</ul>
+
+<div class="tab-content" id="documentsTabContent">
+  <!-- Todos os Documentos -->
+  <div class="tab-pane fade show active" id="all-docs" role="tabpanel" aria-labelledby="all-docs-tab">
+    <div class="card">
+      <div class="card-header">
+        <div class="row align-items-center">
+          <div class="col">
+            <h5 class="mb-0">Todos os Documentos da Rede Municipal</h5>
+          </div>
+          <div class="col-auto">
+            <!-- Filtros -->
+            <%= form_with url: admin_documents_path, method: :get, local: true, class: "row g-2" do |form| %>
+              <div class="col-auto">
+                <%= form.text_field :search, placeholder: "Buscar...", 
+                                   value: params[:search], class: "form-control form-control-sm" %>
+              </div>
+              <div class="col-auto">
+                <%= form.select :document_type, 
+                               options_for_select([
+                                 ['Todos os tipos', ''],
+                                 ['Boletim', 'boletim'],
+                                 ['Histórico', 'historico'],
+                                 ['Comunicado', 'comunicado'],
+                                 ['Regulamento', 'regulamento'],
+                                 ['Circular', 'circular'],
+                                 ['Ata', 'ata'],
+                                 ['Certificado', 'certificado'],
+                                 ['Declaração', 'declaracao'],
+                                 ['Outros', 'outros']
+                               ], params[:document_type]),
+                               {}, { class: "form-select form-select-sm" } %>
+              </div>
+              <div class="col-auto">
+                <%= form.select :school_id, 
+                               options_from_collection_for_select(@schools || [], :id, :name, params[:school_id]),
+                               { prompt: "Todas as escolas" }, 
+                               { class: "form-select form-select-sm" } %>
+              </div>
+              <div class="col-auto">
+                <%= form.submit "Filtrar", class: "btn btn-outline-primary btn-sm" %>
+              </div>
             <% end %>
-          </tbody>
-        </table>
+          </div>
+        </div>
       </div>
-    <% else %>
-      <div class="text-center py-5">
-        <i class="fas fa-file-archive fa-3x text-muted mb-3"></i>
-        <h5 class="text-muted">Nenhum documento encontrado</h5>
-        <p class="text-muted">Comece adicionando documentos oficiais ao sistema.</p>
-        <%= link_to new_admin_document_path, class: "btn btn-primary" do %>
-          <i class="fas fa-plus"></i> Adicionar Primeiro Documento
+      <div class="card-body">
+        <% if @documents.any? %>
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Título</th>
+                  <th>Tipo</th>
+                  <th>Escola</th>
+                  <th>Compartilhamento</th>
+                  <th>Criado por</th>
+                  <th class="text-center">Anexo</th>
+                  <th>Data</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% @documents.each do |document| %>
+                  <tr>
+                    <td>
+                      <strong><%= document.title %></strong>
+                      <% if document.description.present? %>
+                        <br>
+                        <small class="text-muted"><%= truncate(document.description, length: 50) %></small>
+                      <% end %>
+                    </td>
+                    <td>
+                      <span class="badge bg-secondary">
+                        <%= document.type_description %>
+                      </span>
+                    </td>
+                    <td>
+                      <%= document.school.name %>
+                      <% if document.is_municipal %>
+                        <br>
+                        <small class="badge bg-success">Municipal</small>
+                      <% end %>
+                    </td>
+                    <td>
+                      <% if document.recipient %>
+                        <span class="badge bg-primary">
+                          <%= document.recipient.name %> (<%= document.recipient.user_type.humanize %>)
+                        </span>
+                      <% elsif document.sharing_type == 'specific_classroom' && document.classroom %>
+                        <span class="badge bg-info">
+                          Turma: <%= document.classroom.name %>
+                        </span>
+                      <% else %>
+                        <span class="badge bg-success">
+                          <%= document.sharing_description %>
+                        </span>
+                      <% end %>
+                    </td>
+                    <td>
+                      <%= document.user.full_name %>
+                      <br>
+                      <small class="text-muted"><%= document.user.user_type.humanize %></small>
+                    </td>
+                    <td class="text-center">
+                      <% if document.attachment.attached? %>
+                        <i class="fas fa-paperclip text-success" title="Arquivo anexado"></i>
+                      <% elsif document.file_path.present? && File.exist?(document.file_path) %>
+                        <i class="fas fa-file text-warning" title="Arquivo legado"></i>
+                      <% else %>
+                        <i class="fas fa-file-slash text-muted" title="Sem anexo"></i>
+                      <% end %>
+                    </td>
+                    <td>
+                      <%= document.created_at.strftime("%d/%m/%Y") %>
+                      <br>
+                      <small class="text-muted"><%= document.created_at.strftime("%H:%M") %></small>
+                    </td>
+                    <td>
+                      <div class="btn-group btn-group-sm">
+                        <%= link_to admin_document_path(document), class: "btn btn-outline-primary", title: "Ver" do %>
+                          <i class="fas fa-eye"></i>
+                        <% end %>
+                        <%= link_to edit_admin_document_path(document), class: "btn btn-outline-secondary", title: "Editar" do %>
+                          <i class="fas fa-edit"></i>
+                        <% end %>
+                        <% if document.attachment.attached? || (document.file_path.present? && File.exist?(document.file_path)) %>
+                          <%= link_to download_admin_document_path(document), class: "btn btn-outline-success", title: "Download" do %>
+                            <i class="fas fa-download"></i>
+                          <% end %>
+                        <% end %>
+                        <%= link_to admin_document_path(document), method: :delete, 
+                                    class: "btn btn-outline-danger", title: "Remover",
+                                    confirm: "Tem certeza que deseja remover este documento?" do %>
+                          <i class="fas fa-trash"></i>
+                        <% end %>
+                      </div>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+          
+          <% if @documents.respond_to?(:current_page) %>
+            <div class="d-flex justify-content-center mt-3">
+              <%= paginate @documents %>
+            </div>
+          <% end %>
+        <% else %>
+          <div class="text-center py-4">
+            <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
+            <h6 class="text-muted">Nenhum documento encontrado</h6>
+            <p class="text-muted">Comece criando o primeiro documento da rede municipal.</p>
+            <%= link_to new_admin_document_path, class: "btn btn-primary" do %>
+              <i class="fas fa-plus"></i> Criar Documento
+            <% end %>
+          </div>
         <% end %>
       </div>
-    <% end %>
+    </div>
+  </div>
+
+  <!-- Documentos Municipais -->
+  <div class="tab-pane fade" id="municipal-docs" role="tabpanel" aria-labelledby="municipal-docs-tab">
+    <div class="card">
+      <div class="card-body">
+        <% municipal_documents = @documents.select { |doc| doc.is_municipal } %>
+        <% if municipal_documents.any? %>
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Título</th>
+                  <th>Tipo</th>
+                  <th>Escola</th>
+                  <th class="text-center">Anexo</th>
+                  <th>Data</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% municipal_documents.each do |document| %>
+                  <tr>
+                    <td>
+                      <strong><%= document.title %></strong>
+                      <% if document.description.present? %>
+                        <br>
+                        <small class="text-muted"><%= truncate(document.description, length: 50) %></small>
+                      <% end %>
+                    </td>
+                    <td>
+                      <span class="badge bg-success">
+                        <%= document.type_description %>
+                      </span>
+                    </td>
+                    <td>
+                      <%= document.school.name %>
+                    </td>
+                    <td class="text-center">
+                      <% if document.attachment.attached? %>
+                        <i class="fas fa-paperclip text-success" title="Arquivo anexado"></i>
+                      <% elsif document.file_path.present? && File.exist?(document.file_path) %>
+                        <i class="fas fa-file text-warning" title="Arquivo legado"></i>
+                      <% else %>
+                        <i class="fas fa-file-slash text-muted" title="Sem anexo"></i>
+                      <% end %>
+                    </td>
+                    <td>
+                      <%= document.created_at.strftime("%d/%m/%Y") %>
+                      <br>
+                      <small class="text-muted"><%= document.created_at.strftime("%H:%M") %></small>
+                    </td>
+                    <td>
+                      <div class="btn-group btn-group-sm">
+                        <%= link_to admin_document_path(document), class: "btn btn-outline-primary", title: "Ver" do %>
+                          <i class="fas fa-eye"></i>
+                        <% end %>
+                        <%= link_to edit_admin_document_path(document), class: "btn btn-outline-secondary", title: "Editar" do %>
+                          <i class="fas fa-edit"></i>
+                        <% end %>
+                        <% if document.attachment.attached? || (document.file_path.present? && File.exist?(document.file_path)) %>
+                          <%= link_to download_admin_document_path(document), class: "btn btn-outline-success", title: "Download" do %>
+                            <i class="fas fa-download"></i>
+                          <% end %>
+                        <% end %>
+                        <%= link_to admin_document_path(document), method: :delete, 
+                                    class: "btn btn-outline-danger", title: "Remover",
+                                    confirm: "Tem certeza que deseja remover este documento?" do %>
+                          <i class="fas fa-trash"></i>
+                        <% end %>
+                      </div>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        <% else %>
+          <div class="text-center py-4">
+            <i class="fas fa-building fa-3x text-muted mb-3"></i>
+            <h6 class="text-muted">Nenhum documento municipal</h6>
+            <p class="text-muted">Não há documentos marcados como municipais.</p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Por Escola -->
+  <div class="tab-pane fade" id="school-docs" role="tabpanel" aria-labelledby="school-docs-tab">
+    <div class="card">
+      <div class="card-body">
+        <% if @schools && @schools.any? %>
+          <div class="accordion" id="schoolDocumentsAccordion">
+            <% @schools.each_with_index do |school, index| %>
+              <% school_documents = @documents.select { |doc| doc.school_id == school.id } %>
+              <div class="accordion-item">
+                <h2 class="accordion-header" id="heading<%= index %>">
+                  <button class="accordion-button <%= 'collapsed' unless index == 0 %>" type="button" data-bs-toggle="collapse" data-bs-target="#collapse<%= index %>" aria-expanded="<%= index == 0 ? 'true' : 'false' %>" aria-controls="collapse<%= index %>">
+                    <strong><%= school.name %></strong>
+                    <span class="badge bg-primary ms-2"><%= school_documents.count %> documentos</span>
+                  </button>
+                </h2>
+                <div id="collapse<%= index %>" class="accordion-collapse collapse <%= 'show' if index == 0 %>" aria-labelledby="heading<%= index %>" data-bs-parent="#schoolDocumentsAccordion">
+                  <div class="accordion-body">
+                    <% if school_documents.any? %>
+                      <div class="table-responsive">
+                        <table class="table table-sm">
+                          <thead>
+                            <tr>
+                              <th>Título</th>
+                              <th>Tipo</th>
+                              <th>Criado por</th>
+                              <th>Data</th>
+                              <th>Ações</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <% school_documents.each do |document| %>
+                              <tr>
+                                <td>
+                                  <strong><%= document.title %></strong>
+                                  <% if document.attachment.attached? %>
+                                    <i class="fas fa-paperclip text-success ms-1" title="Arquivo anexado"></i>
+                                  <% end %>
+                                </td>
+                                <td>
+                                  <span class="badge bg-secondary">
+                                    <%= document.type_description %>
+                                  </span>
+                                </td>
+                                <td>
+                                  <%= document.user.full_name %>
+                                  <br>
+                                  <small class="text-muted"><%= document.user.user_type.humanize %></small>
+                                </td>
+                                <td>
+                                  <%= document.created_at.strftime("%d/%m/%Y") %>
+                                </td>
+                                <td>
+                                  <div class="btn-group btn-group-sm">
+                                    <%= link_to admin_document_path(document), class: "btn btn-outline-primary", title: "Ver" do %>
+                                      <i class="fas fa-eye"></i>
+                                    <% end %>
+                                    <%= link_to edit_admin_document_path(document), class: "btn btn-outline-secondary", title: "Editar" do %>
+                                      <i class="fas fa-edit"></i>
+                                    <% end %>
+                                    <% if document.attachment.attached? || (document.file_path.present? && File.exist?(document.file_path)) %>
+                                      <%= link_to download_admin_document_path(document), class: "btn btn-outline-success", title: "Download" do %>
+                                        <i class="fas fa-download"></i>
+                                      <% end %>
+                                    <% end %>
+                                  </div>
+                                </td>
+                              </tr>
+                            <% end %>
+                          </tbody>
+                        </table>
+                      </div>
+                    <% else %>
+                      <div class="text-center py-3">
+                        <i class="fas fa-folder-open fa-2x text-muted mb-2"></i>
+                        <p class="text-muted mb-0">Nenhum documento nesta escola.</p>
+                      </div>
+                    <% end %>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        <% else %>
+          <div class="text-center py-4">
+            <i class="fas fa-school fa-3x text-muted mb-3"></i>
+            <h6 class="text-muted">Nenhuma escola encontrada</h6>
+            <p class="text-muted">Não há escolas cadastradas no sistema.</p>
+          </div>
+        <% end %>
+      </div>
+    </div>
   </div>
 </div>

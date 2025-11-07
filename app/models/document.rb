@@ -3,12 +3,15 @@ class Document < ApplicationRecord
   belongs_to :user
   belongs_to :subject, optional: true
   belongs_to :classroom, optional: true
+  belongs_to :recipient, polymorphic: true, optional: true
+  belongs_to :attached_by, class_name: "User", optional: true
 
   has_one_attached :attachment
 
   validates :title, presence: true
   validates :document_type, presence: true
-  validates :sharing_type, inclusion: { in: %w[all_students specific_student specific_classroom all_subject_students] }
+  validates :sharing_type, inclusion: { in: %w[all_students specific_student specific_classroom all_subject_students specific_user] }
+  validates :visibility_level, inclusion: { in: %w[public private school_only] }
 
   scope :municipal, -> { where(is_municipal: true) }
   scope :school_specific, -> { where(is_municipal: [ false, nil ]) }
@@ -84,11 +87,17 @@ class Document < ApplicationRecord
     when "specific_student" then user_id.present? ? "Aluno específico" : "Não definido"
     when "specific_classroom" then classroom.present? ? "Turma: #{classroom.name}" : "Turma não definida"
     when "all_subject_students" then subject.present? ? "Todos os alunos da disciplina #{subject.name}" : "Disciplina não definida"
+    when "specific_user" then recipient.present? ? "Usuário específico: #{recipient.name}" : "Usuário não definido"
     else "Não definido"
     end
   end
 
   def shared_with_student?(student)
+    # Se for documento específico para um usuário
+    if sharing_type == "specific_user"
+      return recipient_type == "User" && recipient_id == student.id
+    end
+
     case sharing_type
     when "all_students" then true
     when "specific_student" then user_id == student.id
@@ -96,6 +105,79 @@ class Document < ApplicationRecord
     when "all_subject_students" then subject.present? && subject.classroom_id == student.classroom_id
     else false
     end
+  end
+
+  # Novos métodos para hierarquia de documentos
+  def can_be_viewed_by?(user)
+    return false unless user
+
+    # Diretor pode ver todos os documentos da escola
+    return true if user.direction? && user.school_id == school_id
+
+    # Admin pode ver todos os documentos
+    return true if user.admin?
+
+    # Se é o criador do documento
+    return true if user_id == user.id
+
+    # Se é o destinatário específico
+    if recipient_type == "User" && recipient_id == user.id
+      return true
+    end
+
+    # Se é professor, pode ver documentos de alunos de suas turmas
+    if user.teacher?
+      if recipient_type == "User" && recipient&.student?
+        # Verifica se o aluno está em alguma turma do professor
+        teacher_classroom_ids = user.teacher_subjects.pluck(:classroom_id).uniq
+        return teacher_classroom_ids.include?(recipient.classroom_id)
+      end
+
+      # Documentos compartilhados com a escola ou turma
+      if sharing_type.in?(%w[all_students specific_classroom all_subject_students])
+        return shared_with_student?(user) if user.student?
+        return true # Professor pode ver documentos gerais da escola
+      end
+    end
+
+    # Se é aluno, verifica se tem acesso ao documento
+    if user.student?
+      return shared_with_student?(user)
+    end
+
+    false
+  end
+
+  def can_be_attached_by?(attacher, target_user)
+    return false unless attacher && target_user
+    return false unless attacher.school_id == target_user.school_id
+
+    case attacher.user_type
+    when "direction"
+      # Diretor pode anexar documentos para qualquer um da escola
+      target_user.teacher? || target_user.student?
+    when "teacher"
+      # Professor pode anexar documentos apenas para alunos de suas turmas
+      if target_user.student?
+        teacher_classroom_ids = attacher.teacher_subjects.pluck(:classroom_id).uniq
+        teacher_classroom_ids.include?(target_user.classroom_id)
+      else
+        false
+      end
+    when "student"
+      # Aluno só pode anexar documentos para si mesmo
+      attacher.id == target_user.id
+    else
+      false
+    end
+  end
+
+  def attachment_hierarchy_level
+    return "admin" if user&.admin?
+    return "direction" if user&.direction?
+    return "teacher" if user&.teacher?
+    return "student" if user&.student?
+    "unknown"
   end
 
   private

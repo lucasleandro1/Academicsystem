@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_03_132016) do
+ActiveRecord::Schema[8.0].define(version: 2025_11_07_180142) do
   create_table "absences", force: :cascade do |t|
     t.integer "subject_id", null: false
     t.date "date"
@@ -110,10 +110,18 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_03_132016) do
     t.integer "subject_id"
     t.string "sharing_type", default: "all_students"
     t.integer "classroom_id"
+    t.string "recipient_type"
+    t.integer "recipient_id"
+    t.string "visibility_level", default: "public"
+    t.integer "attached_by_id"
+    t.index ["attached_by_id"], name: "index_documents_on_attached_by_id"
     t.index ["classroom_id"], name: "index_documents_on_classroom_id"
+    t.index ["recipient_type", "recipient_id"], name: "index_documents_on_recipient"
+    t.index ["recipient_type", "recipient_id"], name: "index_documents_on_recipient_type_and_recipient_id"
     t.index ["school_id"], name: "index_documents_on_school_id"
     t.index ["subject_id"], name: "index_documents_on_subject_id"
     t.index ["user_id"], name: "index_documents_on_user_id"
+    t.index ["visibility_level"], name: "index_documents_on_visibility_level"
   end
 
   create_table "events", force: :cascade do |t|
@@ -231,6 +239,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_03_132016) do
   add_foreign_key "documents", "schools"
   add_foreign_key "documents", "subjects"
   add_foreign_key "documents", "users"
+  add_foreign_key "documents", "users", column: "attached_by_id"
   add_foreign_key "events", "schools"
   add_foreign_key "grades", "schools"
   add_foreign_key "grades", "subjects"

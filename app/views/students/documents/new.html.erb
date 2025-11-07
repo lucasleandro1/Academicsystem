@@ -1,0 +1,126 @@
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1 class="h2">Adicionar Documento</h1>
+  <div class="btn-toolbar mb-2 mb-md-0">
+    <%= link_to students_documents_path, class: "btn btn-outline-secondary" do %>
+      <i class="fas fa-arrow-left"></i> Voltar
+    <% end %>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">Novo Documento</h5>
+      </div>
+      <div class="card-body">
+        <%= form_with model: [:students, @document], local: true, multipart: true do |form| %>
+          <% if @document.errors.any? %>
+            <div class="alert alert-danger">
+              <h6>Erro ao salvar documento:</h6>
+              <ul class="mb-0">
+                <% @document.errors.full_messages.each do |message| %>
+                  <li><%= message %></li>
+                <% end %>
+              </ul>
+            </div>
+          <% end %>
+
+          <div class="mb-3">
+            <%= form.label :title, "Título do Documento", class: "form-label" %>
+            <%= form.text_field :title, class: "form-control", placeholder: "Ex: Atestado médico", required: true %>
+          </div>
+
+          <div class="mb-3">
+            <%= form.label :document_type, "Tipo de Documento", class: "form-label" %>
+            <%= form.select :document_type, 
+                            options_for_select([
+                              ['Atestado Médico', 'atestado'],
+                              ['Comprovante de Residência', 'comprovante'],
+                              ['Declaração', 'declaracao'],
+                              ['Certificado', 'certificado'],
+                              ['Outros', 'outros']
+                            ], @document.document_type), 
+                            { prompt: "Selecione o tipo" }, 
+                            { class: "form-select", required: true } %>
+          </div>
+
+          <div class="mb-3">
+            <%= form.label :description, "Descrição (Opcional)", class: "form-label" %>
+            <%= form.text_area :description, class: "form-control", rows: 3, 
+                               placeholder: "Descrição adicional sobre o documento..." %>
+          </div>
+
+          <div class="mb-3">
+            <%= form.label :attachment, "Arquivo", class: "form-label" %>
+            <%= form.file_field :attachment, class: "form-control", 
+                                accept: ".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif",
+                                required: true %>
+            <div class="form-text">
+              Tipos aceitos: PDF, DOC, DOCX, JPG, JPEG, PNG, GIF. Tamanho máximo: 10MB.
+            </div>
+          </div>
+
+          <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+            <%= link_to "Cancelar", students_documents_path, class: "btn btn-secondary me-md-2" %>
+            <%= form.submit "Adicionar Documento", class: "btn btn-primary" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="fas fa-info-circle"></i>
+          Informações
+        </h5>
+      </div>
+      <div class="card-body">
+        <p class="mb-2">
+          <i class="fas fa-user text-success"></i>
+          <small>Este documento será visível apenas para você e para os professores e diretores da escola.</small>
+        </p>
+        <p class="mb-2">
+          <i class="fas fa-file-upload text-info"></i>
+          <small>Você pode adicionar documentos pessoais como atestados médicos, comprovantes, etc.</small>
+        </p>
+        <p class="mb-0">
+          <i class="fas fa-trash text-warning"></i>
+          <small>Você pode excluir seus próprios documentos a qualquer momento.</small>
+        </p>
+      </div>
+    </div>
+
+    <div class="card mt-3">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="fas fa-question-circle"></i>
+          Dicas
+        </h5>
+      </div>
+      <div class="card-body">
+        <ul class="list-unstyled mb-0">
+          <li class="mb-2">
+            <i class="fas fa-check text-success"></i>
+            <small>Use títulos descritivos</small>
+          </li>
+          <li class="mb-2">
+            <i class="fas fa-check text-success"></i>
+            <small>Escolha o tipo correto</small>
+          </li>
+          <li class="mb-2">
+            <i class="fas fa-check text-success"></i>
+            <small>Adicione uma descrição quando necessário</small>
+          </li>
+          <li class="mb-0">
+            <i class="fas fa-check text-success"></i>
+            <small>Certifique-se da qualidade do arquivo</small>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>

@@ -31,10 +31,25 @@ class Admin::DocumentsController < ApplicationController
   def new
     @document = Document.new
     @schools = School.order(:name)
+    @teachers = User.where(user_type: "teacher")
+    @students = User.where(user_type: "student")
+    @classrooms = Classroom.all
+
+    # Para anexar documentos para usuários específicos
+    @target_user = User.find(params[:user_id]) if params[:user_id].present?
   end
 
   def create
     @document = Document.new(document_params)
+    @document.user = current_user
+    @document.attached_by = current_user
+
+    # Se for anexo para usuário específico
+    if params[:document][:target_user_id].present?
+      target_user = User.find(params[:document][:target_user_id])
+      @document.sharing_type = "specific_user"
+      @document.recipient = target_user
+    end
 
     # Processar upload de arquivo se presente
     if params[:document][:file].present?
@@ -128,6 +143,6 @@ class Admin::DocumentsController < ApplicationController
   end
 
   def document_params
-    params.require(:document).permit(:title, :description, :document_type, :attachment, :file_path, :file_name, :school_id, :user_id, :is_municipal)
+    params.require(:document).permit(:title, :description, :document_type, :attachment, :file_path, :file_name, :school_id, :user_id, :is_municipal, :sharing_type, :classroom_id, :target_user_id)
   end
 end

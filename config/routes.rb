@@ -88,6 +88,9 @@ Rails.application.routes.draw do
       member do
         get :download
       end
+      collection do
+        get "attach_to_user/:user_id", to: "documents#attach_to_user", as: "attach_to_user"
+      end
     end
     resources :class_schedules
     resources :messages, only: [ :index, :new, :create, :show ] do
@@ -128,6 +131,9 @@ Rails.application.routes.draw do
       member do
         get :download
       end
+      collection do
+        get "attach_to_student/:student_id", to: "documents#attach_to_student", as: "attach_to_student"
+      end
     end
     resources :messages, only: [ :index, :new, :create, :show ] do
       collection do
@@ -153,7 +159,7 @@ Rails.application.routes.draw do
     resources :subjects, only: [ :index, :show ]
     resources :absences, only: [ :index ]
     resources :class_schedules, only: [ :index ]
-    resources :documents, only: [ :index, :show ] do
+    resources :documents do
       member do
         get :download
       end

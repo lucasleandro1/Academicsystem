@@ -4,15 +4,25 @@ class Teachers::DocumentsController < ApplicationController
   before_action :set_document, only: [ :show, :edit, :update, :destroy, :download ]
 
   def index
-    # Get all documents from the teacher's school
+    # Get all documents from the teacher's school that they can view
     @documents = Document.where(school: current_user.school)
-                        .includes(:user, :subject)
-                        .order(created_at: :desc)
+                        .includes(:user, :subject, :recipient)
+                        .select { |doc| doc.can_be_viewed_by?(current_user) }
+                        .sort_by(&:created_at)
+                        .reverse
 
     @my_documents = current_user.teacher_documents
                                .where(school: current_user.school)
-                               .includes(:subject)
+                               .includes(:subject, :recipient)
                                .order(created_at: :desc)
+
+    # Documentos anexados para meus alunos
+    my_student_ids = available_students.pluck(:id)
+    @documents_for_students = Document.where(
+      school: current_user.school,
+      recipient_type: "User",
+      recipient_id: my_student_ids
+    ).includes(:recipient, :user).order(created_at: :desc)
   end
 
   def show
@@ -23,6 +33,15 @@ class Teachers::DocumentsController < ApplicationController
     @subjects = grouped_subjects_for_select
     @students = available_students
     @classrooms = available_classrooms
+
+    # Debug: verificar se há alunos disponíveis
+    Rails.logger.info "=== DEBUG: Alunos disponíveis para #{current_user.full_name}: #{@students.count} ==="
+    
+    # Para anexar documentos para alunos específicos
+    @target_student = User.find(params[:student_id]) if params[:student_id].present?
+    if @target_student && !@target_student.student?
+      @target_student = nil
+    end
   end
 
   def edit
@@ -34,6 +53,18 @@ class Teachers::DocumentsController < ApplicationController
   def create
     @document = current_user.authored_documents.build(document_params)
     @document.school = current_user.school
+    @document.attached_by = current_user
+
+    # Se for anexo para aluno específico
+    if params[:document][:target_student_id].present?
+      target_student = User.find(params[:document][:target_student_id])
+      if @document.can_be_attached_by?(current_user, target_student)
+        @document.sharing_type = "specific_user"
+        @document.recipient = target_student
+      else
+        @document.errors.add(:base, "Você não tem permissão para anexar documentos para este aluno.")
+      end
+    end
 
     if @document.save
       redirect_to teachers_document_path(@document), notice: "Documento criado com sucesso."
@@ -59,6 +90,20 @@ class Teachers::DocumentsController < ApplicationController
   def destroy
     @document.destroy
     redirect_to teachers_documents_path, notice: "Documento removido com sucesso."
+  end
+
+  def attach_to_student
+    @student = User.find(params[:student_id])
+    unless @student.student? && available_students.include?(@student)
+      redirect_to teachers_documents_path, alert: "Aluno não encontrado ou não pertence às suas turmas."
+      return
+    end
+
+    @document = current_user.authored_documents.build
+    @document.recipient = @student
+    @document.sharing_type = "specific_user"
+
+    render :new
   end
 
   def download
@@ -99,9 +144,19 @@ class Teachers::DocumentsController < ApplicationController
   end
 
   def available_students
-    classroom_ids = current_user.teacher_subjects.pluck(:classroom_id).uniq
-    User.where(classroom_id: classroom_ids, user_type: "student")
-        .distinct
+    # Buscar turmas do professor através de suas disciplinas
+    classroom_ids = current_user.subjects.pluck(:classroom_id).compact.uniq
+    
+    # Se não há turmas com disciplinas, buscar todos os alunos da escola do professor
+    if classroom_ids.empty?
+      # Buscar alunos da mesma escola
+      User.where(school: current_user.school, user_type: "student")
+          .order(:first_name, :last_name)
+    else
+      # Buscar alunos das turmas onde o professor leciona
+      User.where(classroom_id: classroom_ids, user_type: "student")
+          .order(:first_name, :last_name)
+    end
   end
 
   def available_classrooms
@@ -126,6 +181,6 @@ class Teachers::DocumentsController < ApplicationController
   end
 
   def document_params
-    params.require(:document).permit(:title, :description, :subject_id, :user_id, :attachment, :document_type, :sharing_type, :classroom_id)
+    params.require(:document).permit(:title, :description, :subject_id, :user_id, :attachment, :document_type, :sharing_type, :classroom_id, :target_student_id)
   end
 end

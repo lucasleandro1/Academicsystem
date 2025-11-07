@@ -143,7 +143,7 @@
               <h6 class="text-info mb-2">Disciplina</h6>
               <p class="mb-0"><%= @class_schedule.subject.name %></p>
               <% if @class_schedule.subject.user %>
-                <small class="text-muted">Prof. <%= @class_schedule.subject.user.name %></small>
+                <small class="text-muted">Prof. <%= @class_schedule.subject.user.full_name %></small>
               <% end %>
             </div>
             

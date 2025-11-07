@@ -54,12 +54,70 @@
                                  ['Projeto', 'projeto'],
                                  ['Plano de Ensino', 'plano_ensino'],
                                  ['Manual', 'manual'],
+                                 ['Boletim', 'boletim'],
+                                 ['Histórico', 'historico'],
+                                 ['Certificado', 'certificado'],
+                                 ['Declaração', 'declaracao'],
                                  ['Outros', 'outros']
                                ]), 
                                { prompt: "Selecione o tipo" }, 
                                { class: "form-select" } %>
               </div>
             </div>
+          </div>
+
+          <!-- Compartilhamento -->
+          <div class="mb-4">
+            <h6 class="text-muted border-bottom pb-2">Opções de Compartilhamento</h6>
+            
+            <div class="mb-3">
+              <%= form.label :sharing_type, "Compartilhar com", class: "form-label" %>
+              <%= form.select :sharing_type, [
+                ['Toda a escola', 'all_students'],
+                ['Turma específica', 'specific_classroom'],
+                ['Professor específico', 'specific_user'],
+                ['Aluno específico', 'specific_user']
+              ], { selected: @document.sharing_type || 'all_students' }, { class: "form-select", id: "sharing_type_select" } %>
+              <small class="form-text text-muted">Escolha com quem deseja compartilhar este documento</small>
+            </div>
+
+            <div class="mb-3" id="classroom_select_div" style="display: none;">
+              <%= form.label :classroom_id, "Selecionar Turma", class: "form-label" %>
+              <%= form.select :classroom_id, 
+                  options_from_collection_for_select(@classrooms || [], :id, :name), 
+                  { prompt: "Escolha uma turma" }, 
+                  { class: "form-select" } %>
+            </div>
+
+            <div class="mb-3" id="user_select_div" style="display: <%= @target_user ? 'block' : 'none' %>;">
+              <%= form.label :target_user_id, "Anexar para Usuário", class: "form-label" %>
+              
+              <div class="row">
+                <div class="col-md-6">
+                  <label class="form-label">Professores</label>
+                  <%= form.select :target_user_id, 
+                      options_from_collection_for_select(@teachers || [], :id, :full_name, @target_user&.id), 
+                      { prompt: "Escolha um professor" }, 
+                      { class: "form-select", id: "teacher_select" } %>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Alunos</label>
+                  <%= form.select :target_user_id, 
+                      options_from_collection_for_select(@students || [], :id, :full_name, @target_user&.id), 
+                      { prompt: "Escolha um aluno" }, 
+                      { class: "form-select", id: "student_select" } %>
+                </div>
+              </div>
+              
+              <small class="form-text text-muted">Este documento será anexado especificamente para o usuário selecionado</small>
+            </div>
+
+            <% if @target_user %>
+              <div class="alert alert-info">
+                <i class="fas fa-user"></i>
+                Anexando documento para: <strong><%= @target_user.full_name %></strong> (<%= @target_user.user_type.humanize %>)
+              </div>
+            <% end %>
           </div>
 
           <!-- Upload de Arquivo -->
@@ -102,15 +160,15 @@
           </li>
           <li class="mb-2">
             <i class="fas fa-check text-success"></i>
-            Professores e alunos podem visualizar documentos ativos
+            Você pode anexar documentos para professores ou alunos específicos
           </li>
           <li class="mb-2">
             <i class="fas fa-check text-success"></i>
-            Você pode desativar documentos sem excluí-los
+            Documentos podem ser compartilhados com toda a escola ou grupos específicos
           </li>
           <li class="mb-2">
             <i class="fas fa-check text-success"></i>
-            Histórico de upload é mantido
+            Histórico de anexação é mantido para auditoria
           </li>
         </ul>
       </div>
@@ -127,12 +185,68 @@
           <strong>Circular:</strong> Comunicações oficiais<br>
           <strong>Comunicado:</strong> Avisos gerais<br>
           <strong>Ata:</strong> Registros de reuniões<br>
-          <strong>Relatório:</strong> Relatórios institucionais<br>
-          <strong>Projeto:</strong> Projetos pedagógicos<br>
-          <strong>Plano de Ensino:</strong> Planejamentos curriculares<br>
-          <strong>Manual:</strong> Manuais e instruções<br>
+          <strong>Boletim:</strong> Boletins escolares individuais<br>
+          <strong>Histórico:</strong> Históricos escolares<br>
+          <strong>Certificado:</strong> Certificados e diplomas<br>
+          <strong>Declaração:</strong> Declarações diversas<br>
+        </div>
+      </div>
+    </div>
+
+    <!-- Compartilhamento -->
+    <div class="card mt-3">
+      <div class="card-header">
+        <h6><i class="fas fa-share-alt"></i> Opções de Compartilhamento</h6>
+      </div>
+      <div class="card-body">
+        <div class="small">
+          <strong>Toda a escola:</strong> Visível para todos os usuários<br>
+          <strong>Turma específica:</strong> Apenas para alunos da turma<br>
+          <strong>Professor específico:</strong> Anexar para um professor<br>
+          <strong>Aluno específico:</strong> Anexar para um aluno (ex: boletim)<br>
         </div>
       </div>
     </div>
   </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const sharingTypeSelect = document.getElementById('sharing_type_select');
+  const classroomDiv = document.getElementById('classroom_select_div');
+  const userDiv = document.getElementById('user_select_div');
+  const teacherSelect = document.getElementById('teacher_select');
+  const studentSelect = document.getElementById('student_select');
+
+  function toggleFields() {
+    const selectedValue = sharingTypeSelect.value;
+    
+    // Esconder todos os campos primeiro
+    classroomDiv.style.display = 'none';
+    userDiv.style.display = 'none';
+    
+    // Mostrar o campo relevante
+    if (selectedValue === 'specific_classroom') {
+      classroomDiv.style.display = 'block';
+    } else if (selectedValue === 'specific_user') {
+      userDiv.style.display = 'block';
+    }
+  }
+
+  // Sincronizar seleção entre professores e alunos
+  teacherSelect.addEventListener('change', function() {
+    if (this.value) {
+      studentSelect.value = '';
+    }
+  });
+
+  studentSelect.addEventListener('change', function() {
+    if (this.value) {
+      teacherSelect.value = '';
+    }
+  });
+
+  sharingTypeSelect.addEventListener('change', toggleFields);
+  toggleFields(); // Executar na inicialização
+});
+</script>

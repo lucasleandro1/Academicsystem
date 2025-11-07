@@ -1,140 +1,19 @@
 <% content_for :title, "Documentos" %>
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-  <h1><i class="fas fa-folder"></i> Gerenciar Documentos</h1>
-  <%= link_to new_direction_document_path, class: "btn btn-primary" do %>
-    <i class="fas fa-plus"></i> Novo Documento
-  <% end %>
-</div>
-
-<!-- Filtros e Busca -->
-<div class="card mb-4">
-  <div class="card-body">
-    <%= form_with url: direction_documents_path, method: :get, local: true, class: "row g-3" do |form| %>
-      <div class="col-md-4">
-        <%= form.text_field :search, placeholder: "Buscar por título ou descrição...", 
-                           value: params[:search], class: "form-control" %>
-      </div>
-      <div class="col-md-3">
-        <%= form.select :document_type, 
-                        options_for_select([['Todos os tipos', '']] + @document_types.map { |type| [type.humanize, type] }, params[:document_type]),
-                        {}, { class: "form-select" } %>
-      </div>
-      <div class="col-md-3">
-        <%= form.select :user_type, 
-                        options_for_select([
-                          ['Todos os usuários', ''],
-                          ['Documentos da Direção', 'direction'],
-                          ['Documentos de Professores', 'teacher'],
-                          ['Documentos de Alunos', 'student']
-                        ], params[:user_type]),
-                        {}, { class: "form-select" } %>
-      </div>
-      <div class="col-md-2">
-        <%= form.submit "Filtrar", class: "btn btn-outline-primary w-100" %>
-      </div>
-    <% end %>
-  </div>
-</div>
-
-<!-- Lista de Documentos -->
-<div class="card">
-  <div class="card-header">
-    <h5><i class="fas fa-list"></i> Documentos da Escola</h5>
-  </div>
-  <div class="card-body">
-    <% if @documents.any? %>
-      <div class="table-responsive">
-        <table class="table table-hover">
-          <thead>
-            <tr>
-              <th>Título</th>
-              <th>Tipo</th>
-              <th>Criado por</th>
-              <th>Data</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            <% @documents.each do |document| %>
-              <tr>
-                <td>
-                  <div>
-                    <strong><%= document.title %></strong>
-                    <% if document.attachment.attached? %>
-                      <i class="fas fa-paperclip text-success ms-1" title="Arquivo anexado"></i>
-                    <% end %>
-                    <% if document.description.present? %>
-                      <br><small class="text-muted"><%= truncate(document.description, length: 50) %></small>
-                    <% end %>
-                  </div>
-                </td>
-                <td>
-                  <span class="badge bg-info"><%= document.document_type&.humanize || 'Não definido' %></span>
-                </td>
-                <td>
-                  <div>
-                    <%= document.user.full_name %>
-                    <br><small class="text-muted"><%= document.user.user_type.humanize %></small>
-                  </div>
-                </td>
-                <td>
-                  <%= document.created_at.strftime("%d/%m/%Y") %>
-                  <br><small class="text-muted"><%= document.created_at.strftime("%H:%M") %></small>
-                </td>
-                <td>
-                  <div class="btn-group" role="group">
-                    <%= link_to direction_document_path(document), class: "btn btn-sm btn-outline-primary", title: "Visualizar" do %>
-                      <i class="fas fa-eye"></i>
-                    <% end %>
-                    <% if document.attachment.attached? %>
-                      <%= link_to rails_blob_path(document.attachment, disposition: "attachment"), 
-                                  class: "btn btn-sm btn-outline-success", target: "_blank", title: "Baixar arquivo" do %>
-                        <i class="fas fa-download"></i>
-                      <% end %>
-                    <% end %>
-                    <%= link_to edit_direction_document_path(document), class: "btn btn-sm btn-outline-warning", title: "Editar" do %>
-                      <i class="fas fa-edit"></i>
-                    <% end %>
-                    <%= link_to direction_document_path(document), method: :delete, 
-                               class: "btn btn-sm btn-outline-danger", title: "Excluir",
-                               confirm: "Tem certeza que deseja excluir este documento?" do %>
-                      <i class="fas fa-trash"></i>
-                    <% end %>
-                  </div>
-                </td>
-              </tr>
-            <% end %>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Paginação -->
-      <div class="d-flex justify-content-center mt-3">
-        <%= paginate @documents %>
-      </div>
-    <% else %>
-      <div class="text-center py-5">
-        <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
-        <h5 class="text-muted">Nenhum documento encontrado</h5>
-        <p class="text-muted">
-          <% if params[:search].present? || params[:document_type].present? || params[:user_type].present? %>
-            Tente ajustar os filtros de busca.
-          <% else %>
-            Adicione o primeiro documento da escola.
-          <% end %>
-        </p>
-        <%= link_to new_direction_document_path, class: "btn btn-primary" do %>
-          <i class="fas fa-plus"></i> Adicionar Documento
-        <% end %>
-      </div>
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1 class="h2">
+    <i class="fas fa-folder-open"></i> Documentos
+  </h1>
+  <div class="btn-toolbar mb-2 mb-md-0">
+    <%= link_to new_direction_document_path, class: "btn btn-primary" do %>
+      <i class="fas fa-plus"></i> Novo Documento
     <% end %>
   </div>
 </div>
 
 <!-- Estatísticas -->
-<div class="row mt-4">
-  <div class="col-md-4">
+<div class="row mb-4">
+  <div class="col-md-3">
     <div class="card text-center">
       <div class="card-body">
         <h4 class="text-primary"><%= @documents.count %></h4>
@@ -145,17 +24,404 @@
   <div class="col-md-3">
     <div class="card text-center">
       <div class="card-body">
-        <h4 class="text-info"><%= @document_types.count %></h4>
-        <small class="text-muted">Tipos de Documentos</small>
+        <h4 class="text-success"><%= @documents.where(user: current_user).count %></h4>
+        <small class="text-muted">Meus Documentos</small>
       </div>
     </div>
   </div>
   <div class="col-md-3">
     <div class="card text-center">
       <div class="card-body">
-        <h4 class="text-warning"><%= @documents.where(user_id: current_user.id).count %></h4>
-        <small class="text-muted">Meus Documentos</small>
+        <h4 class="text-info"><%= @documents.where(sharing_type: 'specific_user').count %></h4>
+        <small class="text-muted">Documentos Específicos</small>
       </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center">
+      <div class="card-body">
+        <h4 class="text-warning"><%= @documents.where(sharing_type: 'all_students').count %></h4>
+        <small class="text-muted">Documentos Gerais</small>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tabs -->
+<ul class="nav nav-tabs" id="documentsTab" role="tablist">
+  <li class="nav-item" role="presentation">
+    <button class="nav-link active" id="all-docs-tab" data-bs-toggle="tab" data-bs-target="#all-docs" type="button" role="tab">
+      <i class="fas fa-list"></i> Todos os Documentos
+    </button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="my-docs-tab" data-bs-toggle="tab" data-bs-target="#my-docs" type="button" role="tab">
+      <i class="fas fa-user"></i> Meus Documentos
+    </button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="specific-docs-tab" data-bs-toggle="tab" data-bs-target="#specific-docs" type="button" role="tab">
+      <i class="fas fa-user-graduate"></i> Documentos Específicos
+    </button>
+  </li>
+</ul>
+
+<div class="tab-content" id="documentsTabContent">
+  <!-- Todos os Documentos -->
+  <div class="tab-pane fade show active" id="all-docs" role="tabpanel" aria-labelledby="all-docs-tab">
+    <div class="card">
+      <div class="card-header">
+        <div class="row align-items-center">
+          <div class="col">
+            <h5 class="mb-0">Todos os Documentos da Escola</h5>
+          </div>
+          <div class="col-auto">
+            <!-- Filtros -->
+            <%= form_with url: direction_documents_path, method: :get, local: true, class: "row g-2" do |form| %>
+              <div class="col-auto">
+                <%= form.text_field :search, placeholder: "Buscar...", 
+                                   value: params[:search], class: "form-control form-control-sm" %>
+              </div>
+              <div class="col-auto">
+                <%= form.select :document_type, 
+                                options_for_select([['Todos os tipos', '']] + (@document_types || []).map { |type| [type.humanize, type] }, params[:document_type]),
+                                {}, { class: "form-select form-select-sm" } %>
+              </div>
+              <div class="col-auto">
+                <%= form.submit "Filtrar", class: "btn btn-outline-primary btn-sm" %>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+        <% if @documents.any? %>
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Título</th>
+                  <th>Tipo</th>
+                  <th>Compartilhamento</th>
+                  <th>Criado por</th>
+                  <th class="text-center">Anexo</th>
+                  <th>Data</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% @documents.each do |document| %>
+                  <tr>
+                    <td>
+                      <strong><%= document.title %></strong>
+                      <% if document.description.present? %>
+                        <br>
+                        <small class="text-muted"><%= truncate(document.description, length: 50) %></small>
+                      <% end %>
+                    </td>
+                    <td>
+                      <span class="badge bg-secondary">
+                        <%= document.type_description %>
+                      </span>
+                    </td>
+                    <td>
+                      <% if document.recipient %>
+                        <span class="badge bg-primary">
+                          <%= document.recipient.full_name %> (<%= document.recipient.user_type.humanize %>)
+                        </span>
+                      <% elsif document.sharing_type == 'specific_classroom' && document.classroom %>
+                        <span class="badge bg-info">
+                          Turma: <%= document.classroom.name %>
+                        </span>
+                      <% else %>
+                        <span class="badge bg-success">
+                          <%= document.sharing_description %>
+                        </span>
+                      <% end %>
+                    </td>
+                    <td>
+                      <%= document.user.full_name %>
+                      <br>
+                      <small class="text-muted"><%= document.user.user_type.humanize %></small>
+                    </td>
+                    <td class="text-center">
+                      <% if document.attachment.attached? %>
+                        <i class="fas fa-paperclip text-success" title="Arquivo anexado"></i>
+                      <% elsif document.file_path.present? && File.exist?(document.file_path) %>
+                        <i class="fas fa-file text-warning" title="Arquivo legado"></i>
+                      <% else %>
+                        <i class="fas fa-file-slash text-muted" title="Sem anexo"></i>
+                      <% end %>
+                    </td>
+                    <td>
+                      <%= document.created_at.strftime("%d/%m/%Y") %>
+                      <br>
+                      <small class="text-muted"><%= document.created_at.strftime("%H:%M") %></small>
+                    </td>
+                    <td>
+                      <div class="btn-group btn-group-sm">
+                        <%= link_to direction_document_path(document), class: "btn btn-outline-primary", title: "Ver" do %>
+                          <i class="fas fa-eye"></i>
+                        <% end %>
+                        <%= link_to edit_direction_document_path(document), class: "btn btn-outline-secondary", title: "Editar" do %>
+                          <i class="fas fa-edit"></i>
+                        <% end %>
+                        <% if document.attachment.attached? || (document.file_path.present? && File.exist?(document.file_path)) %>
+                          <%= link_to download_direction_document_path(document), class: "btn btn-outline-success", title: "Download" do %>
+                            <i class="fas fa-download"></i>
+                          <% end %>
+                        <% end %>
+                        <%= link_to direction_document_path(document), method: :delete, 
+                                    class: "btn btn-outline-danger", title: "Remover",
+                                    confirm: "Tem certeza que deseja remover este documento?" do %>
+                          <i class="fas fa-trash"></i>
+                        <% end %>
+                      </div>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+          
+          <% if @documents.respond_to?(:current_page) %>
+            <div class="d-flex justify-content-center mt-3">
+              <%= paginate @documents %>
+            </div>
+          <% end %>
+        <% else %>
+          <div class="text-center py-4">
+            <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
+            <h6 class="text-muted">Nenhum documento encontrado</h6>
+            <p class="text-muted">Comece criando o primeiro documento da escola.</p>
+            <%= link_to new_direction_document_path, class: "btn btn-primary" do %>
+              <i class="fas fa-plus"></i> Criar Documento
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Meus Documentos -->
+  <div class="tab-pane fade" id="my-docs" role="tabpanel" aria-labelledby="my-docs-tab">
+    <div class="card">
+      <div class="card-body">
+        <% my_documents = @documents.select { |doc| doc.user == current_user } %>
+        <% if my_documents.any? %>
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Título</th>
+                  <th>Tipo</th>
+                  <th>Compartilhamento</th>
+                  <th class="text-center">Anexo</th>
+                  <th>Data</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% my_documents.each do |document| %>
+                  <tr>
+                    <td>
+                      <strong><%= document.title %></strong>
+                      <% if document.description.present? %>
+                        <br>
+                        <small class="text-muted"><%= truncate(document.description, length: 50) %></small>
+                      <% end %>
+                    </td>
+                    <td>
+                      <span class="badge bg-primary">
+                        <%= document.type_description %>
+                      </span>
+                    </td>
+                    <td>
+                      <% if document.recipient %>
+                        <span class="badge bg-success">
+                          <%= document.recipient.full_name %> (<%= document.recipient.user_type.humanize %>)
+                        </span>
+                      <% else %>
+                        <span class="badge bg-info">
+                          <%= document.sharing_description %>
+                        </span>
+                      <% end %>
+                    </td>
+                    <td class="text-center">
+                      <% if document.attachment.attached? %>
+                        <i class="fas fa-paperclip text-success" title="Arquivo anexado"></i>
+                      <% elsif document.file_path.present? && File.exist?(document.file_path) %>
+                        <i class="fas fa-file text-warning" title="Arquivo legado"></i>
+                      <% else %>
+                        <i class="fas fa-file-slash text-muted" title="Sem anexo"></i>
+                      <% end %>
+                    </td>
+                    <td>
+                      <%= document.created_at.strftime("%d/%m/%Y") %>
+                      <br>
+                      <small class="text-muted"><%= document.created_at.strftime("%H:%M") %></small>
+                    </td>
+                    <td>
+                      <div class="btn-group btn-group-sm">
+                        <%= link_to direction_document_path(document), class: "btn btn-outline-primary", title: "Ver" do %>
+                          <i class="fas fa-eye"></i>
+                        <% end %>
+                        <%= link_to edit_direction_document_path(document), class: "btn btn-outline-secondary", title: "Editar" do %>
+                          <i class="fas fa-edit"></i>
+                        <% end %>
+                        <% if document.attachment.attached? || (document.file_path.present? && File.exist?(document.file_path)) %>
+                          <%= link_to download_direction_document_path(document), class: "btn btn-outline-success", title: "Download" do %>
+                            <i class="fas fa-download"></i>
+                          <% end %>
+                        <% end %>
+                        <%= link_to direction_document_path(document), method: :delete, 
+                                    class: "btn btn-outline-danger", title: "Remover",
+                                    confirm: "Tem certeza que deseja remover este documento?" do %>
+                          <i class="fas fa-trash"></i>
+                        <% end %>
+                      </div>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        <% else %>
+          <div class="text-center py-4">
+            <i class="fas fa-user fa-3x text-muted mb-3"></i>
+            <h6 class="text-muted">Nenhum documento criado</h6>
+            <p class="text-muted">Você ainda não criou nenhum documento.</p>
+            <%= link_to new_direction_document_path, class: "btn btn-primary" do %>
+              <i class="fas fa-plus"></i> Criar Documento
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Documentos Específicos -->
+  <div class="tab-pane fade" id="specific-docs" role="tabpanel" aria-labelledby="specific-docs-tab">
+    <div class="card">
+      <div class="card-body">
+        <% specific_documents = @documents.select { |doc| doc.sharing_type == 'specific_user' } %>
+        <% if specific_documents.any? %>
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Título</th>
+                  <th>Tipo</th>
+                  <th>Destinatário</th>
+                  <th>Anexado por</th>
+                  <th class="text-center">Anexo</th>
+                  <th>Data</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% specific_documents.each do |document| %>
+                  <tr>
+                    <td>
+                      <strong><%= document.title %></strong>
+                      <% if document.description.present? %>
+                        <br>
+                        <small class="text-muted"><%= truncate(document.description, length: 50) %></small>
+                      <% end %>
+                    </td>
+                    <td>
+                      <span class="badge bg-secondary">
+                        <%= document.type_description %>
+                      </span>
+                    </td>
+                    <td>
+                      <% if document.recipient %>
+                        <%= document.recipient.full_name %>
+                        <br>
+                        <small class="text-muted"><%= document.recipient.user_type.humanize %></small>
+                      <% else %>
+                        <span class="text-muted">N/A</span>
+                      <% end %>
+                    </td>
+                    <td>
+                      <%= document.user.full_name %>
+                      <br>
+                      <small class="text-muted"><%= document.user.user_type.humanize %></small>
+                    </td>
+                    <td class="text-center">
+                      <% if document.attachment.attached? %>
+                        <i class="fas fa-paperclip text-success" title="Arquivo anexado"></i>
+                      <% elsif document.file_path.present? && File.exist?(document.file_path) %>
+                        <i class="fas fa-file text-warning" title="Arquivo legado"></i>
+                      <% else %>
+                        <i class="fas fa-file-slash text-muted" title="Sem anexo"></i>
+                      <% end %>
+                    </td>
+                    <td>
+                      <%= document.created_at.strftime("%d/%m/%Y") %>
+                      <br>
+                      <small class="text-muted"><%= document.created_at.strftime("%H:%M") %></small>
+                    </td>
+                    <td>
+                      <div class="btn-group btn-group-sm">
+                        <%= link_to direction_document_path(document), class: "btn btn-outline-primary", title: "Ver" do %>
+                          <i class="fas fa-eye"></i>
+                        <% end %>
+                        <% if document.user == current_user %>
+                          <%= link_to edit_direction_document_path(document), class: "btn btn-outline-secondary", title: "Editar" do %>
+                            <i class="fas fa-edit"></i>
+                          <% end %>
+                        <% end %>
+                        <% if document.attachment.attached? || (document.file_path.present? && File.exist?(document.file_path)) %>
+                          <%= link_to download_direction_document_path(document), class: "btn btn-outline-success", title: "Download" do %>
+                            <i class="fas fa-download"></i>
+                          <% end %>
+                        <% end %>
+                        <% if document.user == current_user %>
+                          <%= link_to direction_document_path(document), method: :delete, 
+                                      class: "btn btn-outline-danger", title: "Remover",
+                                      confirm: "Tem certeza que deseja remover este documento?" do %>
+                            <i class="fas fa-trash"></i>
+                          <% end %>
+                        <% end %>
+                      </div>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        <% else %>
+          <div class="text-center py-4">
+            <i class="fas fa-search fa-3x text-muted mb-3"></i>
+            <h6 class="text-muted">Nenhum documento específico encontrado</h6>
+            <p class="text-muted">Documentos específicos aparecem quando são anexados para usuários específicos.</p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Ajuda sobre Hierarquia -->
+<div class="alert alert-info mt-4">
+  <h6><i class="fas fa-info-circle"></i> Sistema de Hierarquia de Documentos</h6>
+  <div class="row">
+    <div class="col-md-6">
+      <p class="mb-2"><strong>Como Diretor, você pode:</strong></p>
+      <ul class="mb-0">
+        <li>Anexar documentos para professores específicos</li>
+        <li>Anexar documentos para alunos específicos (ex: boletins)</li>
+        <li>Criar documentos gerais para toda a escola</li>
+      </ul>
+    </div>
+    <div class="col-md-6">
+      <p class="mb-2"><strong>Acesso rápido:</strong></p>
+      <ul class="mb-0">
+        <li>Use o menu dropdown nas listas de professores e alunos</li>
+        <li>Ou crie um documento e escolha o destinatário específico</li>
+        <li>Documentos anexados são visíveis apenas para o destinatário</li>
+      </ul>
     </div>
   </div>
 </div>

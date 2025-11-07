@@ -7,6 +7,20 @@
     <%= link_to students_documents_path, class: "btn btn-outline-secondary" do %>
       <i class="fas fa-arrow-left"></i> Voltar
     <% end %>
+    
+    <% if @document.user_id == current_user.id %>
+      <%= link_to students_document_path(@document), 
+                  class: "btn btn-outline-danger ms-2",
+                  method: :delete,
+                  data: { 
+                    confirm: "Tem certeza que deseja excluir este documento?",
+                    bs_toggle: "tooltip",
+                    bs_placement: "bottom"
+                  },
+                  title: "Excluir documento" do %>
+        <i class="fas fa-trash"></i> Excluir
+      <% end %>
+    <% end %>
   </div>
 </div>
 
@@ -51,6 +65,28 @@
             </span>
           </div>
         </div>
+
+        <% if @document.attached_by && @document.attached_by != @document.user %>
+          <div class="row mb-3">
+            <div class="col-sm-4"><strong>Anexado por:</strong></div>
+            <div class="col-sm-8">
+              <span class="badge bg-success">
+                <%= @document.attached_by.name %> (<%= @document.attached_by.user_type.humanize %>)
+              </span>
+            </div>
+          </div>
+        <% end %>
+
+        <% if @document.recipient && @document.recipient != @document.user %>
+          <div class="row mb-3">
+            <div class="col-sm-4"><strong>Destinatário:</strong></div>
+            <div class="col-sm-8">
+              <span class="badge bg-primary">
+                <%= @document.recipient.name %> (<%= @document.recipient.user_type.humanize %>)
+              </span>
+            </div>
+          </div>
+        <% end %>
 
         <% if @document.subject.present? %>
           <div class="row mb-3">
@@ -126,10 +162,23 @@
         </h5>
       </div>
       <div class="card-body">
-        <p class="mb-2">
-          <i class="fas fa-shield-alt text-success"></i>
-          <small>Este documento foi disponibilizado oficialmente pela escola.</small>
-        </p>
+        <% if @document.user_id == current_user.id %>
+          <p class="mb-2">
+            <i class="fas fa-user text-success"></i>
+            <small>Este é um documento que você adicionou.</small>
+          </p>
+        <% elsif @document.attached_by %>
+          <p class="mb-2">
+            <i class="fas fa-paper-plane text-info"></i>
+            <small>Este documento foi anexado por <%= @document.attached_by.name %> (<%= @document.attached_by.user_type.humanize %>).</small>
+          </p>
+        <% else %>
+          <p class="mb-2">
+            <i class="fas fa-shield-alt text-success"></i>
+            <small>Este documento foi disponibilizado oficialmente pela escola.</small>
+          </p>
+        <% end %>
+        
         <p class="mb-2">
           <i class="fas fa-eye text-info"></i>
           <small>Você tem acesso de visualização a este documento.</small>
