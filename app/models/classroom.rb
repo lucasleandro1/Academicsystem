@@ -46,6 +46,13 @@ class Classroom < ApplicationRecord
     class_schedules.includes(:subject).where(weekday: weekday).order(:start_time)
   end
 
+  def subjects_from_schedules
+    # Buscar disciplinas através dos horários desta turma
+    Subject.joins(:class_schedules)
+           .where(class_schedules: { classroom: self })
+           .distinct
+  end
+
   def average_attendance_rate
     return 0 if students.empty?
 

@@ -87,7 +87,7 @@ class Document < ApplicationRecord
     when "specific_student" then user_id.present? ? "Aluno específico" : "Não definido"
     when "specific_classroom" then classroom.present? ? "Turma: #{classroom.name}" : "Turma não definida"
     when "all_subject_students" then subject.present? ? "Todos os alunos da disciplina #{subject.name}" : "Disciplina não definida"
-    when "specific_user" then recipient.present? ? "Usuário específico: #{recipient.name}" : "Usuário não definido"
+    when "specific_user" then recipient.present? ? "Usuário específico: #{recipient.full_name}" : "Usuário não definido"
     else "Não definido"
     end
   end

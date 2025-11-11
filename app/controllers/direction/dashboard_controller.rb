@@ -106,21 +106,6 @@ class Direction::DashboardController < ApplicationController
       }
     end
 
-    # Verificar disciplinas sem horários na grade
-    subjects_without_schedule = Subject.where(school_id: @school.id)
-                                      .left_joins(:class_schedules)
-                                      .where(class_schedules: { id: nil })
-                                      .count
-    if subjects_without_schedule > 0
-      notifications << {
-        type: "info",
-        icon: "fas fa-calendar-times",
-        title: "Disciplinas sem Horário",
-        message: "#{subjects_without_schedule} disciplina(s) não têm horários definidos na grade",
-        link: direction_class_schedules_path
-      }
-    end
-
     # Verificar turmas sem horários completos
     classrooms_without_full_schedule = Classroom.where(school_id: @school.id)
                                                .select { |c| c.class_schedules.active.count < 20 } # Menos de 20 aulas por semana
@@ -151,19 +136,6 @@ class Direction::DashboardController < ApplicationController
       }
     end
 
-    # Turmas sem disciplinas cadastradas
-    classrooms_without_subjects = Classroom.where(school_id: @school.id)
-                                          .left_joins(:subjects)
-                                          .where(subjects: { id: nil })
-                                          .count
-    if classrooms_without_subjects > 0
-      alerts << {
-        type: "warning",
-        title: "Turmas sem Disciplinas",
-        message: "#{classrooms_without_subjects} turma(s) sem disciplinas cadastradas"
-      }
-    end
-
     # Verificar conflitos de horários
     conflicting_schedules = ClassSchedule.where(school_id: @school.id, active: true)
                                         .group(:classroom_id, :weekday, :start_time)
@@ -174,6 +146,22 @@ class Direction::DashboardController < ApplicationController
         type: "danger",
         title: "Conflitos de Horário",
         message: "Existem #{conflicting_schedules.size} conflito(s) na grade de horários"
+      }
+    end
+
+    # Verificar professores sem horários atribuídos (através das disciplinas)
+    teachers_without_classrooms = User.where(school_id: @school.id, user_type: "teacher")
+                                     .left_joins(:teacher_subjects)
+                                     .joins("LEFT JOIN class_schedules ON subjects.id = class_schedules.subject_id")
+                                     .where(class_schedules: { id: nil })
+                                     .where.not(subjects: { id: nil })
+                                     .distinct
+                                     .count
+    if teachers_without_classrooms > 0
+      alerts << {
+        type: "info",
+        title: "Professores sem Horários",
+        message: "#{teachers_without_classrooms} professor(es) com disciplinas mas sem horários definidos"
       }
     end
 

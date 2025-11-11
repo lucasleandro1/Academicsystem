@@ -229,66 +229,7 @@
     </div>
   </div>
 </div>
-            <div class="mb-3">
-              <div class="d-flex justify-content-between">
-                <span>Professores</span>
-                <strong><%= User.where(user_type: 'teacher').count %></strong>
-              </div>
-              <div class="progress mb-2">
-                <div class="progress-bar bg-info" role="progressbar" 
-                     style="width: <%= (User.where(user_type: 'teacher').count.to_f / User.count * 100).round(1) %>%"></div>
-              </div>
-            </div>
-            
-            <div class="mb-3">
-              <div class="d-flex justify-content-between">
-                <span>Alunos</span>
-                <strong><%= User.where(user_type: 'student').count %></strong>
-              </div>
-              <div class="progress mb-2">
-                <div class="progress-bar bg-success" role="progressbar" 
-                     style="width: <%= (User.where(user_type: 'student').count.to_f / User.count * 100).round(1) %>%"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 
-  <div class="col-lg-4 mb-4">
-    <div class="card shadow mb-4">
-      <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-primary">
-          <i class="fas fa-info-circle me-2"></i>
-          Sistema
-        </h6>
-      </div>
-      <div class="card-body">
-        <div class="mb-3">
-          <small class="text-muted">Versão do Rails</small>
-          <div><strong><%= Rails.version %></strong></div>
-        </div>
-        <div class="mb-3">
-          <small class="text-muted">Versão do Ruby</small>
-          <div><strong><%= RUBY_VERSION %></strong></div>
-        </div>
-        <div class="mb-3">
-          <small class="text-muted">Ambiente</small>
-          <div>
-            <span class="badge bg-<%= Rails.env.production? ? 'danger' : 'success' %>">
-              <%= Rails.env.capitalize %>
-            </span>
-          </div>
-        </div>
-        <div class="mb-3">
-          <small class="text-muted">Última atualização</small>
-          <div><strong><%= Date.current.strftime("%d/%m/%Y") %></strong></div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
 
 <!-- Recent Events/Communications -->
 <div class="row mb-4">
@@ -362,6 +303,18 @@
       <div class="card-body">
         <div class="row">
           <div class="col-lg-3 col-md-6 mb-3">
+            <%= link_to admin_calendars_path, class: "text-decoration-none" do %>
+              <div class="card border-left-danger h-100">
+                <div class="card-body text-center">
+                  <i class="fas fa-calendar-check fa-2x text-danger mb-2"></i>
+                  <h6 class="text-danger">Calendário Acadêmico</h6>
+                  <small class="text-muted">Gerenciar feriados e datas importantes</small>
+                </div>
+              </div>
+            <% end %>
+          </div>
+
+          <div class="col-lg-3 col-md-6 mb-3">
             <%= link_to admin_events_path, class: "text-decoration-none" do %>
               <div class="card border-left-primary h-100">
                 <div class="card-body text-center">
@@ -396,7 +349,9 @@
               </div>
             <% end %>
           </div>
-          
+        </div>
+        
+        <div class="row">
           <div class="col-lg-3 col-md-6 mb-3">
             <%= link_to admin_settings_path, class: "text-decoration-none" do %>
               <div class="card border-left-warning h-100">
@@ -404,6 +359,18 @@
                   <i class="fas fa-cogs fa-2x text-warning mb-2"></i>
                   <h6 class="text-warning">Configurações</h6>
                   <small class="text-muted">Sistema e permissões</small>
+                </div>
+              </div>
+            <% end %>
+          </div>
+
+          <div class="col-lg-3 col-md-6 mb-3">
+            <%= link_to calendars_path, class: "text-decoration-none" do %>
+              <div class="card border-left-secondary h-100">
+                <div class="card-body text-center">
+                  <i class="fas fa-eye fa-2x text-secondary mb-2"></i>
+                  <h6 class="text-secondary">Visualizar Calendário</h6>
+                  <small class="text-muted">Visão geral do calendário</small>
                 </div>
               </div>
             <% end %>
@@ -499,6 +466,12 @@
   }
   .border-left-warning {
     border-left: 0.25rem solid #f6c23e !important;
+  }
+  .border-left-danger {
+    border-left: 0.25rem solid #e74a3b !important;
+  }
+  .border-left-secondary {
+    border-left: 0.25rem solid #858796 !important;
   }
   .text-xs {
     font-size: 0.7rem;

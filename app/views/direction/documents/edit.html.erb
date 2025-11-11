@@ -107,7 +107,7 @@
                   <div class="col-md-6">
                     <label class="form-label">Professores</label>
                     <%= form.select :target_user_id, 
-                        options_from_collection_for_select(@teachers || [], :id, :name, 
+                        options_from_collection_for_select(@teachers || [], :id, :full_name, 
                         (@document.recipient&.teacher? ? @document.recipient_id : nil)), 
                         { prompt: "Escolha um professor" }, 
                         { class: "form-select", id: "teacher_select" } %>
@@ -115,7 +115,7 @@
                   <div class="col-md-6">
                     <label class="form-label">Alunos</label>
                     <%= form.select :target_user_id, 
-                        options_from_collection_for_select(@students || [], :id, :name, 
+                        options_from_collection_for_select(@students || [], :id, :full_name, 
                         (@document.recipient&.student? ? @document.recipient_id : nil)), 
                         { prompt: "Escolha um aluno" }, 
                         { class: "form-select", id: "student_select" } %>
@@ -128,7 +128,7 @@
               <% if @document.recipient %>
                 <div class="alert alert-info">
                   <i class="fas fa-user"></i>
-                  Anexado para: <strong><%= @document.recipient.name %></strong> (<%= @document.recipient.user_type.humanize %>)
+                  Anexado para: <strong><%= @document.recipient.full_name %></strong> (<%= @document.recipient.user_type.humanize %>)
                 </div>
               <% end %>
             </div>

@@ -16,11 +16,35 @@
           <dt class="col-sm-3">Professor:</dt>
           <dd class="col-sm-9"><%= @subject.user.full_name %></dd>
           
-          <dt class="col-sm-3">Turma:</dt>
-          <dd class="col-sm-9"><%= @subject.classroom_name %></dd>
+          <dt class="col-sm-3">Minha Turma:</dt>
+          <dd class="col-sm-9"><%= current_user.classroom&.name %></dd>
           
           <dt class="col-sm-3">Carga Horária:</dt>
           <dd class="col-sm-9"><%= @subject.workload %>h</dd>
+          
+          <% if @grades.any? %>
+            <dt class="col-sm-3">Minha Situação:</dt>
+            <dd class="col-sm-9">
+              <% overall_average = @grades.sum(&:value) / @grades.size.to_f %>
+              <% if overall_average >= 7 %>
+                <span class="badge bg-success">Aprovado</span>
+              <% elsif overall_average >= 5 %>
+                <span class="badge bg-warning">Em Recuperação</span>
+              <% else %>
+                <span class="badge bg-danger">Reprovado</span>
+              <% end %>
+              <span class="text-muted">(<%= number_with_precision(overall_average, precision: 1) %>)</span>
+            </dd>
+          <% end %>
+          
+          <% if @total_absences > 0 %>
+            <dt class="col-sm-3">Faltas:</dt>
+            <dd class="col-sm-9">
+              <span class="text-<%= @total_absences > 15 ? 'danger' : 'warning' %>">
+                <%= @total_absences %> faltas
+              </span>
+            </dd>
+          <% end %>
           
           <% if @subject.description.present? %>
             <dt class="col-sm-3">Descrição:</dt>
@@ -30,24 +54,76 @@
       </div>
     </div>
 
+    <!-- Atividades Recentes -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5>Atividades e Avaliações Recentes</h5>
+      </div>
+      <div class="card-body">
+        <% recent_grades = @grades.order(assessment_date: :desc).limit(5) %>
+        <% if recent_grades.any? %>
+          <div class="table-responsive">
+            <table class="table table-sm">
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Atividade</th>
+                  <th>Tipo</th>
+                  <th>Nota</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% recent_grades.each do |grade| %>
+                  <tr>
+                    <td><%= grade.assessment_date.strftime("%d/%m") %></td>
+                    <td><%= grade.assessment_name %></td>
+                    <td>
+                      <span class="badge bg-info"><%= grade.grade_type.humanize %></span>
+                    </td>
+                    <td><%= grade.display_grade %></td>
+                    <td>
+                      <% if grade.passed? %>
+                        <span class="badge bg-success">Passou</span>
+                      <% else %>
+                        <span class="badge bg-danger">Não passou</span>
+                      <% end %>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+          <div class="text-end mt-2">
+            <small class="text-muted">Últimas <%= recent_grades.count %> atividades</small>
+          </div>
+        <% else %>
+          <div class="text-center text-muted py-3">
+            <i class="fas fa-tasks fa-2x mb-2"></i>
+            <p>Nenhuma atividade avaliada ainda</p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
     <!-- Horários -->
     <div class="card mb-4">
       <div class="card-header">
         <h5>Horários de Aula</h5>
       </div>
       <div class="card-body">
-        <% if @subject.class_schedules.any? %>
+        <% if @class_schedules.any? %>
           <div class="table-responsive">
             <table class="table table-sm">
               <thead>
                 <tr>
                   <th>Dia da Semana</th>
                   <th>Horário</th>
-                  <th>Sala</th>
+                  <th>Turma</th>
                 </tr>
               </thead>
               <tbody>
-              <% @subject.class_schedules.includes(:classroom).each do |schedule| %>
+              <% @class_schedules.each do |schedule| %>
                   <tr>
                     <td><%= schedule.weekday_name %></td>
                     <td><%= schedule.time_range %></td>
@@ -58,7 +134,7 @@
             </table>
           </div>
         <% else %>
-          <p class="text-muted">Nenhum horário cadastrado.</p>
+          <p class="text-muted">Nenhum horário cadastrado para sua turma.</p>
         <% end %>
       </div>
     </div>
@@ -73,54 +149,112 @@
         <h5>Minhas Notas</h5>
       </div>
       <div class="card-body">
-        <% if current_user.classroom && current_user.classroom.subjects.include?(@subject) %>
-          <% Grade.grade_types.each_key do |grade_type| %>
-            <% grade = @subject.grades.where(user_id: current_user.id, grade_type: grade_type).first %>
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <span><%= grade_type.humanize %>:</span>
-              <% if grade %>
-                <span class="badge bg-<%= grade.value >= 7 ? 'success' : grade.value >= 5 ? 'warning' : 'danger' %>">
-                  <%= grade.value %>
-                </span>
-              <% else %>
-                <span class="text-muted">-</span>
-              <% end %>
-            </div>
-          <% end %>
+        <% if @grades.any? %>
+          <!-- Tabs para Bimestres -->
+          <ul class="nav nav-tabs mb-3" id="bimesterTabs" role="tablist">
+            <% (1..4).each do |bimester| %>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link <%= 'active' if bimester == 1 %>" id="bimester<%= bimester %>-tab" data-bs-toggle="tab" data-bs-target="#bimester<%= bimester %>" type="button" role="tab">
+                  <%= bimester %>º Bim
+                </button>
+              </li>
+            <% end %>
+          </ul>
+
+          <div class="tab-content" id="bimesterTabsContent">
+            <% (1..4).each do |bimester| %>
+              <div class="tab-pane fade <%= 'show active' if bimester == 1 %>" id="bimester<%= bimester %>" role="tabpanel">
+                <% bimester_grades = @grades_by_bimester[bimester] || [] %>
+                <% if bimester_grades.any? %>
+                  <% bimester_grades.each do |grade| %>
+                    <div class="mb-2 p-2 border rounded">
+                      <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                          <strong><%= grade.assessment_name %></strong>
+                          <br>
+                          <span class="badge bg-secondary small"><%= grade.grade_type.humanize %></span>
+                          <br>
+                          <small class="text-muted"><%= grade.assessment_date.strftime("%d/%m/%Y") %></small>
+                        </div>
+                        <div class="text-end">
+                          <span class="h6 mb-0 text-<%= grade.passed? ? 'success' : 'danger' %>">
+                            <%= grade.display_grade %>
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  <% end %>
+                  
+                  <hr>
+                  
+                  <% bimester_average = bimester_grades.sum(&:value) / bimester_grades.size.to_f %>
+                  <div class="d-flex justify-content-between align-items-center">
+                    <strong>Média do Bimestre:</strong>
+                    <strong class="text-<%= bimester_average >= 7 ? 'success' : bimester_average >= 5 ? 'warning' : 'danger' %>">
+                      <%= number_with_precision(bimester_average, precision: 1) %>
+                    </strong>
+                  </div>
+                <% else %>
+                  <p class="text-muted text-center">Sem notas lançadas neste bimestre</p>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
           
           <hr>
           
-          <% user_grades = @subject.grades.where(user_id: current_user.id) %>
-          <% average = user_grades.any? ? user_grades.average(:value) : nil %>
+          <% overall_average = @grades.sum(&:value) / @grades.size.to_f %>
           <div class="d-flex justify-content-between align-items-center">
-            <strong>Média:</strong>
-            <% if average %>
-              <strong class="text-<%= average >= 7 ? 'success' : average >= 5 ? 'warning' : 'danger' %>">
-                <%= number_with_precision(average, precision: 1) %>
-              </strong>
-            <% else %>
-              <span class="text-muted">-</span>
-            <% end %>
+            <strong>Média Geral:</strong>
+            <strong class="text-<%= overall_average >= 7 ? 'success' : overall_average >= 5 ? 'warning' : 'danger' %>">
+              <%= number_with_precision(overall_average, precision: 1) %>
+            </strong>
           </div>
         <% else %>
-          <p class="text-muted">Você não está matriculado nesta disciplina.</p>
+          <div class="text-center text-muted py-3">
+            <i class="fas fa-chart-bar fa-2x mb-2"></i>
+            <p>Nenhuma nota lançada ainda</p>
+          </div>
         <% end %>
       </div>
     </div>
 
-    <!-- Estatísticas -->
-    <div class="card">
+    <!-- Faltas -->
+    <div class="card mb-4">
       <div class="card-header">
-        <h5>Estatísticas</h5>
+        <h5>Minhas Faltas</h5>
       </div>
       <div class="card-body">
-
-        <div class="mb-3">
-          <div class="d-flex justify-content-between">
-            <span>Alunos Matriculados:</span>
-            <span><%= @subject.classroom&.students&.count || 0 %></span>
+        <div class="row text-center mb-3">
+          <div class="col-12">
+            <div class="border rounded p-2">
+              <div class="h4 mb-0 text-danger"><%= @total_absences %></div>
+              <small class="text-muted">Total</small>
+            </div>
           </div>
         </div>
+
+        <% if @absences.any? %>
+          <div class="mb-2">
+            <strong>Últimas Faltas:</strong>
+          </div>
+          <div style="max-height: 200px; overflow-y: auto;">
+            <% @absences.limit(10).each do |absence| %>
+              <div class="d-flex justify-content-between align-items-center mb-1 p-2 border-bottom">
+                <div>
+                  <small class="text-muted">
+                    <%= absence.date.strftime("%d/%m/%Y") %>
+                  </small>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        <% else %>
+          <div class="text-center text-muted py-3">
+            <i class="fas fa-check-circle fa-2x mb-2 text-success"></i>
+            <p>Sem faltas registradas!</p>
+          </div>
+        <% end %>
       </div>
     </div>
   </div>

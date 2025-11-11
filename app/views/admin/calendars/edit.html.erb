@@ -55,7 +55,7 @@
               <%= form.label :calendar_type, "Tipo de Evento", class: "form-label" %>
               <%= form.select :calendar_type, 
                              options_for_select(@calendar_types.map { |type| 
-                               [AcademicCalendar.new(calendar_type: type).type_description, type] 
+                               [Calendar.new(calendar_type: type).type_description, type] 
                              }, @calendar.calendar_type), 
                              { prompt: "Selecione o tipo..." }, 
                              { class: "form-select" } %>

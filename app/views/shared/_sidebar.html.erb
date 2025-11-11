@@ -49,10 +49,33 @@
         <i class="fas fa-file-archive"></i> GED Municipal
       <% end %>
     </li>
+    <li class="nav-item">
+      <%= link_to admin_calendars_path, class: "nav-link" do %>
+        <i class="fas fa-edit"></i> Configurar Calendário
+      <% end %>
+    </li>
+
+    <li class="nav-item">
+      <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+        <span>Sistema</span>
+      </h6>
+    </li>
     
     <li class="nav-item">
       <%= link_to admin_reports_path, class: "nav-link #{'active' if controller_name == 'reports' && controller.class.module_parent.name.downcase == 'admin'}" do %>
         <i class="fas fa-chart-bar"></i> Relatórios
+      <% end %>
+    </li>
+    
+    <li class="nav-item">
+      <%= link_to admin_settings_path, class: "nav-link #{'active' if controller_name == 'settings' && controller.class.module_parent.name.downcase == 'admin'}" do %>
+        <i class="fas fa-cogs"></i> Configurações
+      <% end %>
+    </li>
+    
+    <li class="nav-item">
+      <%= link_to calendars_path, class: "nav-link #{'active' if controller_name == 'calendars' && !controller.class.module_parent.present?}" do %>
+        <i class="fas fa-calendar-check"></i> Calendário Acadêmico
       <% end %>
     </li>
   </ul>
@@ -148,13 +171,14 @@
     
     <li class="nav-item">
       <%= link_to direction_documents_path, class: "nav-link #{'active' if controller_name == 'documents' && controller.class.module_parent.name.downcase == 'direction'}" do %>
-        <i class="fas fa-file-archive"></i> GED da Escola
+        <i class="fas fa-file-archive"></i> Documentos
       <% end %>
     </li>
+
     
     <li class="nav-item">
-      <%= link_to direction_reports_path, class: "nav-link #{'active' if controller_name == 'reports' && controller.class.module_parent.name.downcase == 'direction'}" do %>
-        <i class="fas fa-chart-bar"></i> Relatórios
+      <%= link_to calendars_path, class: "nav-link #{'active' if controller_name == 'calendars' && !controller.class.module_parent.present?}" do %>
+        <i class="fas fa-calendar-check"></i> Calendário Acadêmico
       <% end %>
     </li>
   </ul>
@@ -226,14 +250,8 @@
     </li>
     
     <li class="nav-item">
-      <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
-        <span>Relatórios</span>
-      </h6>
-    </li>
-    
-    <li class="nav-item">
-      <%= link_to teachers_reports_path, class: "nav-link #{'active' if controller_name == 'reports' && controller.class.module_parent.name.downcase == 'teachers'}" do %>
-        <i class="fas fa-chart-bar"></i> Relatórios
+      <%= link_to calendars_path, class: "nav-link #{'active' if controller_name == 'calendars' && !controller.class.module_parent.present?}" do %>
+        <i class="fas fa-calendar-check"></i> Calendário Acadêmico
       <% end %>
     </li>
   </ul>
@@ -296,6 +314,12 @@
     <li class="nav-item">
       <%= link_to messages_path, class: "nav-link #{'active' if controller_name == 'messages'}" do %>
         <i class="fas fa-envelope"></i> Mensagens
+      <% end %>
+    </li>
+    
+    <li class="nav-item">
+      <%= link_to calendars_path, class: "nav-link #{'active' if controller_name == 'calendars' && !controller.class.module_parent.present?}" do %>
+        <i class="fas fa-calendar-check"></i> Calendário Acadêmico
       <% end %>
     </li>
   </ul>

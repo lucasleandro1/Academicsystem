@@ -1,11 +1,28 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
   <h1 class="h2">Meus Documentos</h1>
   <div class="btn-toolbar mb-2 mb-md-0">
+    <% if current_user.classroom&.class_schedules&.any? %>
+      <%= link_to generate_report_card_students_documents_path, class: "btn btn-success me-2", 
+                  title: "Gerar e baixar boletim escolar em PDF" do %>
+        <i class="fas fa-file-pdf"></i> Gerar Boletim Escolar
+      <% end %>
+    <% else %>
+      <button class="btn btn-outline-secondary me-2" disabled title="Boletim disponível após matrícula em turma com disciplinas">
+        <i class="fas fa-file-pdf"></i> Gerar Boletim Escolar
+      </button>
+    <% end %>
     <%= link_to new_students_document_path, class: "btn btn-primary" do %>
       <i class="fas fa-plus"></i> Adicionar Documento
     <% end %>
   </div>
 </div>
+
+<% unless current_user.classroom&.class_schedules&.any? %>
+  <div class="alert alert-info">
+    <i class="fas fa-info-circle"></i>
+    <strong>Informação:</strong> O boletim escolar será gerado automaticamente assim que você estiver matriculado em uma turma com disciplinas e notas cadastradas.
+  </div>
+<% end %>
 
 <!-- Nav tabs -->
 <ul class="nav nav-tabs" id="documentsTab" role="tablist">
@@ -53,7 +70,7 @@
                   <td>
                     <% if document.attached_by %>
                       <span class="badge bg-info">
-                        <%= document.attached_by.name %> (<%= document.attached_by.user_type.humanize %>)
+                        <%= document.attached_by.full_name %> (<%= document.attached_by.user_type.humanize %>)
                       </span>
                     <% else %>
                       <span class="text-muted">Escola</span>
@@ -172,46 +189,3 @@
   </div>
 </div>
 
-<div class="row mt-4">
-  <div class="col-md-6">
-    <div class="card">
-      <div class="card-header">
-        <h5>Documentos por Tipo</h5>
-      </div>
-      <div class="card-body">
-        <% if @documents_by_type.any? %>
-          <% @documents_by_type.each do |type, count| %>
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <span><%= type.humanize %>:</span>
-              <span class="badge bg-primary"><%= count %></span>
-            </div>
-          <% end %>
-        <% else %>
-          <p class="text-muted mb-0">Nenhum documento encontrado.</p>
-        <% end %>
-      </div>
-    </div>
-  </div>
-  
-  <div class="col-md-6">
-    <div class="card">
-      <div class="card-header">
-        <h5>Informações</h5>
-      </div>
-      <div class="card-body">
-        <p class="mb-2">
-          <i class="fas fa-info-circle text-info"></i>
-          Os documentos disponíveis aqui são fornecidos pela secretaria da escola.
-        </p>
-        <p class="mb-2">
-          <i class="fas fa-download text-primary"></i>
-          Clique em "Download" para baixar o arquivo.
-        </p>
-        <p class="mb-0">
-          <i class="fas fa-question-circle text-warning"></i>
-          Em caso de dúvidas, entre em contato com a secretaria.
-        </p>
-      </div>
-    </div>
-  </div>
-</div>

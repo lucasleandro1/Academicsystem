@@ -82,7 +82,7 @@
             <div class="col-sm-4"><strong>Destinatário:</strong></div>
             <div class="col-sm-8">
               <span class="badge bg-primary">
-                <%= @document.recipient.name %> (<%= @document.recipient.user_type.humanize %>)
+                <%= @document.recipient.full_name %> (<%= @document.recipient.user_type.humanize %>)
               </span>
             </div>
           </div>
@@ -141,7 +141,11 @@
 
           <%= link_to download_students_document_path(@document), 
                       class: "btn btn-primary btn-block w-100",
-                      method: :get do %>
+                      data: { 
+                        turbo: false,
+                        disable_with: "Baixando...",
+                        confirm: false
+                      } do %>
             <i class="fas fa-download"></i> 
             Baixar Documento
           <% end %>
@@ -170,7 +174,7 @@
         <% elsif @document.attached_by %>
           <p class="mb-2">
             <i class="fas fa-paper-plane text-info"></i>
-            <small>Este documento foi anexado por <%= @document.attached_by.name %> (<%= @document.attached_by.user_type.humanize %>).</small>
+            <small>Este documento foi anexado por <%= @document.attached_by.full_name %> (<%= @document.attached_by.user_type.humanize %>).</small>
           </p>
         <% else %>
           <p class="mb-2">

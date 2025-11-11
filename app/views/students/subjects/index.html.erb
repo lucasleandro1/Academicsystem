@@ -16,8 +16,20 @@
                 <p class="card-text">
                   <strong>Professor:</strong> <%= subject.user.full_name %><br>
                   <strong>Carga Horária:</strong> <%= subject.workload %>h<br>
-                  <strong>Turma:</strong> <%= subject.classroom_name %>
                 </p>
+                
+                <% schedules = subject.class_schedules.where(classroom: current_user.classroom).order(:weekday, :start_time) %>
+                <% if schedules.any? %>
+                  <div class="mb-2">
+                    <strong>Horários:</strong>
+                    <% schedules.each do |schedule| %>
+                      <div class="small text-muted">
+                        <%= schedule.weekday_short %>: <%= schedule.time_range %>
+                      </div>
+                    <% end %>
+                  </div>
+                <% end %>
+                
                 <% if subject.description.present? %>
                   <p class="card-text">
                     <small class="text-muted"><%= truncate(subject.description, length: 100) %></small>

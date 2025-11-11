@@ -21,6 +21,4 @@ class Teachers::ClassSchedulesController < ApplicationController
                         .group_by(&:weekday)
                         .transform_values { |schedules| schedules.sort_by(&:start_time) }
   end
-
-  private
 end

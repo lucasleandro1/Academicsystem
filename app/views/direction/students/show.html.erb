@@ -270,7 +270,7 @@
                       <tr>
                         <th>Data</th>
                         <th>Disciplina</th>
-                        <th>Justificativa</th>
+                        <th>Status</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -279,11 +279,7 @@
                           <td><%= absence.date.strftime("%d/%m/%Y") %></td>
                           <td><%= absence.subject&.name || "N/A" %></td>
                           <td>
-                            <% if absence.justified? %>
-                              <span class="badge bg-success">Justificada</span>
-                            <% else %>
-                              <span class="badge bg-danger">Não Justificada</span>
-                            <% end %>
+                            <span class="badge bg-primary">Registrada</span>
                           </td>
                         </tr>
                       <% end %>

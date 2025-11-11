@@ -69,7 +69,7 @@ class Students::DashboardController < ApplicationController
 
     @classroom.class_schedules
               .joins(:subject)
-              .includes(subject: :teacher)
+              .includes(subject: :user)
               .where(weekday: today_weekday)
               .order(:start_time)
   end

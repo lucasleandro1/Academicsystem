@@ -13,6 +13,9 @@ Rails.application.routes.draw do
     end
   end
 
+  # Calendário acadêmico (visualização para todos os usuários)
+  resources :calendars, only: [ :index ]
+
   namespace :admin do
     resources :schools
     resources :users
@@ -162,6 +165,9 @@ Rails.application.routes.draw do
     resources :documents do
       member do
         get :download
+      end
+      collection do
+        get :generate_report_card
       end
     end
     resources :events, only: [ :index, :show ]

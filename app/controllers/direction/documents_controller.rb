@@ -50,7 +50,7 @@ class Direction::DocumentsController < ApplicationController
   end
 
   def create
-    @document = Document.new(document_params)
+    @document = Document.new(document_params.except(:target_user_id))
     @document.school = current_user.school
     @document.user = current_user
     @document.attached_by = current_user
@@ -63,6 +63,11 @@ class Direction::DocumentsController < ApplicationController
         @document.recipient = target_user
       else
         @document.errors.add(:base, "Você não tem permissão para anexar documentos para este usuário.")
+        @teachers = current_user.school.users.where(user_type: "teacher")
+        @students = current_user.school.users.where(user_type: "student")
+        @classrooms = current_user.school.classrooms
+        render :new
+        return
       end
     end
 

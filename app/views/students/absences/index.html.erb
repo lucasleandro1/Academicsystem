@@ -42,45 +42,7 @@
     </div>
   </div>
 
-  <div class="col-xl-3 col-md-6 mb-4">
-    <div class="card card-stat border-left-danger shadow h-100 py-2">
-      <div class="card-body">
-        <div class="row no-gutters align-items-center">
-          <div class="col mr-2">
-            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
-              Injustificadas
-            </div>
-            <div class="h5 mb-0 font-weight-bold text-gray-800">
-              <%= @absences.where(justified: false).count %>
-            </div>
-          </div>
-          <div class="col-auto">
-            <i class="fas fa-times-circle fa-2x text-gray-300"></i>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 
-  <div class="col-xl-3 col-md-6 mb-4">
-    <div class="card card-stat border-left-success shadow h-100 py-2">
-      <div class="card-body">
-        <div class="row no-gutters align-items-center">
-          <div class="col mr-2">
-            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-              Justificadas
-            </div>
-            <div class="h5 mb-0 font-weight-bold text-gray-800">
-              <%= @absences.where(justified: true).count %>
-            </div>
-          </div>
-          <div class="col-auto">
-            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 
   <div class="col-xl-3 col-md-6 mb-4">
     <div class="card card-stat border-left-info shadow h-100 py-2">
@@ -100,56 +62,6 @@
         </div>
       </div>
     </div>
-  </div>
-</div>
-
-<!-- Filtros -->
-<div class="card shadow mb-4">
-  <div class="card-header py-3">
-    <h6 class="m-0 font-weight-bold text-primary">
-      <i class="fas fa-filter me-2"></i>
-      Filtros de Pesquisa
-    </h6>
-  </div>
-  <div class="card-body">
-    <%= form_with url: students_absences_path, method: :get, local: true, class: "row g-3" do |form| %>
-      <div class="col-md-3">
-        <label class="form-label text-muted small">Disciplina</label>
-        <%= form.select :subject_id, 
-                        options_from_collection_for_select(@subjects, :id, :name, params[:subject_id]),
-                        { prompt: 'Todas as disciplinas' }, 
-                        { class: "form-select" } %>
-      </div>
-      <div class="col-md-3">
-        <label class="form-label text-muted small">Período</label>
-        <%= form.select :period, 
-                        options_for_select([
-                          ['Todos os períodos', ''], 
-                          ['Este mês', 'current_month'], 
-                          ['Último mês', 'last_month'], 
-                          ['Este bimestre', 'current_quarter'],
-                          ['Este semestre', 'current_semester'],
-                          ['Este ano', 'current_year']
-                        ], params[:period]),
-                        {}, { class: "form-select" } %>
-      </div>
-      <div class="col-md-3">
-        <label class="form-label text-muted small">Status</label>
-        <%= form.select :status, 
-                        options_for_select([
-                          ['Todas', ''], 
-                          ['Justificadas', 'justified'], 
-                          ['Injustificadas', 'unjustified']
-                        ], params[:status]),
-                        {}, { class: "form-select" } %>
-      </div>
-      <div class="col-md-3">
-        <label class="form-label text-muted small">&nbsp;</label>
-        <div class="d-grid">
-          <%= form.submit "Filtrar", class: "btn btn-primary" %>
-        </div>
-      </div>
-    <% end %>
   </div>
 </div>
 
@@ -261,9 +173,6 @@
               <th>Disciplina</th>
               <th>Professor</th>
               <th>Período</th>
-              <th>Status</th>
-              <th>Justificativa</th>
-              <th>Ações</th>
             </tr>
           </thead>
           <tbody>
@@ -298,45 +207,6 @@
                   <% else %>
                     <span class="text-muted">-</span>
                   <% end %>
-                </td>
-                <td>
-                  <% if absence.justified? %>
-                    <span class="badge bg-success">
-                      <i class="fas fa-check"></i> Justificada
-                    </span>
-                  <% else %>
-                    <span class="badge bg-danger">
-                      <i class="fas fa-times"></i> Injustificada
-                    </span>
-                  <% end %>
-                </td>
-                <td>
-                  <% if absence.justification.present? %>
-                    <button class="btn btn-sm btn-outline-info" 
-                            data-bs-toggle="modal" 
-                            data-bs-target="#justificationModal<%= absence.id %>">
-                      <i class="fas fa-eye"></i> Ver
-                    </button>
-                  <% else %>
-                    <% unless absence.justified? %>
-                      <button class="btn btn-sm btn-outline-primary" 
-                              data-bs-toggle="modal" 
-                              data-bs-target="#justifyModal<%= absence.id %>">
-                        <i class="fas fa-plus"></i> Justificar
-                      </button>
-                    <% else %>
-                      <span class="text-muted">-</span>
-                    <% end %>
-                  <% end %>
-                </td>
-                <td>
-                  <div class="btn-group btn-group-sm">
-                    <button class="btn btn-outline-secondary" 
-                            data-bs-toggle="modal" 
-                            data-bs-target="#detailModal<%= absence.id %>">
-                      <i class="fas fa-info"></i>
-                    </button>
-                  </div>
                 </td>
               </tr>
             <% end %>

@@ -196,50 +196,6 @@
   </div>
 </div>
 <% end %>
-
-<!-- Horários de Aula -->
-<% if @class_schedules.any? %>
-  <div class="card mb-4">
-    <div class="card-header">
-      <h5 class="mb-0"><i class="fas fa-calendar-alt"></i> Horários de Aula</h5>
-    </div>
-    <div class="card-body">
-      <div class="table-responsive">
-        <table class="table table-sm">
-          <thead>
-            <tr>
-              <th>Dia da Semana</th>
-              <th>Horário</th>
-              <th>Sala</th>
-            </tr>
-          </thead>
-          <tbody>
-            <% @class_schedules.order(:weekday, :start_time).each do |schedule| %>
-              <tr>
-                <td>
-                  <%= 
-                    case schedule.weekday
-                    when 0 then 'Domingo'
-                    when 1 then 'Segunda-feira'
-                    when 2 then 'Terça-feira'
-                    when 3 then 'Quarta-feira'
-                    when 4 then 'Quinta-feira'
-                    when 5 then 'Sexta-feira'
-                    when 6 then 'Sábado'
-                    end
-                  %>
-                </td>
-                <td><%= schedule.start_time.strftime("%H:%M") %> - <%= schedule.end_time.strftime("%H:%M") %></td>
-                <td><%= schedule.classroom.name || 'Não definida' %></td>
-              </tr>
-            <% end %>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-<% end %>
-
 <!-- Notas por Bimestre -->
 <% if @grades.any? %>
   <div class="card">

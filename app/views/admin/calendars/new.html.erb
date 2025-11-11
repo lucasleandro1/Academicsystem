@@ -55,7 +55,7 @@
               <%= form.label :calendar_type, "Tipo de Evento", class: "form-label" %>
               <%= form.select :calendar_type, 
                              options_for_select(@calendar_types.map { |type| 
-                               [AcademicCalendar.new(calendar_type: type).type_description, type] 
+                               [Calendar.new(calendar_type: type).type_description, type] 
                              }), 
                              { prompt: "Selecione o tipo..." }, 
                              { class: "form-select" } %>
@@ -131,7 +131,7 @@
             <i class="fas fa-school"></i> <%= @schools.count %> escolas na rede
           </p>
           <p class="small text-muted mb-0">
-            <i class="fas fa-calendar"></i> <%= AcademicCalendar.count %> eventos no calendário
+            <i class="fas fa-calendar"></i> <%= Calendar.count %> eventos no calendário
           </p>
         </div>
       </div>

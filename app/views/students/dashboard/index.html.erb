@@ -72,6 +72,29 @@
 
 
   <div class="col-xl-3 col-md-6 mb-4">
+    <div class="card card-stat border-left-info shadow h-100 py-2">
+      <div class="card-body">
+        <div class="row no-gutters align-items-center">
+          <div class="col mr-2">
+            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+              Próximos Eventos
+            </div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800">
+              <% upcoming_events_count = Event.where(school: current_user.school)
+                                            .where('start_date >= ?', Date.current)
+                                            .count %>
+              <%= upcoming_events_count %>
+            </div>
+          </div>
+          <div class="col-auto">
+            <i class="fas fa-calendar-alt fa-2x text-gray-300"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xl-3 col-md-6 mb-4">
     <div class="card card-stat border-left-warning shadow h-100 py-2">
       <div class="card-body">
         <div class="row no-gutters align-items-center">
@@ -81,9 +104,14 @@
             </div>
             <div class="h5 mb-0 font-weight-bold text-gray-800">
               <% total_absences = current_user.absences.count %>
-              <% justified_absences = current_user.absences.justified.count %>
-              <% attendance_info = total_absences > 0 ? "#{justified_absences}/#{total_absences} justificadas" : "Sem faltas" %>
-              <%= attendance_info %>
+              <%= total_absences %>
+            </div>
+            <div class="text-xs">
+              <% if total_absences > 0 %>
+                <span class="text-danger"><%= total_absences %> faltas registradas</span>
+              <% else %>
+                <span class="text-success">Nenhuma falta</span>
+              <% end %>
             </div>
           </div>
           <div class="col-auto">
@@ -106,7 +134,17 @@
         </h6>
       </div>
       <div class="card-body">
-        <% grades_by_subject = Grade.joins(:subject).where(student: current_user).group('subjects.name').average(:value) %>
+        <%# Buscar disciplinas através dos horários da turma do aluno %>
+        <% if current_user.classroom %>
+          <% student_subjects = current_user.classroom.subjects_from_schedules %>
+          <% grades_by_subject = Grade.joins(:subject)
+                                     .where(student: current_user, subject: student_subjects)
+                                     .group('subjects.name')
+                                     .average(:value) %>
+        <% else %>
+          <% grades_by_subject = {} %>
+        <% end %>
+        
         <% if grades_by_subject.any? %>
           <div class="table-responsive">
             <table class="table table-hover">
@@ -165,61 +203,94 @@
     </div>
   </div>
 
-  <div class="col-lg-4 mb-4">
+  <div class="col-lg-3 mb-4">
     <div class="card shadow mb-4">
-      <div class="card-header py-3">
+      <div class="card-header py-3 d-flex justify-content-between align-items-center">
         <h6 class="m-0 font-weight-bold text-primary">
           <i class="fas fa-clock me-2"></i>
-          Meus Horários
+          Horários de Hoje
         </h6>
+        <small class="text-muted">
+          <% day_names = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'] %>
+          <%= Date.current.strftime("%d/%m") %> - <%= day_names[Date.current.wday] %>
+        </small>
       </div>
       <div class="card-body">
-                <% if current_user.classroom %>
-          <% class_schedules = ClassSchedule.where(classroom: current_user.classroom)
-                                          .where(weekday: Date.current.wday)
-                                          .includes(:subject)
-                                          .order(:start_time) %>
-        <% else %>
-          <% class_schedules = [] %>
-        <% end %>
-        <% if class_schedules.any? %>
-          <% class_schedules.group_by(&:weekday).each do |day, schedules| %>
-            <div class="mb-3">
-              <h6 class="text-primary"><%= Date::DAYNAMES[day] %></h6>
-              <% schedules.each do |schedule| %>
-                <div class="d-flex align-items-center mb-2 p-2 border rounded">
-                  <div class="me-3">
+        <% if @today_schedule&.any? %>
+          <% @today_schedule.each_with_index do |schedule, index| %>
+            <% current_time = Time.current %>
+            <% schedule_start = Time.zone.parse("#{Date.current} #{schedule.start_time}") %>
+            <% schedule_end = Time.zone.parse("#{Date.current} #{schedule.end_time}") %>
+            <% is_current_class = current_time >= schedule_start && current_time <= schedule_end %>
+            <% is_next_class = current_time < schedule_start && index == @today_schedule.index { |s| Time.zone.parse("#{Date.current} #{s.start_time}") > current_time } %>
+            
+            <div class="d-flex align-items-center mb-3 p-3 border rounded <%= 'border-success bg-light-success' if is_current_class %> <%= 'border-warning bg-light-warning' if is_next_class %>">
+              <div class="me-3">
+                <% if is_current_class %>
+                  <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                    <i class="fas fa-play"></i>
+                  </div>
+                <% elsif is_next_class %>
+                  <div class="rounded-circle bg-warning text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                    <i class="fas fa-clock"></i>
+                  </div>
+                <% else %>
+                  <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                    <i class="fas fa-book"></i>
+                  </div>
+                <% end %>
+              </div>
+              <div class="flex-grow-1">
+                <div class="d-flex justify-content-between align-items-start">
+                  <div>
+                    <h6 class="mb-1 <%= 'text-success' if is_current_class %> <%= 'text-warning' if is_next_class %>">
+                      <%= schedule.subject.name %>
+                    </h6>
+                    <p class="mb-1 small text-muted">
+                      Prof. <%= schedule.subject.user.full_name %>
+                    </p>
+                    <% if is_current_class %>
+                      <span class="badge bg-success">Agora</span>
+                    <% elsif is_next_class %>
+                      <span class="badge bg-warning">Próxima</span>
+                    <% end %>
+                  </div>
+                  <div class="text-end">
+                    <small class="text-muted d-block">
+                      <%= schedule.start_time.strftime("%H:%M") %>
+                    </small>
                     <small class="text-muted">
-                      <%= schedule.start_time.strftime("%H:%M") %> - 
                       <%= schedule.end_time.strftime("%H:%M") %>
                     </small>
                   </div>
-                  <div class="flex-grow-1">
-                    <small>
-                      <strong><%= schedule.subject.name %></strong>
-                      <br>
-                      <%= schedule.classroom.name %>
-                    </small>
-                  </div>
                 </div>
-              <% end %>
+              </div>
             </div>
           <% end %>
+          
+          <div class="mt-3 text-center">
+            <%= link_to students_class_schedules_path, class: "btn btn-sm btn-outline-primary" do %>
+              <i class="fas fa-calendar-week"></i> Ver semana completa
+            <% end %>
+          </div>
         <% else %>
           <div class="text-center text-muted py-4">
-            <i class="fas fa-calendar fa-2x mb-3"></i>
-            <p>Nenhum horário cadastrado</p>
+            <% if Date.current.saturday? || Date.current.sunday? %>
+              <i class="fas fa-calendar-times fa-3x mb-3 text-info"></i>
+              <h6>Final de semana</h6>
+              <p>Não há aulas hoje</p>
+              <small>Aproveite para descansar!</small>
+            <% else %>
+              <i class="fas fa-calendar-check fa-3x mb-3"></i>
+              <h6>Nenhuma aula hoje</h6>
+              <p>Você está livre!</p>
+            <% end %>
           </div>
         <% end %>
       </div>
     </div>
   </div>
-</div>
-
-<!-- Upcoming Activities and Recent Events -->
 <div class="row">
-
-
   <div class="col-lg-6 mb-4">
     <div class="card shadow mb-4">
       <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
@@ -307,54 +378,6 @@
       </div>
     </div>
   </div>
-
-  <div class="col-lg-6 mb-4">
-    <div class="card shadow mb-4">
-      <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-primary">
-          <i class="fas fa-chart-pie me-2"></i>
-          Meu Desempenho
-        </h6>
-      </div>
-      <div class="card-body">
-        <% total_grades = Grade.where(student: current_user).count %>
-        <% if total_grades > 0 %>
-          <% grades_distribution = Grade.where(student: current_user).group_by do |grade|
-               if grade.value >= 9
-                 'Excelente (9-10)'
-               elsif grade.value >= 7
-                 'Bom (7-8)'
-               elsif grade.value >= 5
-                 'Regular (5-6)'
-               else
-                 'Insuficiente (0-4)'
-               end
-             end %>
-          
-          <% ['Excelente (9-10)', 'Bom (7-8)', 'Regular (5-6)', 'Insuficiente (0-4)'].each do |category| %>
-            <% count = grades_distribution[category]&.count || 0 %>
-            <% percentage = (count.to_f / total_grades * 100).round(1) %>
-            <div class="mb-3">
-              <div class="d-flex justify-content-between">
-                <span><%= category %></span>
-                <strong><%= count %> (<%= percentage %>%)</strong>
-              </div>
-              <div class="progress mb-2">
-                <div class="progress-bar bg-<%= category.include?('Excelente') ? 'success' : category.include?('Bom') ? 'primary' : category.include?('Regular') ? 'warning' : 'danger' %>" 
-                     role="progressbar" style="width: <%= percentage %>%"></div>
-              </div>
-            </div>
-          <% end %>
-        <% else %>
-          <div class="text-center text-muted py-4">
-            <i class="fas fa-chart-pie fa-2x mb-3"></i>
-            <p>Ainda não há dados suficientes</p>
-            <small>Continue estudando!</small>
-          </div>
-        <% end %>
-      </div>
-    </div>
-  </div>
 </div>
 
 <style>
@@ -378,5 +401,30 @@
   }
   .text-gray-300 {
     color: #dddfeb !important;
+  }
+  
+  /* Estilos para os horários */
+  .bg-light-success {
+    background-color: rgba(28, 200, 138, 0.1) !important;
+  }
+  .bg-light-warning {
+    background-color: rgba(246, 194, 62, 0.1) !important;
+  }
+  .border-success {
+    border-color: #1cc88a !important;
+  }
+  .border-warning {
+    border-color: #f6c23e !important;
+  }
+  
+  /* Animação para aula atual */
+  @keyframes pulse-success {
+    0% { box-shadow: 0 0 0 0 rgba(28, 200, 138, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(28, 200, 138, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(28, 200, 138, 0); }
+  }
+  
+  .border-success.bg-light-success {
+    animation: pulse-success 2s infinite;
   }
 </style>

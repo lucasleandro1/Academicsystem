@@ -5,7 +5,9 @@ class Students::SubjectsController < ApplicationController
   def index
     return redirect_to students_root_path, alert: "Você não está em nenhuma turma." unless current_user.classroom
 
-    @subjects = current_user.classroom.subjects.includes(:user, :classroom, class_schedules: :classroom)
+    # Buscar disciplinas através dos horários da turma do aluno
+    @subjects = current_user.classroom.subjects_from_schedules
+                           .includes(:user, :classroom, class_schedules: :classroom)
     @current_semester = determine_current_semester
     @academic_year = Date.current.year
   end
@@ -13,8 +15,10 @@ class Students::SubjectsController < ApplicationController
   def show
     @subject = Subject.find(params[:id])
 
-    # Verificar se o estudante tem acesso a esta disciplina
-    unless current_user.classroom&.subjects&.include?(@subject)
+    # Verificar se o estudante tem acesso a esta disciplina através dos horários
+    accessible_subjects = current_user.classroom.subjects_from_schedules
+
+    unless accessible_subjects.include?(@subject)
       redirect_to students_subjects_path, alert: "Você não tem acesso a esta disciplina."
       return
     end
@@ -22,9 +26,22 @@ class Students::SubjectsController < ApplicationController
     # Buscar informações da disciplina
     @teacher = @subject.user
     @classroom = @subject.classroom
-    @class_schedules = ClassSchedule.where(subject: @subject)
+    @class_schedules = ClassSchedule.where(subject: @subject, classroom: current_user.classroom)
                                   .includes(:classroom)
                                   .order(:weekday, :start_time)
+
+    # Buscar notas do estudante nesta disciplina
+    @grades = Grade.where(user_id: current_user.id, subject: @subject)
+                  .order(:bimester, :assessment_date)
+    @grades_by_bimester = @grades.group_by(&:bimester)
+    @grades_by_type = @grades.group_by(&:grade_type)
+
+    # Buscar faltas do estudante nesta disciplina
+    @absences = Absence.where(user_id: current_user.id, subject: @subject)
+                      .order(date: :desc)
+    @total_absences = @absences.count
+    @justified_absences = @absences.justified.count
+    @unjustified_absences = @absences.unjustified.count
 
     # Estatísticas básicas
     @total_classes = @class_schedules.count * 4 # Estimativa baseada em 4 semanas por mês
@@ -53,7 +70,7 @@ class Students::SubjectsController < ApplicationController
     # Esta é uma implementação básica - você pode refinar baseado no seu modelo de dados
     total_classes = 20 # Valor padrão
     absences = Absence.where(
-      user: current_user,
+      user_id: current_user.id,
       subject: subject,
       date: Date.current.beginning_of_year..Date.current.end_of_year
     ).count
