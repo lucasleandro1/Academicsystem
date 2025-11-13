@@ -7,43 +7,6 @@
   <% end %>
 </div>
 
-<!-- Estatísticas -->
-<div class="row mb-4">
-  <div class="col-md-3">
-    <div class="card text-center">
-      <div class="card-body">
-        <h4 class="text-primary"><%= @sent_messages.count %></h4>
-        <small class="text-muted">Mensagens Enviadas</small>
-      </div>
-    </div>
-  </div>
-  <div class="col-md-3">
-    <div class="card text-center">
-      <div class="card-body">
-        <h4 class="text-success"><%= @received_messages.count %></h4>
-        <small class="text-muted">Mensagens Recebidas</small>
-      </div>
-    </div>
-  </div>
-  <div class="col-md-3">
-    <div class="card text-center">
-      <div class="card-body">
-        <h4 class="text-warning"><%= @received_messages.unread.count %></h4>
-        <small class="text-muted">Não Lidas</small>
-      </div>
-    </div>
-  </div>
-  <div class="col-md-3">
-    <div class="card text-center">
-      <div class="card-body">
-        <h4 class="text-info"><%= (@sent_messages.count + @received_messages.count) %></h4>
-        <small class="text-muted">Total</small>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Tabs -->
 <ul class="nav nav-tabs" id="messagesTab" role="tablist">
   <li class="nav-item" role="presentation">
     <button class="nav-link active" id="received-tab" data-bs-toggle="tab" data-bs-target="#received" type="button" role="tab">

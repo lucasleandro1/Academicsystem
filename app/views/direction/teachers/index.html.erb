@@ -71,7 +71,6 @@
               <th>Professor</th>
               <th>Contato</th>
               <th>Disciplinas</th>
-              <th>Última Atividade</th>
               <th>Ações</th>
             </tr>
           </thead>
@@ -114,13 +113,6 @@
                     <% end %>
                   <% else %>
                     <span class="text-muted">Nenhuma</span>
-                  <% end %>
-                </td>
-                <td>
-                  <% if teacher.respond_to?(:last_sign_in_at) && teacher.last_sign_in_at %>
-                    <%= time_ago_in_words(teacher.last_sign_in_at) %> atrás
-                  <% else %>
-                    <span class="text-muted">Nunca acessou</span>
                   <% end %>
                 </td>
                 <td>

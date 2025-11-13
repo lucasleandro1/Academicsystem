@@ -50,33 +50,3 @@
     <% end %>
   </div>
 </div>
-
-<div class="row mt-4">
-  <div class="col-12">
-    <h4>Lista de Disciplinas</h4>
-    <% if @subjects.any? %>
-      <div class="row">
-        <% @subjects.each do |subject| %>
-          <div class="col-md-6 col-lg-4 mb-3">
-            <div class="card">
-              <div class="card-body">
-                <h6 class="card-title"><%= subject.name %></h6>
-                <p class="card-text">
-                  <small class="text-muted">
-                    <i class="fas fa-user"></i> <%= subject.user.full_name %><br>
-                    <i class="fas fa-clock"></i> <%= subject.workload %>h
-                  </small>
-                </p>
-              </div>
-            </div>
-          </div>
-        <% end %>
-      </div>
-    <% else %>
-      <div class="alert alert-warning">
-        <i class="fas fa-exclamation-triangle"></i>
-        Você ainda não está matriculado em nenhuma disciplina.
-      </div>
-    <% end %>
-  </div>
-</div>

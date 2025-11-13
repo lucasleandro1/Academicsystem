@@ -6,13 +6,9 @@ FactoryBot.define do
     workload { 40 }
     classroom
     school
-    association :user, factory: [ :user, :teacher ]
 
-    # Garantir que o teacher pertença à mesma escola
     before(:create) do |subject|
-      if subject.user && subject.school && subject.user.school != subject.school
-        subject.user.update!(school: subject.school)
-      end
+      subject.user = create(:user, :teacher, school: subject.school)
     end
 
     trait :with_high_workload do

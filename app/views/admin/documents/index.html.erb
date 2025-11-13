@@ -152,7 +152,7 @@
                     <td>
                       <% if document.recipient %>
                         <span class="badge bg-primary">
-                          <%= document.recipient.name %> (<%= document.recipient.user_type.humanize %>)
+                          <%= document.recipient.full_name %> (<%= document.recipient.user_type.humanize %>)
                         </span>
                       <% elsif document.sharing_type == 'specific_classroom' && document.classroom %>
                         <span class="badge bg-info">
