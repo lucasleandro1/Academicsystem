@@ -117,14 +117,15 @@ class Teachers::MessagesController < ApplicationController
   end
 
   def available_students
-    classroom_ids = current_user.teacher_subjects.pluck(:classroom_id).uniq
+    # Usar teacher_classrooms que considera os horários
+    classroom_ids = current_user.teacher_classrooms.pluck(:id).uniq
     User.where(classroom_id: classroom_ids, user_type: "student")
         .distinct
   end
 
   def available_classrooms
-    classroom_ids = current_user.teacher_subjects.pluck(:classroom_id).uniq
-    Classroom.where(id: classroom_ids)
+    # Usar teacher_classrooms que considera os horários
+    current_user.teacher_classrooms
   end
 
   def available_directions

@@ -43,7 +43,8 @@ class MessageRecipientService
       current_user.school.users.where(id: recipient_id).where.not(id: current_user.id).exists?
     when "teacher"
       # Professor pode enviar para direção, alunos de suas turmas e outros professores
-      classroom_ids = current_user.teacher_subjects.pluck(:classroom_id)
+      # Usar teacher_classrooms que considera os horários
+      classroom_ids = current_user.teacher_classrooms.pluck(:id).uniq
       student_ids = User.where(classroom_id: classroom_ids, user_type: "student").pluck(:id)
       direction_ids = current_user.school.directions.pluck(:id)
       teacher_ids = current_user.school.teachers.where.not(id: current_user.id).pluck(:id)
@@ -87,8 +88,8 @@ class MessageRecipientService
     when "direction"
       current_user.school.classrooms
     when "teacher"
-      classroom_ids = current_user.teacher_subjects.pluck(:classroom_id).uniq
-      Classroom.where(id: classroom_ids)
+      # Usar teacher_classrooms que considera os horários
+      current_user.teacher_classrooms
     else
       Classroom.none
     end
@@ -117,8 +118,9 @@ class MessageRecipientService
     # Direção da escola
     direction_users = current_user.school.directions.includes(:school).to_a
 
-    # Alunos das turmas do professor
-    classroom_ids = current_user.teacher_subjects.pluck(:classroom_id)
+    # Alunos das turmas do professor através dos horários
+    # Usar teacher_classrooms que já considera os class_schedules
+    classroom_ids = current_user.teacher_classrooms.pluck(:id).uniq
     student_users = User.where(classroom_id: classroom_ids, user_type: "student").includes(:classroom, :school).to_a
 
     # Outros professores da escola
@@ -135,8 +137,18 @@ class MessageRecipientService
   def student_recipients_grouped
     return {} unless current_user.classroom
 
-    # Professores das matérias do aluno
-    teacher_ids = current_user.classroom.subjects.pluck(:user_id)
+    # Professores das matérias do aluno (via class_schedules)
+    # Buscar disciplinas que têm horários na turma do aluno
+    teacher_ids = Subject.joins(:class_schedules)
+                         .where(class_schedules: { classroom: current_user.classroom })
+                         .where.not(user_id: nil)
+                         .pluck(:user_id)
+                         .uniq
+    
+    # Adicionar também professores das disciplinas diretas da turma
+    direct_teacher_ids = current_user.classroom.subjects.where.not(user_id: nil).pluck(:user_id)
+    teacher_ids = (teacher_ids + direct_teacher_ids).uniq
+    
     teacher_users = User.where(id: teacher_ids).includes(:school).to_a
 
     # Direção da escola
@@ -216,8 +228,8 @@ class MessageRecipientService
   end
 
   def teacher_broadcast_options
-    classroom_ids = current_user.teacher_subjects.pluck(:classroom_id).uniq
-    return [] if classroom_ids.empty?
+    # Verificar se o professor tem turmas através dos horários
+    return [] if current_user.teacher_classrooms.empty?
 
     [
       {

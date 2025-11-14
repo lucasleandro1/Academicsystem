@@ -30,7 +30,42 @@
             <%= form.label :recipient_id, "Destinatário", class: "form-label" %>
             <i class="fas fa-info-circle text-muted" 
                data-bs-toggle="tooltip" 
-               title="Apenas usuários de sua escola são exibidos"></i>
+               title="Use os filtros abaixo para facilitar a busca do destinatário"></i>
+            
+            <!-- Filtros para facilitar a seleção -->
+            <div class="card mt-2 mb-3">
+              <div class="card-header py-2">
+                <h6 class="mb-0"><i class="fas fa-filter"></i> Filtros de Busca</h6>
+              </div>
+              <div class="card-body py-3">
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label for="user_type_filter" class="form-label small">Tipo de Usuário</label>
+                    <select id="user_type_filter" class="form-select form-select-sm">
+                      <option value="">Todos os tipos</option>
+                      <option value="teacher">Professores</option>
+                      <option value="student">Alunos</option>
+                    </select>
+                  </div>
+                  <div class="col-md-6">
+                    <label for="classroom_filter" class="form-label small">Turma (apenas alunos)</label>
+                    <select id="classroom_filter" class="form-select form-select-sm" disabled>
+                      <option value="">Todas as turmas</option>
+                      <% current_user.school.classrooms.order(:name).each do |classroom| %>
+                        <option value="<%= classroom.id %>"><%= classroom.name %></option>
+                      <% end %>
+                    </select>
+                  </div>
+                </div>
+                <div class="row mt-2">
+                  <div class="col-12">
+                    <button type="button" id="clear_filters" class="btn btn-outline-secondary btn-sm">
+                      <i class="fas fa-times"></i> Limpar Filtros
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
             
             <% grouped_options = recipient_options_grouped(current_user) %>
             <% if grouped_options.any? %>
@@ -44,6 +79,11 @@
                 Não há destinatários disponíveis na sua escola no momento.
               </div>
             <% end %>
+            
+            <!-- Contador de resultados -->
+            <small class="text-muted mt-1 d-block">
+              <span id="recipient_count">Carregando destinatários...</span>
+            </small>
           </div>
 
           <div class="mb-3">
@@ -63,31 +103,142 @@
         <% end %>
       </div>
     </div>
-
-    <!-- Comunicados em Massa -->
-    <div class="card mt-4">
-      <div class="card-header">
-        <h5>Envio em Massa</h5>
-        <small class="text-muted">Para enviar comunicados para grupos específicos</small>
-      </div>
-      <div class="card-body">
-        <div class="row">
-          <% broadcast_options(current_user).each do |option| %>
-            <div class="col-md-6 mb-3">
-              <button type="button" 
-                      class="btn btn-outline-<%= option[:color] %> w-100 broadcast-btn h-100" 
-                      data-bs-toggle="modal" 
-                      data-bs-target="#broadcast<%= option[:key].camelize %>Modal">
-                <div class="text-center py-3">
-                  <i class="<%= option[:icon] %> fa-2x mb-2"></i><br>
-                  <strong><%= option[:title] %></strong><br>
-                  <small><%= option[:description] %></small>
-                </div>
-              </button>
-            </div>
-          <% end %>
-        </div>
-      </div>
-    </div>
   </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const recipientSelect = document.querySelector('.recipient-select');
+  const userTypeFilter = document.getElementById('user_type_filter');
+  const classroomFilter = document.getElementById('classroom_filter');
+  const clearFiltersBtn = document.getElementById('clear_filters');
+  const recipientCount = document.getElementById('recipient_count');
+  
+  // Armazenar todas as opções originais
+  const allGroups = [];
+  
+  // Função para salvar opções originais
+  function saveOriginalOptions() {
+    if (recipientSelect) {
+      const optgroups = recipientSelect.querySelectorAll('optgroup');
+      optgroups.forEach(optgroup => {
+        const groupData = {
+          label: optgroup.label,
+          options: []
+        };
+        
+        const options = optgroup.querySelectorAll('option');
+        options.forEach(option => {
+          if (option.value) { // Ignorar o prompt
+            groupData.options.push({
+              value: option.value,
+              text: option.textContent,
+              userType: option.getAttribute('data-user-type') || '',
+              classroomId: option.getAttribute('data-classroom-id') || '',
+              classroomName: option.getAttribute('data-classroom-name') || ''
+            });
+          }
+        });
+        
+        if (groupData.options.length > 0) {
+          allGroups.push(groupData);
+        }
+      });
+      
+      updateRecipientCount();
+    }
+  }
+  
+  // Função para atualizar contador
+  function updateRecipientCount() {
+    if (!recipientSelect || !recipientCount) return;
+    
+    const visibleOptions = recipientSelect.querySelectorAll('optgroup option').length;
+    recipientCount.textContent = `${visibleOptions} destinatário(s) disponível(is)`;
+  }
+  
+  // Função para filtrar destinatários
+  function filterRecipients() {
+    if (!recipientSelect) return;
+    
+    const selectedUserType = userTypeFilter?.value || '';
+    const selectedClassroomId = classroomFilter?.value || '';
+    
+    // Preservar o prompt
+    const promptOption = recipientSelect.querySelector('option[value=""]');
+    recipientSelect.innerHTML = '';
+    if (promptOption) {
+      recipientSelect.appendChild(promptOption);
+    }
+    
+    // Aplicar filtros
+    allGroups.forEach(group => {
+      const filteredOptions = group.options.filter(option => {
+        // Filtro por tipo de usuário
+        if (selectedUserType && option.userType !== selectedUserType) {
+          return false;
+        }
+        
+        // Filtro por turma (apenas para alunos)
+        if (selectedClassroomId && option.userType === 'student' && option.classroomId !== selectedClassroomId) {
+          return false;
+        }
+        
+        return true;
+      });
+      
+      // Se há opções após o filtro, adicionar o grupo
+      if (filteredOptions.length > 0) {
+        const optgroup = document.createElement('optgroup');
+        optgroup.label = group.label;
+        
+        filteredOptions.forEach(optionData => {
+          const option = document.createElement('option');
+          option.value = optionData.value;
+          option.textContent = optionData.text;
+          option.setAttribute('data-user-type', optionData.userType);
+          option.setAttribute('data-classroom-id', optionData.classroomId);
+          option.setAttribute('data-classroom-name', optionData.classroomName);
+          optgroup.appendChild(option);
+        });
+        
+        recipientSelect.appendChild(optgroup);
+      }
+    });
+    
+    updateRecipientCount();
+  }
+  
+  // Event listeners
+  if (userTypeFilter) {
+    userTypeFilter.addEventListener('change', function() {
+      // Habilitar/desabilitar filtro de turma
+      if (classroomFilter) {
+        classroomFilter.disabled = this.value !== 'student';
+        if (this.value !== 'student') {
+          classroomFilter.value = '';
+        }
+      }
+      filterRecipients();
+    });
+  }
+  
+  if (classroomFilter) {
+    classroomFilter.addEventListener('change', filterRecipients);
+  }
+  
+  if (clearFiltersBtn) {
+    clearFiltersBtn.addEventListener('click', function() {
+      if (userTypeFilter) userTypeFilter.value = '';
+      if (classroomFilter) {
+        classroomFilter.value = '';
+        classroomFilter.disabled = true;
+      }
+      filterRecipients();
+    });
+  }
+  
+  // Inicializar
+  saveOriginalOptions();
+});
+</script>

@@ -8,7 +8,17 @@ module MessagesHelper
       next if users.empty?
 
       # As relações já estão pré-carregadas no service
-      options = users.map { |user| [ format_user_display_name(user), user.id ] }
+      options = users.map { |user|
+        [
+          format_user_display_name(user),
+          user.id,
+          {
+            "data-user-type" => user.user_type,
+            "data-classroom-id" => user.classroom_id,
+            "data-classroom-name" => user.classroom&.name
+          }
+        ]
+      }
       grouped_options << [ group_name, options ]
     end
 
@@ -30,6 +40,11 @@ module MessagesHelper
     service = MessageRecipientService.new(current_user)
     classrooms = service.classrooms_for_broadcast
     options_from_collection_for_select(classrooms, :id, :display_name)
+  end
+
+  def classrooms_for_broadcast(current_user)
+    service = MessageRecipientService.new(current_user)
+    service.classrooms_for_broadcast
   end
 
   def format_user_display_name(user)

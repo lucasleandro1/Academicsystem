@@ -93,6 +93,11 @@
                 <li><a class="dropdown-item" href="<%= students_messages_path %>"><i class="fas fa-envelope"></i> Mensagens</a></li>
               <% elsif current_user.user_type == 'teacher' %>
                 <li><a class="dropdown-item" href="<%= teachers_profile_path %>"><i class="fas fa-user"></i> Meu Perfil</a></li>
+                <li><a class="dropdown-item" href="<%= teachers_messages_path %>"><i class="fas fa-envelope"></i> Mensagens</a></li>
+              <% elsif current_user.user_type == 'direction' %>
+                <li><a class="dropdown-item" href="<%= direction_messages_path %>"><i class="fas fa-envelope"></i> Mensagens</a></li>
+              <% elsif current_user.user_type == 'admin' %>
+                <li><a class="dropdown-item" href="<%= admin_messages_path %>"><i class="fas fa-envelope"></i> Mensagens</a></li>
               <% end %>
               <li><a class="dropdown-item" href="<%= edit_user_registration_path %>"><i class="fas fa-cog"></i> Configurações</a></li>
               <li><hr class="dropdown-divider"></li>

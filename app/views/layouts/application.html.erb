@@ -90,7 +90,21 @@
         <% if user_signed_in? %>
           <div class="navbar-nav ms-auto d-flex flex-row">
             <!-- Mensagens -->
-            <%= link_to messages_path, class: "nav-link me-3 position-relative" do %>
+            <% 
+              messages_url = case current_user.user_type
+              when 'admin'
+                admin_messages_path
+              when 'direction'
+                direction_messages_path
+              when 'teacher'
+                teachers_messages_path
+              when 'student'
+                students_messages_path
+              else
+                messages_path
+              end
+            %>
+            <%= link_to messages_url, class: "nav-link me-3 position-relative" do %>
               <i class="fas fa-envelope"></i>
               <% unread_count = current_user.received_messages.unread.count %>
               <% if unread_count > 0 %>
@@ -119,7 +133,7 @@
                   </div>
                 </li>
                 <li><hr class="dropdown-divider"></li>
-                <li><%= link_to messages_path, class: "dropdown-item" do %>
+                <li><%= link_to messages_url, class: "dropdown-item" do %>
                   <i class="fas fa-envelope me-2"></i> Mensagens
                   <% unread_count = current_user.received_messages.unread.count %>
                   <% if unread_count > 0 %>

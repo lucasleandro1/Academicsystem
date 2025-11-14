@@ -27,7 +27,36 @@
             <%= form.label :recipient_id, "Destinatário", class: "form-label" %>
             <i class="fas fa-info-circle text-muted" 
                data-bs-toggle="tooltip" 
-               title="Apenas alunos de suas turmas e membros da direção são exibidos"></i>
+               title="Use os filtros abaixo para facilitar a busca do destinatário"></i>
+            
+            <!-- Filtros para facilitar a seleção -->
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label for="user_type_filter" class="form-label small">Tipo de Usuário</label>
+                    <select id="user_type_filter" class="form-select form-select-sm">
+                      <option value="">Todos os tipos</option>
+                      <option value="direction">Direção</option>
+                      <option value="teacher">Professores</option>
+                      <option value="student">Alunos</option>
+                    </select>
+                  </div>
+                  <div class="col-md-6">
+                    <label for="classroom_filter" class="form-label small">Turma (apenas alunos)</label>
+                    <select id="classroom_filter" class="form-select form-select-sm" disabled>
+                      <option value="">Todas as turmas</option>
+                      <% current_user.teacher_classrooms.order(:name).each do |classroom| %>
+                        <option value="<%= classroom.id %>"><%= classroom.name %></option>
+                      <% end %>
+                    </select>
+                  </div>
+                </div>
+                <div class="row mt-2">
+                  <div class="col-12">
+                    <button type="button" id="clear_filters" class="btn btn-outline-secondary btn-sm">
+                      <i class="fas fa-times"></i> Limpar Filtros
+                    </button>
+                  </div>
+                </div>
             
             <% grouped_options = recipient_options_grouped(current_user) %>
             <% if grouped_options.any? %>
@@ -41,6 +70,11 @@
                 Não há destinatários disponíveis. Verifique se você tem turmas atribuídas.
               </div>
             <% end %>
+            
+            <!-- Contador de resultados -->
+            <small class="text-muted mt-1 d-block">
+              <span id="recipient_count">Carregando destinatários...</span>
+            </small>
           </div>
 
           <div class="mb-3">
@@ -92,8 +126,8 @@
               <label class="form-label small">Turma específica:</label>
               <select class="form-select form-select-sm" id="classroom-select">
                 <option value="">Selecione uma turma</option>
-                <% classrooms_for_broadcast_select(current_user).each do |classroom| %>
-                  <%= content_tag :option, classroom[0], value: classroom[1] %>
+                <% classrooms_for_broadcast(current_user).each do |classroom| %>
+                  <option value="<%= classroom.id %>"><%= classroom.display_name %></option>
                 <% end %>
               </select>
             </div>
@@ -184,86 +218,231 @@ Prof. <%= current_user.full_name %>">
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+  // ==== FILTRO DE DESTINATÁRIOS ====
+  const recipientSelect = document.querySelector('.recipient-select');
+  const userTypeFilter = document.getElementById('user_type_filter');
+  const classroomFilter = document.getElementById('classroom_filter');
+  const clearFiltersBtn = document.getElementById('clear_filters');
+  const recipientCount = document.getElementById('recipient_count');
+  
+  // Armazenar todas as opções originais
+  const allGroups = [];
+  
+  // Função para salvar opções originais
+  function saveOriginalOptions() {
+    if (recipientSelect) {
+      const optgroups = recipientSelect.querySelectorAll('optgroup');
+      optgroups.forEach(optgroup => {
+        const groupData = {
+          label: optgroup.label,
+          options: []
+        };
+        
+        const options = optgroup.querySelectorAll('option');
+        options.forEach(option => {
+          if (option.value) { // Ignorar o prompt
+            groupData.options.push({
+              value: option.value,
+              text: option.textContent,
+              userType: option.getAttribute('data-user-type') || '',
+              classroomId: option.getAttribute('data-classroom-id') || '',
+              classroomName: option.getAttribute('data-classroom-name') || ''
+            });
+          }
+        });
+        
+        if (groupData.options.length > 0) {
+          allGroups.push(groupData);
+        }
+      });
+      
+      updateRecipientCount();
+    }
+  }
+  
+  // Função para atualizar contador
+  function updateRecipientCount() {
+    if (!recipientSelect || !recipientCount) return;
+    
+    const visibleOptions = recipientSelect.querySelectorAll('optgroup option').length;
+    recipientCount.textContent = `${visibleOptions} destinatário(s) disponível(is)`;
+  }
+  
+  // Função para filtrar destinatários
+  function filterRecipients() {
+    if (!recipientSelect) return;
+    
+    const selectedUserType = userTypeFilter?.value || '';
+    const selectedClassroomId = classroomFilter?.value || '';
+    
+    // Preservar o prompt
+    const promptOption = recipientSelect.querySelector('option[value=""]');
+    recipientSelect.innerHTML = '';
+    if (promptOption) {
+      recipientSelect.appendChild(promptOption);
+    }
+    
+    // Aplicar filtros
+    allGroups.forEach(group => {
+      const filteredOptions = group.options.filter(option => {
+        // Filtro por tipo de usuário
+        if (selectedUserType && option.userType !== selectedUserType) {
+          return false;
+        }
+        
+        // Filtro por turma (apenas para alunos)
+        if (selectedClassroomId && option.userType === 'student' && option.classroomId !== selectedClassroomId) {
+          return false;
+        }
+        
+        return true;
+      });
+      
+      // Se há opções após o filtro, adicionar o grupo
+      if (filteredOptions.length > 0) {
+        const optgroup = document.createElement('optgroup');
+        optgroup.label = group.label;
+        
+        filteredOptions.forEach(optionData => {
+          const option = document.createElement('option');
+          option.value = optionData.value;
+          option.textContent = optionData.text;
+          option.setAttribute('data-user-type', optionData.userType);
+          option.setAttribute('data-classroom-id', optionData.classroomId);
+          option.setAttribute('data-classroom-name', optionData.classroomName);
+          optgroup.appendChild(option);
+        });
+        
+        recipientSelect.appendChild(optgroup);
+      }
+    });
+    
+    updateRecipientCount();
+  }
+  
+  // Event listeners para filtros
+  if (userTypeFilter) {
+    userTypeFilter.addEventListener('change', function() {
+      // Habilitar/desabilitar filtro de turma
+      if (classroomFilter) {
+        classroomFilter.disabled = this.value !== 'student';
+        if (this.value !== 'student') {
+          classroomFilter.value = '';
+        }
+      }
+      filterRecipients();
+    });
+  }
+  
+  if (classroomFilter) {
+    classroomFilter.addEventListener('change', filterRecipients);
+  }
+  
+  if (clearFiltersBtn) {
+    clearFiltersBtn.addEventListener('click', function() {
+      if (userTypeFilter) userTypeFilter.value = '';
+      if (classroomFilter) {
+        classroomFilter.value = '';
+        classroomFilter.disabled = true;
+      }
+      filterRecipients();
+    });
+  }
+  
+  // Inicializar filtros
+  saveOriginalOptions();
+
+  // ==== FUNCIONALIDADES EXISTENTES ====
   // Modelos rápidos
   document.querySelectorAll('.template-btn').forEach(btn => {
     btn.addEventListener('click', function() {
-      document.getElementById('message_subject').value = this.dataset.subject;
-      document.getElementById('message_content').value = this.dataset.content;
+      const subjectField = document.getElementById('message_subject');
+      const contentField = document.getElementById('message_body');
+      
+      if (subjectField) subjectField.value = this.dataset.subject;
+      if (contentField) contentField.value = this.dataset.content;
     });
   });
 
-  // Envio para turma
-  document.getElementById('send-to-classroom').addEventListener('click', function() {
-    const classroomId = document.getElementById('classroom-select').value;
-    if (!classroomId) {
-      alert('Selecione uma turma primeiro');
-      return;
-    }
-    
-    document.getElementById('bulk-recipients').innerHTML = 
-      '<p><strong>Destinatários:</strong> Todos os alunos da turma selecionada</p>';
-    
-    document.getElementById('bulkMessageModal').dataset.type = 'classroom';
-    document.getElementById('bulkMessageModal').dataset.id = classroomId;
-    
-    new bootstrap.Modal(document.getElementById('bulkMessageModal')).show();
-  });
-
-  // Envio para direção
-  document.getElementById('send-to-direction').addEventListener('click', function() {
-    document.getElementById('bulk-recipients').innerHTML = 
-      '<p><strong>Destinatários:</strong> Todos os membros da direção</p>';
-    
-    document.getElementById('bulkMessageModal').dataset.type = 'direction';
-    
-    new bootstrap.Modal(document.getElementById('bulkMessageModal')).show();
+  // Broadcast triggers
+  document.querySelectorAll('.broadcast-trigger').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const type = this.dataset.key;
+      const title = this.dataset.title;
+      const modal = document.getElementById('bulkMessageModal');
+      
+      if (type === 'by_classroom') {
+        const classroomSelect = document.getElementById('classroom-select');
+        const classroomId = classroomSelect?.value;
+        if (!classroomId) {
+          alert('Selecione uma turma primeiro');
+          return;
+        }
+        
+        document.getElementById('bulk-recipients').innerHTML = 
+          '<p><strong>Destinatários:</strong> Todos os alunos da turma selecionada</p>';
+        
+        modal.dataset.type = 'classroom';
+        modal.dataset.id = classroomId;
+      } else if (type === 'my_students') {
+        document.getElementById('bulk-recipients').innerHTML = 
+          '<p><strong>Destinatários:</strong> Todos os seus alunos</p>';
+        
+        modal.dataset.type = 'my_students';
+      }
+      
+      new bootstrap.Modal(modal).show();
+    });
   });
 
   // Enviar mensagem em lote
-  document.getElementById('send-bulk-message').addEventListener('click', function() {
-    const modal = document.getElementById('bulkMessageModal');
-    const type = modal.dataset.type;
-    const id = modal.dataset.id;
-    const subject = document.getElementById('bulk-subject').value;
-    const content = document.getElementById('bulk-content').value;
+  const sendBulkBtn = document.getElementById('send-bulk-message');
+  if (sendBulkBtn) {
+    sendBulkBtn.addEventListener('click', function() {
+      const modal = document.getElementById('bulkMessageModal');
+      const type = modal.dataset.type;
+      const id = modal.dataset.id;
+      const subject = document.getElementById('bulk-subject')?.value;
+      const content = document.getElementById('bulk-content')?.value;
 
-    if (!subject || !content) {
-      alert('Preencha todos os campos');
-      return;
-    }
-
-    let url = '';
-    let data = { subject: subject, content: content };
-
-    if (type === 'classroom') {
-      url = '<%= send_to_classroom_teachers_messages_path %>';
-      data.classroom_id = id;
-    } else if (type === 'direction') {
-      url = '<%= send_to_direction_teachers_messages_path %>';
-    }
-
-    fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
-      },
-      body: JSON.stringify(data)
-    })
-    .then(response => response.json())
-    .then(data => {
-      if (data.status === 'success') {
-        alert(data.message);
-        bootstrap.Modal.getInstance(modal).hide();
-        window.location.href = '<%= teachers_messages_path %>';
-      } else {
-        alert('Erro ao enviar mensagem: ' + data.message);
+      if (!subject || !content) {
+        alert('Preencha todos os campos');
+        return;
       }
-    })
-    .catch(error => {
-      console.error('Error:', error);
-      alert('Erro ao enviar mensagem');
+
+      let url = '';
+      let data = { subject: subject, body: content };
+
+      if (type === 'classroom') {
+        url = '/teachers/messages/broadcast_to_classroom';
+        data.classroom_id = id;
+      } else if (type === 'my_students') {
+        url = '/teachers/messages/broadcast_to_my_students';
+      }
+
+      fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+        },
+        body: JSON.stringify(data)
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 'success') {
+          alert(data.message);
+          bootstrap.Modal.getInstance(modal).hide();
+          window.location.reload();
+        } else {
+          alert('Erro ao enviar mensagem: ' + data.message);
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('Erro ao enviar mensagem');
+      });
     });
-  });
+  }
 });
 </script>
