@@ -144,11 +144,11 @@ class MessageRecipientService
                          .where.not(user_id: nil)
                          .pluck(:user_id)
                          .uniq
-    
+
     # Adicionar também professores das disciplinas diretas da turma
     direct_teacher_ids = current_user.classroom.subjects.where.not(user_id: nil).pluck(:user_id)
     teacher_ids = (teacher_ids + direct_teacher_ids).uniq
-    
+
     teacher_users = User.where(id: teacher_ids).includes(:school).to_a
 
     # Direção da escola
