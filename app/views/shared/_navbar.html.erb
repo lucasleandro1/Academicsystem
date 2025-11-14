@@ -90,10 +90,10 @@
               <li><hr class="dropdown-divider"></li>
               <% if current_user.user_type == 'student' %>
                 <li><a class="dropdown-item" href="<%= students_profile_path %>"><i class="fas fa-user"></i> Meu Perfil</a></li>
+                <li><a class="dropdown-item" href="<%= students_messages_path %>"><i class="fas fa-envelope"></i> Mensagens</a></li>
               <% elsif current_user.user_type == 'teacher' %>
                 <li><a class="dropdown-item" href="<%= teachers_profile_path %>"><i class="fas fa-user"></i> Meu Perfil</a></li>
               <% end %>
-              <li><a class="dropdown-item" href="<%= messages_path %>"><i class="fas fa-envelope"></i> Mensagens</a></li>
               <li><a class="dropdown-item" href="<%= edit_user_registration_path %>"><i class="fas fa-cog"></i> Configurações</a></li>
               <li><hr class="dropdown-divider"></li>
               <li><%= link_to destroy_user_session_path, method: :delete, class: "dropdown-item" do %>

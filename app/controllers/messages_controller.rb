@@ -3,8 +3,45 @@ class MessagesController < ApplicationController
   before_action :set_message, only: [ :show, :destroy ]
 
   def index
-    @sent_messages = current_user.sent_messages.recent.includes(:recipient)
-    @received_messages = current_user.received_messages.recent.includes(:sender)
+    # Aplicar filtros
+    sent_messages = current_user.sent_messages
+    received_messages = current_user.received_messages
+
+    # Filtro por status
+    if params[:status].present?
+      case params[:status]
+      when "unread"
+        sent_messages = sent_messages.where(read: false)
+        received_messages = received_messages.unread
+      when "read"
+        sent_messages = sent_messages.where(read: true)
+        received_messages = received_messages.where(read_at: nil..)
+      end
+    end
+
+    # Filtro por tipo
+    if params[:type].present?
+      case params[:type]
+      when "received"
+        sent_messages = sent_messages.none
+      when "sent"
+        received_messages = received_messages.none
+      end
+    end
+
+    # Filtro de busca
+    if params[:search].present?
+      search_term = "%#{params[:search]}%"
+      sent_messages = sent_messages.joins(:recipient)
+                                  .where("messages.subject ILIKE ? OR messages.body ILIKE ? OR users.full_name ILIKE ?",
+                                         search_term, search_term, search_term)
+      received_messages = received_messages.joins(:sender)
+                                          .where("messages.subject ILIKE ? OR messages.body ILIKE ? OR users.full_name ILIKE ?",
+                                                 search_term, search_term, search_term)
+    end
+
+    @sent_messages = sent_messages.includes(:recipient).order(created_at: :desc).limit(50)
+    @received_messages = received_messages.includes(:sender).order(created_at: :desc).limit(50)
     @unread_count = current_user.received_messages.unread.count
   end
 

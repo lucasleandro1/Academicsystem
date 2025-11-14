@@ -1,206 +1,148 @@
-<div class="container-fluid py-4">
-  <div class="row">
-    <div class="col-12">
-      <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <h4 class="mb-0">
-            <i class="fas fa-envelope me-2"></i>
-            Minhas Mensagens
-          </h4>
-          <div>
+<% content_for :title, "Mensagens" %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1><i class="fas fa-envelope"></i> Mensagens</h1>
+  <%= link_to new_students_message_path, class: "btn btn-primary" do %>
+    <i class="fas fa-plus"></i> Nova Mensagem
+  <% end %>
+</div>
+
+<!-- Filtros -->
+<div class="card mb-4">
+  <div class="card-body">
+    <%= form_with url: students_messages_path, method: :get, local: true, class: "row g-3" do |form| %>
+      <div class="col-md-3">
+        <%= form.select :status, 
+                        options_for_select([
+                          ['Todas', ''], 
+                          ['Não lidas', 'unread'], 
+                          ['Lidas', 'read']
+                        ], params[:status]),
+                        {}, { class: "form-select" } %>
+      </div>
+      <div class="col-md-3">
+        <%= form.select :type, 
+                        options_for_select([
+                          ['Todas', ''], 
+                          ['Recebidas', 'received'], 
+                          ['Enviadas', 'sent']
+                        ], params[:type]),
+                        {}, { class: "form-select" } %>
+      </div>
+      <div class="col-md-4">
+        <%= form.text_field :search, placeholder: "Buscar por assunto ou remetente...", 
+                           value: params[:search], class: "form-control" %>
+      </div>
+      <div class="col-md-2">
+        <div class="d-grid">
+          <%= form.submit "Filtrar", class: "btn btn-outline-secondary" %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<ul class="nav nav-tabs" id="messagesTab" role="tablist">
+  <li class="nav-item" role="presentation">
+    <button class="nav-link active" id="received-tab" data-bs-toggle="tab" data-bs-target="#received" type="button" role="tab">
+      <i class="fas fa-inbox"></i> Recebidas 
+      <% if @received_messages.unread.any? %>
+        <span class="badge bg-danger"><%= @received_messages.unread.count %></span>
+      <% end %>
+    </button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="sent-tab" data-bs-toggle="tab" data-bs-target="#sent" type="button" role="tab">
+      <i class="fas fa-paper-plane"></i> Enviadas
+    </button>
+  </li>
+</ul>
+
+<div class="tab-content" id="messagesTabContent">
+  <!-- Mensagens Recebidas -->
+  <div class="tab-pane fade show active" id="received" role="tabpanel">
+    <div class="card">
+      <div class="card-body">
+        <% if @received_messages.any? %>
+          <div class="list-group list-group-flush">
+            <% @received_messages.each do |message| %>
+              <div class="list-group-item <%= 'border-start border-primary border-3' unless message.read? %>">
+                <div class="d-flex w-100 justify-content-between">
+                  <h6 class="mb-1">
+                    <% unless message.read? %>
+                      <i class="fas fa-circle text-primary" style="font-size: 8px;"></i>
+                    <% end %>
+                    <%= message.subject %>
+                  </h6>
+                  <small class="text-muted"><%= time_ago_in_words(message.created_at) %> atrás</small>
+                </div>
+                <p class="mb-1"><%= truncate(message.body, length: 100) %></p>
+                <div class="d-flex justify-content-between align-items-center">
+                  <small class="text-muted">
+                    <i class="fas fa-user"></i> <%= message.sender.full_name %>
+                    (<%= message.sender.user_type_humanized %>)
+                  </small>
+                  <%= link_to students_message_path(message), class: "btn btn-sm btn-outline-primary" do %>
+                    <i class="fas fa-eye"></i> Ler
+                  <% end %>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        <% else %>
+          <div class="text-center py-4">
+            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+            <h6 class="text-muted">Nenhuma mensagem recebida</h6>
+            <p class="text-muted">Suas mensagens recebidas aparecerão aqui.</p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mensagens Enviadas -->
+  <div class="tab-pane fade" id="sent" role="tabpanel">
+    <div class="card">
+      <div class="card-body">
+        <% if @sent_messages.any? %>
+          <div class="list-group list-group-flush">
+            <% @sent_messages.each do |message| %>
+              <div class="list-group-item">
+                <div class="d-flex w-100 justify-content-between">
+                  <h6 class="mb-1"><%= message.subject %></h6>
+                  <small class="text-muted"><%= message.created_at.strftime("%d/%m/%Y %H:%M") %></small>
+                </div>
+                <p class="mb-1"><%= truncate(message.body, length: 100) %></p>
+                <div class="d-flex justify-content-between align-items-center">
+                  <small class="text-muted">
+                    <i class="fas fa-user"></i> Para: <%= message.recipient.full_name %>
+                    (<%= message.recipient.user_type_humanized %>)
+                  </small>
+                  <div>
+                    <% if message.read? %>
+                      <span class="badge bg-success me-2">Lida</span>
+                    <% else %>
+                      <span class="badge bg-secondary me-2">Não lida</span>
+                    <% end %>
+                    <%= link_to students_message_path(message), class: "btn btn-sm btn-outline-primary" do %>
+                      <i class="fas fa-eye"></i> Ver
+                    <% end %>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        <% else %>
+          <div class="text-center py-4">
+            <i class="fas fa-paper-plane fa-3x text-muted mb-3"></i>
+            <h6 class="text-muted">Nenhuma mensagem enviada</h6>
+            <p class="text-muted">Suas mensagens enviadas aparecerão aqui.</p>
             <%= link_to new_students_message_path, class: "btn btn-primary" do %>
-              <i class="fas fa-plus"></i> Nova Mensagem
+              <i class="fas fa-plus"></i> Enviar Primeira Mensagem
             <% end %>
           </div>
-        </div>
-        
-        <div class="card-body">
-          <!-- Filtros -->
-          <div class="row mb-4">
-            <div class="col-md-3">
-              <%= form_tag students_messages_path, method: :get, local: true do %>
-                <%= select_tag :status, 
-                               options_for_select([
-                                 ['Todas', ''],
-                                 ['Não lidas', 'unread'],
-                                 ['Lidas', 'read']
-                               ], params[:status]), 
-                               { class: "form-select", onchange: "this.form.submit();" } %>
-              <% end %>
-            </div>
-            <div class="col-md-3">
-              <%= form_tag students_messages_path, method: :get, local: true do %>
-                <%= select_tag :sender_type, 
-                               options_for_select([
-                                 ['Todas', ''],
-                                 ['Professores', 'teacher'],
-                                 ['Direção', 'direction'],
-                                 ['Administração', 'admin']
-                               ], params[:sender_type]), 
-                               { class: "form-select", onchange: "this.form.submit();" } %>
-              <% end %>
-            </div>
-            <div class="col-md-6">
-              <%= form_tag students_messages_path, method: :get, local: true, class: "d-flex" do %>
-                <%= text_field_tag :search, params[:search], 
-                                   placeholder: "Buscar mensagens...", 
-                                   class: "form-control me-2" %>
-                <%= button_tag type: "submit", class: "btn btn-outline-primary" do %>
-                  <i class="fas fa-search"></i>
-                <% end %>
-              <% end %>
-            </div>
-          </div>
-
-          <!-- Lista de Mensagens -->
-          <div class="messages-list">
-            <% messages = (@received_messages + @sent_messages).sort_by(&:created_at).reverse %>
-
-            <% if messages.any? %>
-              <div class="list-group">
-                <% messages.each do |message| %>
-                  <% is_received = message.recipient == current_user %>
-                  <% other_user = is_received ? message.sender : message.recipient %>
-                  
-                  <a href="<%= students_message_path(message) %>" class="list-group-item list-group-item-action <%= 'list-group-item-light' if is_received && !message.read? %>">
-                    <div class="d-flex w-100 justify-content-between align-items-start">
-                      <div class="flex-grow-1">
-                        <div class="d-flex align-items-center mb-1">
-                          <% if is_received %>
-                            <i class="fas fa-arrow-down text-success me-2"></i>
-                          <% else %>
-                            <i class="fas fa-arrow-up text-primary me-2"></i>
-                          <% end %>
-                          
-                          <i class="<%= message_recipient_icon(other_user) %> me-2"></i>
-                          
-                          <h6 class="mb-0 <%= 'fw-bold' if is_received && !message.read? %>">
-                            <% if is_received %>
-                              De: <%= other_user.full_name %>
-                            <% else %>
-                              Para: <%= other_user.full_name %>
-                            <% end %>
-                          </h6>
-                          
-                          <span class="<%= message_recipient_badge_class(other_user) %> ms-2">
-                            <%= other_user.user_type.humanize %>
-                          </span>
-                          
-                          <% if is_received && !message.read? %>
-                            <span class="badge bg-danger ms-2">Nova</span>
-                          <% end %>
-                        </div>
-                        
-                        <h6 class="mb-1 <%= 'fw-bold' if is_received && !message.read? %>">
-                          <%= message.subject %>
-                        </h6>
-                        
-                        <p class="mb-1 text-muted small">
-                          <%= truncate(message.body, length: 100) %>
-                        </p>
-                      </div>
-                      
-                      <div class="text-end">
-                        <small class="text-muted">
-                          <i class="fas fa-clock me-1"></i>
-                          <%= time_ago_in_words(message.created_at) %> atrás
-                        </small>
-                        <div class="mt-2">
-                          <% if is_received && message.read? %>
-                            <small class="text-success">
-                              <i class="fas fa-check-double"></i> Lida
-                            </small>
-                          <% elsif !is_received %>
-                            <% if message.read? %>
-                              <small class="text-success">
-                                <i class="fas fa-check-double"></i> Lida pelo destinatário
-                              </small>
-                            <% else %>
-                              <small class="text-muted">
-                                <i class="fas fa-check"></i> Enviada
-                              </small>
-                            <% end %>
-                          <% end %>
-                        </div>
-                      </div>
-                    </div>
-                  </a>
-                <% end %>
-              </div>
-
-              <!-- Paginação -->
-              <div class="d-flex justify-content-center mt-4">
-                <nav>
-                  <ul class="pagination">
-                    <li class="page-item disabled">
-                      <a class="page-link" href="#">Anterior</a>
-                    </li>
-                    <li class="page-item active">
-                      <a class="page-link" href="#">1</a>
-                    </li>
-                    <li class="page-item">
-                      <a class="page-link" href="#">2</a>
-                    </li>
-                    <li class="page-item">
-                      <a class="page-link" href="#">3</a>
-                    </li>
-                    <li class="page-item">
-                      <a class="page-link" href="#">Próximo</a>
-                    </li>
-                  </ul>
-                </nav>
-              </div>
-            <% else %>
-              <div class="text-center py-5">
-                <i class="fas fa-envelope-open fa-3x text-muted mb-3"></i>
-                <h5 class="text-muted">Nenhuma mensagem encontrada</h5>
-                <p class="text-muted">Você não possui mensagens no momento.</p>
-                <%= link_to new_students_message_path, class: "btn btn-primary" do %>
-                  <i class="fas fa-plus"></i> Enviar Nova Mensagem
-                <% end %>
-              </div>
-            <% end %>
-          </div>
-        </div>
+        <% end %>
       </div>
     </div>
   </div>
 </div>
-
-<!-- Modal para ações rápidas -->
-<div class="modal fade" id="quickActionModal" tabindex="-1">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Ação Rápida</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <div id="modalContent"></div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-primary" id="confirmAction">Confirmar</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<script>
-function markAsRead(messageId) {
-  // Implementar marcação como lida via AJAX
-  console.log('Marcar como lida:', messageId);
-}
-
-function replyMessage(messageId) {
-  // Redirecionar para página de resposta
-  window.location.href = `/students/messages/${messageId}/reply`;
-}
-
-function deleteMessage(messageId) {
-  if (confirm('Tem certeza que deseja excluir esta mensagem?')) {
-    // Implementar exclusão via AJAX
-    console.log('Excluir mensagem:', messageId);
-  }
-}
-</script>

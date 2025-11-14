@@ -1,7 +1,7 @@
-<% content_for :title, "Mensagens Internas" %>
+<% content_for :title, "Mensagens" %>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-  <h1><i class="fas fa-envelope"></i> Mensagens Internas</h1>
+  <h1><i class="fas fa-envelope"></i> Mensagens</h1>
   <div class="btn-group">
     <%= link_to new_direction_message_path, class: "btn btn-primary" do %>
       <i class="fas fa-plus"></i> Nova Mensagem
@@ -18,6 +18,41 @@
   </div>
 </div>
 
+<!-- Filtros -->
+<div class="card mb-4">
+  <div class="card-body">
+    <%= form_with url: direction_messages_path, method: :get, local: true, class: "row g-3" do |form| %>
+      <div class="col-md-3">
+        <%= form.select :status, 
+                        options_for_select([
+                          ['Todas', ''], 
+                          ['Não lidas', 'unread'], 
+                          ['Lidas', 'read']
+                        ], params[:status]),
+                        {}, { class: "form-select" } %>
+      </div>
+      <div class="col-md-3">
+        <%= form.select :type, 
+                        options_for_select([
+                          ['Todas', ''], 
+                          ['Recebidas', 'received'], 
+                          ['Enviadas', 'sent']
+                        ], params[:type]),
+                        {}, { class: "form-select" } %>
+      </div>
+      <div class="col-md-4">
+        <%= form.text_field :search, placeholder: "Buscar por assunto ou remetente...", 
+                           value: params[:search], class: "form-control" %>
+      </div>
+      <div class="col-md-2">
+        <div class="d-grid">
+          <%= form.submit "Filtrar", class: "btn btn-outline-secondary" %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
+
 <!-- Alert for unread messages -->
 <% if @unread_count > 0 %>
   <div class="alert alert-info alert-dismissible fade show" role="alert">
@@ -26,68 +61,105 @@
   </div>
 <% end %>
 
-<div class="row">
-  <!-- Received Messages -->
-  <div class="col-md-6 mb-4">
+<ul class="nav nav-tabs" id="messagesTab" role="tablist">
+  <li class="nav-item" role="presentation">
+    <button class="nav-link active" id="received-tab" data-bs-toggle="tab" data-bs-target="#received" type="button" role="tab">
+      <i class="fas fa-inbox"></i> Recebidas 
+      <% if @received_messages.unread.any? %>
+        <span class="badge bg-danger"><%= @received_messages.unread.count %></span>
+      <% end %>
+    </button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="sent-tab" data-bs-toggle="tab" data-bs-target="#sent" type="button" role="tab">
+      <i class="fas fa-paper-plane"></i> Enviadas
+    </button>
+  </li>
+</ul>
+
+<div class="tab-content" id="messagesTabContent">
+  <!-- Mensagens Recebidas -->
+  <div class="tab-pane fade show active" id="received" role="tabpanel">
     <div class="card">
-      <div class="card-header">
-        <h5><i class="fas fa-inbox"></i> Mensagens Recebidas</h5>
-      </div>
       <div class="card-body">
         <% if @received_messages.any? %>
-          <% @received_messages.each do |message| %>
-            <div class="message-item border-bottom py-2 <%= 'fw-bold' unless message.read? %>">
-              <div class="d-flex justify-content-between align-items-start">
-                <div>
-                  <strong><%= message.sender.full_name %></strong>
-                  <span class="text-muted small">(<%= message.sender.user_type_humanized %>)</span>
-                  <br>
-                  <%= link_to message.subject, direction_message_path(message), class: "text-decoration-none" %>
-                  <br>
+          <div class="list-group list-group-flush">
+            <% @received_messages.each do |message| %>
+              <div class="list-group-item <%= 'border-start border-primary border-3' unless message.read? %>">
+                <div class="d-flex w-100 justify-content-between">
+                  <h6 class="mb-1">
+                    <% unless message.read? %>
+                      <i class="fas fa-circle text-primary" style="font-size: 8px;"></i>
+                    <% end %>
+                    <%= message.subject %>
+                  </h6>
                   <small class="text-muted"><%= time_ago_in_words(message.created_at) %> atrás</small>
                 </div>
-                <% unless message.read? %>
-                  <span class="badge bg-primary">Nova</span>
-                <% end %>
+                <p class="mb-1"><%= truncate(message.body, length: 100) %></p>
+                <div class="d-flex justify-content-between align-items-center">
+                  <small class="text-muted">
+                    <i class="fas fa-user"></i> <%= message.sender.full_name %>
+                    (<%= message.sender.user_type_humanized %>)
+                  </small>
+                  <%= link_to direction_message_path(message), class: "btn btn-sm btn-outline-primary" do %>
+                    <i class="fas fa-eye"></i> Ler
+                  <% end %>
+                </div>
               </div>
-            </div>
-          <% end %>
+            <% end %>
+          </div>
         <% else %>
-          <p class="text-muted">Nenhuma mensagem recebida.</p>
+          <div class="text-center py-4">
+            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+            <h6 class="text-muted">Nenhuma mensagem recebida</h6>
+            <p class="text-muted">Suas mensagens recebidas aparecerão aqui.</p>
+          </div>
         <% end %>
       </div>
     </div>
   </div>
 
-  <!-- Sent Messages -->
-  <div class="col-md-6 mb-4">
+  <!-- Mensagens Enviadas -->
+  <div class="tab-pane fade" id="sent" role="tabpanel">
     <div class="card">
-      <div class="card-header">
-        <h5><i class="fas fa-paper-plane"></i> Mensagens Enviadas</h5>
-      </div>
       <div class="card-body">
         <% if @sent_messages.any? %>
-          <% @sent_messages.each do |message| %>
-            <div class="message-item border-bottom py-2">
-              <div class="d-flex justify-content-between align-items-start">
-                <div>
-                  <strong>Para: <%= message.recipient.full_name %></strong>
-                  <span class="text-muted small">(<%= message.recipient.user_type_humanized %>)</span>
-                  <br>
-                  <%= link_to message.subject, direction_message_path(message), class: "text-decoration-none" %>
-                  <br>
-                  <small class="text-muted"><%= time_ago_in_words(message.created_at) %> atrás</small>
+          <div class="list-group list-group-flush">
+            <% @sent_messages.each do |message| %>
+              <div class="list-group-item">
+                <div class="d-flex w-100 justify-content-between">
+                  <h6 class="mb-1"><%= message.subject %></h6>
+                  <small class="text-muted"><%= message.created_at.strftime("%d/%m/%Y %H:%M") %></small>
                 </div>
-                <% if message.read? %>
-                  <span class="badge bg-success">Lida</span>
-                <% else %>
-                  <span class="badge bg-secondary">Não lida</span>
-                <% end %>
+                <p class="mb-1"><%= truncate(message.body, length: 100) %></p>
+                <div class="d-flex justify-content-between align-items-center">
+                  <small class="text-muted">
+                    <i class="fas fa-user"></i> Para: <%= message.recipient.full_name %>
+                    (<%= message.recipient.user_type_humanized %>)
+                  </small>
+                  <div>
+                    <% if message.read? %>
+                      <span class="badge bg-success me-2">Lida</span>
+                    <% else %>
+                      <span class="badge bg-secondary me-2">Não lida</span>
+                    <% end %>
+                    <%= link_to direction_message_path(message), class: "btn btn-sm btn-outline-primary" do %>
+                      <i class="fas fa-eye"></i> Ver
+                    <% end %>
+                  </div>
+                </div>
               </div>
-            </div>
-          <% end %>
+            <% end %>
+          </div>
         <% else %>
-          <p class="text-muted">Nenhuma mensagem enviada.</p>
+          <div class="text-center py-4">
+            <i class="fas fa-paper-plane fa-3x text-muted mb-3"></i>
+            <h6 class="text-muted">Nenhuma mensagem enviada</h6>
+            <p class="text-muted">Suas mensagens enviadas aparecerão aqui.</p>
+            <%= link_to new_direction_message_path, class: "btn btn-primary" do %>
+              <i class="fas fa-plus"></i> Enviar Primeira Mensagem
+            <% end %>
+          </div>
         <% end %>
       </div>
     </div>
