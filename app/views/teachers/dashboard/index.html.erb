@@ -5,11 +5,11 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
   <div>
     <h1 class="h2">
-      <i class="fas fa-chalkboard-teacher text-primary me-2"></i>
-      Dashboard do Professor
+      <i class=" text-primary me-2"></i>
+      Painel do Professor
     </h1>
     <p class="text-muted mb-0">
-      Bem-vindo(a), <%= current_user.full_name %>! 
+      Bem-vindo(a), <%= current_user.full_name %>!
       Escola: <strong><%= current_user.school.name %></strong>
     </p>
   </div>
@@ -111,15 +111,17 @@
   </div>
 </div>
 
+<!-- Agenda e Mensagens -->
+<div class="row mb-4">
   <!-- Resumo da Agenda -->
   <div class="col-lg-6 mb-4">
-    <div class="card shadow">
+    <div class="card shadow h-100">
       <div class="card-header d-flex justify-content-between align-items-center">
         <h6 class="m-0 font-weight-bold text-primary">
           <i class="fas fa-calendar-alt me-2"></i>Agenda de Hoje
         </h6>
         <small class="text-muted">
-          <%= Date.current.strftime("%d/%m/%Y - %A").capitalize %>
+          <%= I18n.l(Date.current, format: :long) %> - <%= I18n.l(Date.current, format: '%A') %>
         </small>
       </div>
       <div class="card-body">
@@ -167,7 +169,7 @@
 
   <!-- Mensagens Recentes -->
   <div class="col-lg-6 mb-4">
-    <div class="card shadow">
+    <div class="card shadow h-100">
       <div class="card-header">
         <h6 class="m-0 font-weight-bold text-primary">
           <i class="fas fa-envelope me-2"></i>Mensagens Recentes
@@ -175,31 +177,54 @@
       </div>
       <div class="card-body">
         <% if @recent_messages.any? %>
-          <% @recent_messages.first(3).each do |message| %>
-            <div class="d-flex align-items-center mb-3">
-              <div class="me-3">
-                <div class="rounded-circle bg-info text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
-                  <i class="fas fa-user"></i>
+          <% @recent_messages.first(3).each_with_index do |message, index| %>
+            <div class="mb-3 <%= 'pb-3 border-bottom' if index < [@recent_messages.count, 3].min - 1 %>">
+              <div class="d-flex align-items-start">
+                <div class="me-3">
+                  <div class="rounded-circle bg-info text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                    <i class="fas fa-envelope"></i>
+                  </div>
+                </div>
+                <div class="flex-grow-1">
+                  <div class="d-flex justify-content-between align-items-start mb-1">
+                    <h6 class="mb-0 fw-bold"><%= message.subject %></h6>
+                    <span class="badge bg-primary">Nova</span>
+                  </div>
+                  <p class="text-muted mb-1 small">
+                    De: <strong><%= message.sender.full_name %></strong>
+                  </p>
+                  <p class="mb-2 text-truncate" style="max-width: 100%;">
+                    <%= truncate(message.body, length: 80) %>
+                  </p>
+                  <div class="d-flex justify-content-between align-items-center">
+                    <small class="text-muted">
+                      <i class="fas fa-clock me-1"></i>
+                      <%= time_ago_in_words(message.created_at) %> atrás
+                    </small>
+                    <%= link_to "Ver mensagem", teachers_messages_path, class: "btn btn-sm btn-outline-primary" %>
+                  </div>
                 </div>
               </div>
-              <div class="flex-grow-1">
-                <h6 class="mb-0">Mensagem recebida</h6>
-                <small class="text-muted">
-                  <i class="fas fa-clock me-1"></i>
-                  Hoje
-                </small>
-              </div>
+            </div>
+          <% end %>
+          <% if @recent_messages.count > 3 %>
+            <div class="text-center mt-3">
+              <%= link_to teachers_messages_path, class: "btn btn-sm btn-primary" do %>
+                <i class="fas fa-envelope me-1"></i> Ver todas as mensagens (<%= @recent_messages.count %>)
+              <% end %>
             </div>
           <% end %>
         <% else %>
           <div class="text-center text-muted py-4">
             <i class="fas fa-inbox fa-3x mb-3"></i>
-            <p>Nenhuma mensagem recente</p>
+            <h6>Nenhuma mensagem recente</h6>
+            <p class="mb-0">Você está em dia com suas mensagens!</p>
           </div>
         <% end %>
       </div>
     </div>
   </div>
+</div>
 </div>
 
 <!-- Resumo da Semana -->

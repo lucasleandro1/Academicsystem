@@ -200,7 +200,7 @@
             <div class="border-start border-4 border-primary ps-3">
               <h6 class="fw-bold mb-2">
                 <i class="fas fa-calendar-day me-2"></i>
-                <%= date.strftime("%A, %d de %B") %>
+                <%= I18n.l(date, format: '%A, %d de %B') %>
                 <span class="badge bg-light text-dark ms-2"><%= events.count %> evento(s)</span>
               </h6>
               <div class="row">

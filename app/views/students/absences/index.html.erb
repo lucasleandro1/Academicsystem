@@ -182,7 +182,7 @@
                   <strong><%= absence.date.strftime("%d/%m/%Y") %></strong>
                   <br>
                   <small class="text-muted">
-                    <%= absence.date.strftime("%A").capitalize %>
+                    <%= I18n.l(absence.date, format: '%A') %>
                   </small>
                 </td>
                 <td>

@@ -7,9 +7,9 @@
   </div>
   <div class="text-end">
     <small class="text-muted">
-      Hoje: <%= Date.current.strftime("%d/%m/%Y") %>
+      Hoje: <%= I18n.l(Date.current, format: :default) %>
       <br>
-      <%= Date.current.strftime("%A").capitalize %>
+      <%= I18n.l(Date.current, format: '%A') %>
     </small>
   </div>
 </div>

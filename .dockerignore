@@ -49,3 +49,23 @@
 # Ignore Docker-related files
 /.dockerignore
 /Dockerfile*
+
+# Ignore databases in development
+*.sqlite3
+*.sqlite3-journal
+*.sqlite3-shm
+*.sqlite3-wal
+
+# Ignore coverage reports
+/coverage/
+
+# Ignore editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Ignore OS files
+.DS_Store
+Thumbs.db

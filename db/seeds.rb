@@ -351,6 +351,17 @@ puts "✅ Notas criadas para o 3º bimestre"
 # Create some Absences
 puts "❌ Criando faltas..."
 
+justification_reasons = [
+  "Consulta médica",
+  "Atestado médico",
+  "Problemas familiares",
+  "Compromisso inadiável",
+  "Viagem em família",
+  "Participação em evento esportivo",
+  "Doença",
+  "Comparecimento ao dentista"
+]
+
 all_subjects.values.each do |subject|
   students = subject.students
 
@@ -358,11 +369,14 @@ all_subjects.values.each do |subject|
   students.sample(students.count * 0.3).each do |student|
     # Each student with absences will have 1-5 absences
     rand(1..5).times do
+      is_justified = [ true, false ].sample
+      
       Absence.create!(
         student: student,
         subject: subject,
         date: Date.current - rand(1..90).days,
-        justified: [ true, false ].sample
+        justified: is_justified,
+        justification: is_justified ? justification_reasons.sample : nil
       )
     end
   end

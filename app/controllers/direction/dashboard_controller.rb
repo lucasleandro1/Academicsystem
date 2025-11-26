@@ -46,6 +46,9 @@ class Direction::DashboardController < ApplicationController
                            .order(:start_date)
                            .limit(5)
 
+    # Mensagens recentes não lidas
+    @recent_messages = current_user.received_messages.unread.recent.limit(5)
+
     # Avisos e notificações importantes
     @important_notifications = get_important_notifications
 
