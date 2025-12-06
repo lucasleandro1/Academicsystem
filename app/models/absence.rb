@@ -29,10 +29,20 @@ class Absence < ApplicationRecord
   end
 
   def student_belongs_to_subject_classroom
-    return unless student&.student? && subject&.classroom_id
+    return unless student&.student? && subject
 
-    if student.classroom_id != subject.classroom_id
-      errors.add(:student, "deve pertencer à turma da disciplina")
+    # Se a disciplina tem uma turma específica, verificar se o aluno pertence a ela
+    if subject.classroom_id.present?
+      if student.classroom_id != subject.classroom_id
+        errors.add(:student, "deve pertencer à turma da disciplina")
+      end
+    else
+      # Se a disciplina não tem turma específica (atende múltiplas turmas),
+      # verificar se o aluno pertence a alguma turma que a disciplina atende
+      available_classroom_ids = subject.available_classrooms.pluck(:id)
+      unless available_classroom_ids.include?(student.classroom_id)
+        errors.add(:student, "deve pertencer a uma turma atendida pela disciplina")
+      end
     end
   end
 

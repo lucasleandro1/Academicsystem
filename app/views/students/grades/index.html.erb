@@ -4,18 +4,62 @@
   <h1><i class="fas fa-star"></i> Minhas Notas e Boletim</h1>
   <div>
     <% if current_user.classroom&.class_schedules&.any? && current_user.student_grades.any? %>
-      <%= link_to generate_report_card_students_documents_path, class: "btn btn-success me-2",
-                  title: "Baixar boletim completo em PDF" do %>
+      <button type="button" class="btn btn-success me-2" data-bs-toggle="modal" data-bs-target="#semesterModal"
+              title="Baixar boletim em PDF">
         <i class="fas fa-file-pdf"></i> Baixar Boletim PDF
-      <% end %>
+      </button>
     <% else %>
-      <button class="btn btn-outline-secondary me-2" disabled 
+      <button class="btn btn-outline-secondary me-2" disabled
               title="Boletim será gerado quando houver notas lançadas">
         <i class="fas fa-file-pdf"></i> Baixar Boletim PDF
       </button>
     <% end %>
     <div class="text-muted d-inline">
       <small>Ano letivo: <%= Date.current.year %></small>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Seleção de Bimestre -->
+<div class="modal fade" id="semesterModal" tabindex="-1" aria-labelledby="semesterModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title" id="semesterModalLabel">
+          <i class="fas fa-file-pdf"></i> Gerar Boletim
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p class="mb-3">Selecione qual período deseja gerar o boletim:</p>
+        <div class="d-grid gap-2">
+          <%= link_to generate_report_card_students_documents_path(bimester: 1, format: :pdf), 
+                      class: "btn btn-outline-primary btn-lg" do %>
+            <i class="fas fa-calendar-check"></i> 1º Bimestre
+          <% end %>
+          <%= link_to generate_report_card_students_documents_path(bimester: 2, format: :pdf), 
+                      class: "btn btn-outline-primary btn-lg" do %>
+            <i class="fas fa-calendar-check"></i> 2º Bimestre
+          <% end %>
+          <%= link_to generate_report_card_students_documents_path(bimester: 3, format: :pdf), 
+                      class: "btn btn-outline-primary btn-lg" do %>
+            <i class="fas fa-calendar-check"></i> 3º Bimestre
+          <% end %>
+          <%= link_to generate_report_card_students_documents_path(bimester: 4, format: :pdf), 
+                      class: "btn btn-outline-primary btn-lg" do %>
+            <i class="fas fa-calendar-check"></i> 4º Bimestre
+          <% end %>
+          <%= link_to generate_report_card_students_documents_path(format: :pdf), 
+                      class: "btn btn-success btn-lg" do %>
+            <i class="fas fa-book"></i> Boletim Completo (Todos os Bimestres)
+          <% end %>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          <i class="fas fa-times"></i> Cancelar
+        </button>
+      </div>
     </div>
   </div>
 </div>

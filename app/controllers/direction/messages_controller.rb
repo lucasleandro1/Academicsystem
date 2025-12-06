@@ -91,6 +91,27 @@ class Direction::MessagesController < ApplicationController
                 notice: "Comunicado enviado para todos os usuários da escola (#{users_to_notify.count} pessoas)."
   end
 
+  def broadcast_to_directions
+    @school = current_user.school
+    subject = params[:subject]
+    body = params[:body]
+
+    directions = @school.directions.where.not(id: current_user.id)
+
+    directions.find_each do |direction|
+      Message.create!(
+        sender: current_user,
+        recipient: direction,
+        school: @school,
+        subject: subject,
+        body: body
+      )
+    end
+
+    redirect_to direction_messages_path,
+                notice: "Comunicado enviado para todos os diretores (#{directions.count} pessoas)."
+  end
+
   def broadcast_to_teachers
     @school = current_user.school
     subject = params[:subject]

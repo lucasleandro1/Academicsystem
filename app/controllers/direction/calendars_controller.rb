@@ -1,5 +1,6 @@
-class CalendarsController < ApplicationController
+class Direction::CalendarsController < ApplicationController
   before_action :authenticate_user!
+  before_action :authorize_direction!
 
   def index
     # Definir o mês e ano atual ou baseado nos parâmetros
@@ -59,34 +60,14 @@ class CalendarsController < ApplicationController
   def build_calendar_query(month_start, month_end)
     calendars = Calendar.includes(:school).where(date: month_start..month_end)
 
-    case current_user.user_type
-    when "admin"
-      # Admin pode ver todos os calendários
-      calendars
-    when "direction"
-      # Diretor pode ver eventos municipais e da sua escola
-      if current_user.school_id.present?
-        calendars.where(
-          "(all_schools = ? OR school_id = ?)",
-          true, current_user.school_id
-        )
-      else
-        # Diretor sem escola vê apenas eventos municipais
-        calendars.where(all_schools: true)
-      end
-    when "teacher", "student"
-      # Professor e estudante podem ver eventos municipais e da sua escola
-      if current_user.school_id.present?
-        calendars.where(
-          "(all_schools = ? OR school_id = ?)",
-          true, current_user.school_id
-        )
-      else
-        # Usuário sem escola vê apenas eventos municipais
-        calendars.where(all_schools: true)
-      end
+    if current_user.school_id.present?
+      calendars.where(
+        "(all_schools = ? OR school_id = ?)",
+        true, current_user.school_id
+      )
     else
-      calendars.none
+      # Diretor sem escola vê apenas eventos municipais
+      calendars.where(all_schools: true)
     end
   end
 
@@ -96,34 +77,14 @@ class CalendarsController < ApplicationController
       month_start, month_end
     )
 
-    case current_user.user_type
-    when "admin"
-      # Admin pode ver todos os eventos
-      events
-    when "direction"
-      # Diretor pode ver eventos municipais e da sua escola
-      if current_user.school_id.present?
-        events.where(
-          "(is_municipal = ? OR school_id = ?)",
-          true, current_user.school_id
-        )
-      else
-        # Diretor sem escola vê apenas eventos municipais
-        events.where(is_municipal: true)
-      end
-    when "teacher", "student"
-      # Professor e estudante podem ver eventos municipais e da sua escola
-      if current_user.school_id.present?
-        events.where(
-          "(is_municipal = ? OR school_id = ?)",
-          true, current_user.school_id
-        )
-      else
-        # Usuário sem escola vê apenas eventos municipais
-        events.where(is_municipal: true)
-      end
+    if current_user.school_id.present?
+      events.where(
+        "(is_municipal = ? OR school_id = ?)",
+        true, current_user.school_id
+      )
     else
-      events.none
+      # Diretor sem escola vê apenas eventos municipais
+      events.where(is_municipal: true)
     end
   end
 end

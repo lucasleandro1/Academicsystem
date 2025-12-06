@@ -1,0 +1,197 @@
+<% content_for :title, @classroom.name %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <%= link_to teachers_classrooms_path, class: "btn btn-outline-secondary btn-sm mb-2" do %>
+      <i class="fas fa-arrow-left"></i> Voltar
+    <% end %>
+    <h1>
+      <i class="fas fa-users"></i> <%= @classroom.name %>
+    </h1>
+  </div>
+  <div class="badge bg-<%= @classroom.shift == 'morning' ? 'warning' : @classroom.shift == 'afternoon' ? 'info' : 'dark' %> fs-6">
+    <%= @classroom.shift.humanize %>
+  </div>
+</div>
+
+<!-- Informações da Turma -->
+<div class="row mb-4">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header">
+        <h5><i class="fas fa-info-circle"></i> Informações da Turma</h5>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-4 mb-3">
+            <small class="text-muted">Nível:</small>
+            <br>
+            <strong><%= @classroom.level.humanize %></strong>
+          </div>
+          <div class="col-md-4 mb-3">
+            <small class="text-muted">Ano Letivo:</small>
+            <br>
+            <strong><%= @classroom.academic_year %></strong>
+          </div>
+          <div class="col-md-4 mb-3">
+            <small class="text-muted">Turno:</small>
+            <br>
+            <strong><%= @classroom.shift.humanize %></strong>
+          </div>
+        </div>
+        <% if @classroom.school %>
+          <div class="mt-3">
+            <small class="text-muted">Escola:</small>
+            <br>
+            <strong><%= @classroom.school.name %></strong>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-header">
+        <h5><i class="fas fa-chart-bar"></i> Estatísticas</h5>
+      </div>
+      <div class="card-body">
+        <div class="text-center mb-3">
+          <h3 class="text-primary mb-0"><%= @students.count %></h3>
+          <small class="text-muted">Alunos</small>
+        </div>
+        <div class="text-center mb-3">
+          <h3 class="text-success mb-0"><%= @subjects.count %></h3>
+          <small class="text-muted">Minhas Disciplinas</small>
+        </div>
+        <div class="text-center">
+          <h3 class="text-info mb-0"><%= @classroom.subjects.count %></h3>
+          <small class="text-muted">Total de Disciplinas</small>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Minhas Disciplinas -->
+<div class="card mb-4">
+  <div class="card-header">
+    <h5><i class="fas fa-book"></i> Minhas Disciplinas nesta Turma</h5>
+  </div>
+  <div class="card-body">
+    <% if @subjects.any? %>
+      <div class="row">
+        <% @subjects.each do |subject| %>
+          <div class="col-md-6 mb-3">
+            <div class="card">
+              <div class="card-body">
+                <h6><i class="fas fa-book-open text-primary"></i> <%= subject.name %></h6>
+                <% if subject.description.present? %>
+                  <p class="text-muted small mb-2"><%= subject.description %></p>
+                <% end %>
+                <div class="d-flex gap-2 mt-3">
+                  <%= link_to teachers_grades_path(subject_id: subject.id, classroom_id: @classroom.id), class: "btn btn-sm btn-outline-warning" do %>
+                    <i class="fas fa-star"></i> Notas
+                  <% end %>
+                  <%= link_to teachers_subject_class_schedules_path(subject), class: "btn btn-sm btn-outline-info" do %>
+                    <i class="fas fa-calendar"></i> Horários
+                  <% end %>
+                </div>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="text-center py-4">
+        <i class="fas fa-book fa-3x text-muted mb-3"></i>
+        <p class="text-muted">Você não ministra disciplinas nesta turma.</p>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<!-- Lista de Alunos -->
+<div class="card">
+  <div class="card-header">
+    <h5><i class="fas fa-user-graduate"></i> Alunos (<%= @students.count %>)</h5>
+  </div>
+  <div class="card-body">
+    <% if @students.any? %>
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Email</th>
+              <th>Matrícula</th>
+              <th class="text-center">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @students.each do |student| %>
+              <tr>
+                <td>
+                  <i class="fas fa-user-circle text-muted"></i>
+                  <%= student.full_name %>
+                </td>
+                <td><%= student.email %></td>
+                <td><%= student.id %></td>
+                <td class="text-center">
+                  <div class="btn-group btn-group-sm" role="group">
+                    <%= link_to teachers_grades_path(student_id: student.id, classroom_id: @classroom.id), class: "btn btn-outline-warning", title: "Ver Notas" do %>
+                      <i class="fas fa-star"></i>
+                    <% end %>
+                    <%= link_to teachers_absences_path(student_id: student.id, classroom_id: @classroom.id), class: "btn btn-outline-danger", title: "Ver Faltas" do %>
+                      <i class="fas fa-calendar-times"></i>
+                    <% end %>
+                    <%= link_to new_teachers_message_path(student_id: student.id), class: "btn btn-outline-primary", title: "Enviar Mensagem" do %>
+                      <i class="fas fa-envelope"></i>
+                    <% end %>
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <div class="text-center py-5">
+        <i class="fas fa-user-graduate fa-3x text-muted mb-3"></i>
+        <h5 class="text-muted">Nenhum aluno matriculado</h5>
+        <p class="text-muted">Esta turma ainda não possui alunos matriculados.</p>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<!-- Ações Rápidas -->
+<div class="card mt-4">
+  <div class="card-header">
+    <h5><i class="fas fa-bolt"></i> Ações Rápidas</h5>
+  </div>
+  <div class="card-body">
+    <div class="row g-3">
+      <div class="col-md-3">
+        <%= link_to teachers_grades_path(classroom_id: @classroom.id), class: "btn btn-outline-warning w-100" do %>
+          <i class="fas fa-star"></i> Gerenciar Notas
+        <% end %>
+      </div>
+      <div class="col-md-3">
+        <%= link_to attendance_teachers_absences_path(classroom_id: @classroom.id), class: "btn btn-outline-danger w-100" do %>
+          <i class="fas fa-calendar-check"></i> Registrar Presença
+        <% end %>
+      </div>
+      <div class="col-md-3">
+        <%= link_to teachers_class_schedules_path(classroom_id: @classroom.id), class: "btn btn-outline-info w-100" do %>
+          <i class="fas fa-clock"></i> Ver Horários
+        <% end %>
+      </div>
+      <div class="col-md-3">
+        <%= link_to new_teachers_message_path(classroom_id: @classroom.id), class: "btn btn-outline-primary w-100" do %>
+          <i class="fas fa-envelope"></i> Mensagem para Turma
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

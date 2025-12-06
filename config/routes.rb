@@ -77,6 +77,7 @@ Rails.application.routes.draw do
     end
     resources :subjects
     resources :events
+    resources :calendars, only: [ :index ]
     resources :reports, only: [ :index, :show ] do
       collection do
         get :generate_pdf
@@ -99,6 +100,7 @@ Rails.application.routes.draw do
     resources :messages, only: [ :index, :new, :create, :show ] do
       collection do
         post :broadcast_to_all
+        post :broadcast_to_directions
         post :broadcast_to_teachers
         post :broadcast_to_students
         post :broadcast_to_classroom
@@ -130,6 +132,8 @@ Rails.application.routes.draw do
       resources :class_schedules, only: [ :index, :show ]
     end
     resources :class_schedules, only: [ :index, :show ]
+    resources :calendars, only: [ :index ]
+    resources :events, only: [ :index, :show ]
     resources :documents do
       member do
         get :download
@@ -162,6 +166,7 @@ Rails.application.routes.draw do
     resources :subjects, only: [ :index, :show ]
     resources :absences, only: [ :index ]
     resources :class_schedules, only: [ :index ]
+    resources :calendars, only: [ :index ]
     resources :documents do
       member do
         get :download

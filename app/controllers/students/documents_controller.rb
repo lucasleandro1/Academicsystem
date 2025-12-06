@@ -104,14 +104,28 @@ class Students::DocumentsController < ApplicationController
     end
 
     @grades_data = {}
-    @bimesters = [ 1, 2, 3, 4 ]
+    
+    # Determinar quais bimestres exibir baseado no bimestre selecionado
+    selected_bimester = params[:bimester].to_i
+    @period_label = if selected_bimester > 0
+                      "#{selected_bimester}º Bimestre"
+                    else
+                      "Ano Completo"
+                    end
+    
+    @bimesters = if selected_bimester > 0
+                   [ selected_bimester ]
+                 else
+                   [ 1, 2, 3, 4 ] # Boletim completo
+                 end
+    
     @subject_averages = {}
     @bimester_averages = {}
 
     # Verificar se há pelo menos uma nota cadastrada
-    total_grades = @student.student_grades.where(subject: subjects)
+    total_grades = @student.student_grades.where(subject: subjects, bimester: @bimesters)
     if total_grades.empty?
-      redirect_to students_documents_path, alert: "Você ainda não possui notas lançadas. O boletim será gerado assim que as notas estiverem disponíveis."
+      redirect_to students_documents_path, alert: "Você ainda não possui notas lançadas para o período selecionado. O boletim será gerado assim que as notas estiverem disponíveis."
       return
     end
 
@@ -135,7 +149,7 @@ class Students::DocumentsController < ApplicationController
         end
       end
 
-      # Calcular média anual da disciplina
+      # Calcular média do período da disciplina
       @subject_averages[subject] = subject_count > 0 ? (subject_total / subject_count).round(1) : nil
     end
 
@@ -150,7 +164,7 @@ class Students::DocumentsController < ApplicationController
       @bimester_averages[bimester] = bimester_grades.any? ? (bimester_grades.sum / bimester_grades.size).round(1) : nil
     end
 
-    # Calcular média geral
+    # Calcular média geral do período
     all_subject_averages = @subject_averages.values.compact
     @overall_average = all_subject_averages.any? ? (all_subject_averages.sum / all_subject_averages.size).round(1) : nil
 
@@ -158,7 +172,8 @@ class Students::DocumentsController < ApplicationController
     respond_to do |format|
       format.pdf do
         pdf = generate_report_card_pdf
-        send_data pdf, filename: "boletim_#{@student.full_name.parameterize}_#{Date.current.strftime('%Y%m%d')}.pdf",
+        period_suffix = selected_bimester > 0 ? "_#{@period_label.parameterize}" : ""
+        send_data pdf, filename: "boletim_#{@student.full_name.parameterize}#{period_suffix}_#{Date.current.strftime('%Y%m%d')}.pdf",
                        type: "application/pdf",
                        disposition: "attachment"
       end
@@ -197,8 +212,13 @@ class Students::DocumentsController < ApplicationController
       # Cabeçalho com logo (se houver) e título
       pdf.text_box "BOLETIM ESCOLAR", at: [ 0, pdf.cursor ], width: 540, align: :center,
                    style: :bold, size: 20, color: "2c3e50"
+      
+      # Subtítulo com período selecionado
+      pdf.move_down 30
+      pdf.text_box @period_label, at: [ 0, pdf.cursor ], width: 540, align: :center,
+                   style: :bold, size: 14, color: "3498db"
 
-      pdf.move_down 40
+      pdf.move_down 30
 
       # Informações da escola em caixa destacada
       pdf.stroke_color "d5d5d5"
@@ -229,6 +249,7 @@ class Students::DocumentsController < ApplicationController
       info_data = [
         [ "Nome:", @student.full_name ],
         [ "Turma:", @classroom.name ],
+        [ "Período:", @period_label ],
         [ "Data de emissão:", Date.current.strftime("%d/%m/%Y") ]
       ]
 
@@ -247,9 +268,17 @@ class Students::DocumentsController < ApplicationController
       pdf.stroke_horizontal_line 0, 150, at: pdf.cursor
       pdf.move_down 15
 
-      # Preparar dados da tabela
+      # Preparar dados da tabela com headers dinâmicos
       table_data = []
-      headers = [ "Disciplina", "1º Bim", "2º Bim", "3º Bim", "4º Bim", "Média", "Situação" ]
+      headers = [ "Disciplina" ]
+      
+      # Adicionar headers dos bimestres selecionados
+      @bimesters.each do |bimester|
+        headers << "#{bimester}º Bim"
+      end
+      
+      headers << "Média"
+      headers << "Situação"
       table_data << headers
 
       @grades_data.each do |subject, bimesters|
@@ -297,6 +326,7 @@ class Students::DocumentsController < ApplicationController
       end
 
       # Renderizar tabela
+      bimester_columns_count = @bimesters.size
       pdf.table table_data, header: true, width: 540 do
         row(0).font_style = :bold
         row(0).background_color = "3498db"
@@ -307,8 +337,8 @@ class Students::DocumentsController < ApplicationController
           row(-1).background_color = "ecf0f1"
         end
 
-        columns(1..4).align = :center
-        columns(5..6).align = :center
+        # Centralizar colunas dos bimestres, média e situação dinamicamente
+        columns(1..(bimester_columns_count + 1)).align = :center
 
         self.cell_style = {
           size: 10,
@@ -319,12 +349,13 @@ class Students::DocumentsController < ApplicationController
         # Colorir situações
         if table_data.length > 1
           (1...table_data.length).each do |i|
-            if table_data[i][6] == "Aprovado"
-              self.row(i).columns(6).background_color = "d5f4e6"
-              self.row(i).columns(6).text_color = "27ae60"
-            elsif table_data[i][6] == "Reprovado"
-              self.row(i).columns(6).background_color = "fadbd8"
-              self.row(i).columns(6).text_color = "e74c3c"
+            situation_col_index = bimester_columns_count + 2
+            if table_data[i][situation_col_index] == "Aprovado"
+              self.row(i).columns(situation_col_index).background_color = "d5f4e6"
+              self.row(i).columns(situation_col_index).text_color = "27ae60"
+            elsif table_data[i][situation_col_index] == "Reprovado"
+              self.row(i).columns(situation_col_index).background_color = "fadbd8"
+              self.row(i).columns(situation_col_index).text_color = "e74c3c"
             end
           end
         end

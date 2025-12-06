@@ -206,6 +206,44 @@
 </style>
 
 <script>
+// Funções globais para os botões
+function markAllPresent() {
+  const presentRadios = document.querySelectorAll('input[type="radio"][value="present"]');
+  presentRadios.forEach(function(radio) {
+    radio.checked = true;
+    const studentId = radio.name.replace('attendance_', '');
+    const hiddenField = document.getElementById('hidden_absent_' + studentId);
+    if (hiddenField) {
+      hiddenField.disabled = true;
+    }
+  });
+  updateCounts();
+}
+
+function markAllAbsent() {
+  const absentRadios = document.querySelectorAll('input[type="radio"][value="absent"]');
+  absentRadios.forEach(function(radio) {
+    radio.checked = true;
+    const studentId = radio.name.replace('attendance_', '');
+    const hiddenField = document.getElementById('hidden_absent_' + studentId);
+    if (hiddenField) {
+      hiddenField.disabled = false;
+    }
+  });
+  updateCounts();
+}
+
+function updateCounts() {
+  const presentCount = document.querySelectorAll('input[type="radio"][value="present"]:checked').length;
+  const absentCount = document.querySelectorAll('input[type="radio"][value="absent"]:checked').length;
+  
+  const presentBadge = document.getElementById('present-count');
+  const absentBadge = document.getElementById('absent-count');
+  
+  if (presentBadge) presentBadge.textContent = presentCount;
+  if (absentBadge) absentBadge.textContent = absentCount;
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   const subjectSelect = document.getElementById('subject_select');
   const classroomSelect = document.getElementById('classroom_select');
@@ -346,7 +384,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Esta função será implementada quando necessário
     // Por ora, manteremos o comportamento atual
   }
-}
   
   // Adicionar listeners para os radio buttons
   const radioButtons = document.querySelectorAll('input[type="radio"][name^="attendance_"]');
@@ -355,43 +392,19 @@ document.addEventListener('DOMContentLoaded', function() {
       const studentId = this.name.replace('attendance_', '');
       const hiddenField = document.getElementById('hidden_absent_' + studentId);
       
-      if (this.value === 'absent') {
-        hiddenField.disabled = false;
-      } else {
-        hiddenField.disabled = true;
+      if (hiddenField) {
+        if (this.value === 'absent') {
+          hiddenField.disabled = false;
+        } else {
+          hiddenField.disabled = true;
+        }
       }
       
       updateCounts();
     });
   });
   
+  // Inicializar contadores
   updateCounts();
 });
-
-function markAllPresent() {
-  const presentRadios = document.querySelectorAll('input[type="radio"][value="present"]');
-  presentRadios.forEach(function(radio) {
-    radio.checked = true;
-    radio.dispatchEvent(new Event('change'));
-  });
-}
-
-function markAllAbsent() {
-  const absentRadios = document.querySelectorAll('input[type="radio"][value="absent"]');
-  absentRadios.forEach(function(radio) {
-    radio.checked = true;
-    radio.dispatchEvent(new Event('change'));
-  });
-}
-
-function updateCounts() {
-  const presentCount = document.querySelectorAll('input[type="radio"][value="present"]:checked').length;
-  const absentCount = document.querySelectorAll('input[type="radio"][value="absent"]:checked').length;
-  
-  const presentBadge = document.getElementById('present-count');
-  const absentBadge = document.getElementById('absent-count');
-  
-  if (presentBadge) presentBadge.textContent = presentCount;
-  if (absentBadge) absentBadge.textContent = absentCount;
-}
 </script>

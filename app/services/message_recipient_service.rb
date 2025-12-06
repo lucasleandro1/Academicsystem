@@ -109,6 +109,7 @@ class MessageRecipientService
     school_users = current_user.school.users.where.not(id: current_user.id).includes(:classroom)
 
     {
+      "Diretores" => school_users.directions.to_a,
       "Professores" => school_users.teachers.to_a,
       "Alunos" => school_users.students.to_a
     }

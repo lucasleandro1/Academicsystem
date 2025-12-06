@@ -1,0 +1,190 @@
+<%# Page Title %>
+<% content_for :title, "Editar Nota - Professor" %>
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1 class="h2">
+    <i class="fas fa-edit text-primary me-2"></i>
+    Editar Nota
+  </h1>
+  <div class="btn-toolbar mb-2 mb-md-0">
+    <%= link_to teachers_grades_path, class: "btn btn-sm btn-outline-secondary" do %>
+      <i class="fas fa-arrow-left"></i> Voltar
+    <% end %>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-body">
+        <%= form_with model: @grade, url: teachers_grade_path(@grade), method: :patch, local: true, class: "needs-validation", novalidate: true do |form| %>
+          
+          <% if @grade.errors.any? %>
+            <div class="alert alert-danger">
+              <h6><%= pluralize(@grade.errors.count, "erro") %> impedem que a nota seja atualizada:</h6>
+              <ul class="mb-0">
+                <% @grade.errors.full_messages.each do |message| %>
+                  <li><%= message %></li>
+                <% end %>
+              </ul>
+            </div>
+          <% end %>
+
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <%= form.label :subject_id, "Disciplina", class: "form-label" %>
+              <%= form.select :subject_id, 
+                  options_from_collection_for_select(@subjects, :id, :name, @grade.subject_id), 
+                  { prompt: "Selecione uma disciplina" }, 
+                  { class: "form-select", required: true, disabled: true } %>
+              <div class="form-text">
+                <i class="fas fa-info-circle"></i> A disciplina não pode ser alterada
+              </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+              <%= form.label :user_id, "Aluno", class: "form-label" %>
+              <%= form.select :user_id, 
+                  options_from_collection_for_select(@students, :id, :full_name, @grade.user_id), 
+                  { prompt: "Selecione um aluno" }, 
+                  { class: "form-select", required: true, disabled: true } %>
+              <div class="form-text">
+                <i class="fas fa-info-circle"></i> O aluno não pode ser alterado
+              </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+              <%= form.label :bimester, "Bimestre", class: "form-label" %>
+              <%= form.select :bimester, 
+                  options_for_select([[1, 1], [2, 2], [3, 3], [4, 4]], @grade.bimester), 
+                  { prompt: "Selecione o bimestre" }, 
+                  { class: "form-select", required: true } %>
+              <div class="invalid-feedback">
+                Por favor, selecione o bimestre.
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <%= form.label :grade_type, "Tipo de Avaliação", class: "form-label" %>
+              <%= form.select :grade_type, 
+                  options_for_select([
+                    ["Prova", "prova"], 
+                    ["Trabalho", "trabalho"], 
+                    ["Atividade", "atividade"],
+                    ["Participação", "participacao"],
+                    ["Projeto", "projeto"]
+                  ], @grade.grade_type), 
+                  { prompt: "Selecione o tipo" }, 
+                  { class: "form-select", required: true } %>
+              <div class="invalid-feedback">
+                Por favor, selecione o tipo de avaliação.
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <%= form.label :assessment_name, "Nome da Avaliação", class: "form-label" %>
+              <%= form.text_field :assessment_name, class: "form-control", required: true, placeholder: "Ex: P1, Trabalho 1, etc." %>
+              <div class="invalid-feedback">
+                Por favor, informe o nome da avaliação.
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <%= form.label :value, "Nota", class: "form-label" %>
+              <%= form.number_field :value, step: 0.1, min: 0, max: 10, class: "form-control", required: true %>
+              <div class="invalid-feedback">
+                Por favor, informe a nota (0 a 10).
+              </div>
+              <div class="form-text">
+                Nota obtida pelo aluno
+              </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+              <%= form.label :max_value, "Nota Máxima", class: "form-label" %>
+              <%= form.number_field :max_value, step: 0.1, min: 0, max: 10, class: "form-control", required: true %>
+              <div class="invalid-feedback">
+                Por favor, informe a nota máxima (0 a 10).
+              </div>
+              <div class="form-text">
+                Valor máximo da avaliação
+              </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+              <%= form.label :assessment_date, "Data da Avaliação", class: "form-label" %>
+              <%= form.date_field :assessment_date, class: "form-control", required: true %>
+              <div class="invalid-feedback">
+                Por favor, informe a data da avaliação.
+              </div>
+            </div>
+          </div>
+
+          <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+            <%= link_to teachers_grades_path, class: "btn btn-outline-secondary me-2" do %>
+              <i class="fas fa-times"></i> Cancelar
+            <% end %>
+            <%= form.submit "Atualizar Nota", class: "btn btn-primary" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-header bg-info text-white">
+        <i class="fas fa-info-circle"></i> Informações
+      </div>
+      <div class="card-body">
+        <h6 class="card-subtitle mb-3 text-muted">Dados da Nota</h6>
+        
+        <div class="mb-3">
+          <strong>Aluno:</strong><br>
+          <%= @grade.student.full_name %>
+        </div>
+        
+        <div class="mb-3">
+          <strong>Disciplina:</strong><br>
+          <%= @grade.subject.name %>
+        </div>
+        
+        <% if @grade.subject.classroom %>
+          <div class="mb-3">
+            <strong>Turma:</strong><br>
+            <%= @grade.subject.classroom.name %>
+          </div>
+        <% end %>
+
+        <div class="alert alert-warning mt-3">
+          <small>
+            <i class="fas fa-exclamation-triangle"></i>
+            <strong>Atenção:</strong> A disciplina e o aluno não podem ser alterados após o registro da nota.
+          </small>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Validação do formulário
+(function () {
+  'use strict'
+  var forms = document.querySelectorAll('.needs-validation')
+  Array.prototype.slice.call(forms)
+    .forEach(function (form) {
+      form.addEventListener('submit', function (event) {
+        if (!form.checkValidity()) {
+          event.preventDefault()
+          event.stopPropagation()
+        }
+        form.classList.add('was-validated')
+      }, false)
+    })
+})()
+</script>

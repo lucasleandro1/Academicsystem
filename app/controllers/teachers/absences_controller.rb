@@ -93,51 +93,98 @@ class Teachers::AbsencesController < ApplicationController
   end
 
   def bulk_create
-    @selected_classroom = Classroom.find(params[:classroom_id])
-    @date = Date.parse(params[:date])
+    begin
+      @selected_classroom = Classroom.find(params[:classroom_id])
+      @date = Date.parse(params[:date])
 
-    # Encontrar a instância correta da disciplina para esta turma
-    subject_name = params[:subject_name]
-    subject_instances = current_user.teacher_subjects.select { |s| s.name == subject_name }
-    @subject = subject_instances.find { |s| s.available_classrooms.include?(@selected_classroom) }
+      # Encontrar a instância correta da disciplina para esta turma
+      subject_name = params[:subject_name]
+      subject_instances = current_user.teacher_subjects.select { |s| s.name == subject_name }
+      @subject = subject_instances.find { |s| s.available_classrooms.include?(@selected_classroom) }
 
-    unless @subject
-      redirect_to attendance_teachers_absences_path, alert: "Disciplina não encontrada para esta turma."
-      return
-    end
+      unless @subject
+        redirect_to attendance_teachers_absences_path, alert: "Disciplina não encontrada para esta turma."
+        return
+      end
 
-    @students = @subject.students_from_classroom(@selected_classroom.id)
+      @students = @subject.students_from_classroom(@selected_classroom.id)
 
-    # Obter lista de alunos faltosos
-    absent_student_ids = params[:absent_students] || []
+      # Obter lista de alunos faltosos
+      # Remover valores vazios e duplicados
+      absent_student_ids = (params[:absent_students] || []).reject(&:blank?).uniq
+      
+      # Log para debug
+      Rails.logger.info "=== BULK CREATE ABSENCES ==="
+      Rails.logger.info "Subject: #{@subject.name} (ID: #{@subject.id})"
+      Rails.logger.info "Classroom: #{@selected_classroom.name} (ID: #{@selected_classroom.id})"
+      Rails.logger.info "Date: #{@date}"
+      Rails.logger.info "Absent students IDs: #{absent_student_ids.inspect}"
+      Rails.logger.info "Total students in classroom: #{@students.count}"
 
-    # Limpar faltas existentes para esta data/disciplina/turma
-    existing_absences = @subject.absences.where(
-      date: @date,
-      user_id: @students.pluck(:id)
-    )
-    existing_absences.destroy_all
+      # Limpar faltas existentes para esta data/disciplina/turma
+      existing_absences = @subject.absences.where(
+        date: @date,
+        user_id: @students.pluck(:id)
+      )
+      deleted_count = existing_absences.count
+      existing_absences.destroy_all
 
-    # Criar novas faltas
-    success_count = 0
-    absent_student_ids.each do |student_id|
-      if @students.pluck(:id).include?(student_id.to_i)
-        absence = @subject.absences.build(
-          user_id: student_id,
-          date: @date,
-          justified: false
-        )
-        if absence.save
-          success_count += 1
+      # Criar novas faltas
+      success_count = 0
+      errors = []
+      absent_student_ids.each do |student_id|
+        student = @students.find_by(id: student_id.to_i)
+        if student
+          absence = @subject.absences.build(
+            user_id: student_id,
+            date: @date,
+            justified: false
+          )
+          if absence.save
+            success_count += 1
+            Rails.logger.info "Absence created for student #{student.full_name} (ID: #{student_id})"
+          else
+            error_msg = "Erro ao salvar falta do aluno #{student.full_name} (ID #{student_id}): #{absence.errors.full_messages.join(', ')}"
+            errors << error_msg
+            Rails.logger.error error_msg
+          end
+        else
+          Rails.logger.warn "Student ID #{student_id} not found in classroom"
         end
       end
-    end
 
-    redirect_to attendance_teachers_absences_path(
-      subject_name: subject_name,
-      classroom_id: @selected_classroom.id,
-      date: @date
-    ), notice: "Chamada registrada! #{success_count} falta(s) registrada(s)."
+      # Log dos erros se houver
+      if errors.any?
+        Rails.logger.error "=== ERRORS IN BULK CREATE ==="
+        errors.each { |e| Rails.logger.error e }
+        redirect_to attendance_teachers_absences_path(
+          subject_name: subject_name,
+          classroom_id: @selected_classroom.id,
+          date: @date
+        ), alert: "Erro ao salvar algumas faltas: #{errors.join('; ')}"
+        return
+      end
+
+      # Mensagem mais informativa
+      present_count = @students.count - success_count
+      if absent_student_ids.empty?
+        message = "Chamada registrada! Todos os #{@students.count} alunos marcados como presentes."
+      else
+        message = "Chamada registrada! #{present_count} presente(s), #{success_count} ausente(s)."
+        message += " (#{deleted_count} registro(s) anterior(es) removido(s))" if deleted_count > 0
+      end
+      
+      redirect_to attendance_teachers_absences_path(
+        subject_name: subject_name,
+        classroom_id: @selected_classroom.id,
+        date: @date
+      ), notice: message
+    rescue => e
+      Rails.logger.error "=== EXCEPTION IN BULK CREATE ==="
+      Rails.logger.error "Error: #{e.class.name} - #{e.message}"
+      Rails.logger.error e.backtrace.join("\n")
+      redirect_to attendance_teachers_absences_path, alert: "Erro ao processar a chamada: #{e.message}"
+    end
   end
 
   def show

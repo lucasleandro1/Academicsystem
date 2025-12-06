@@ -32,8 +32,25 @@ class Admin::CalendarsController < ApplicationController
 
     @calendars = @calendars.order(:date)
 
+    # Buscar eventos municipais do mês
+    @events = Event.includes(:school).where(
+      "COALESCE(start_date, event_date) >= ? AND COALESCE(start_date, event_date) <= ?",
+      month_start, month_end
+    )
+    
+    # Aplicar filtros aos eventos
+    if params[:search].present?
+      @events = @events.where("title ILIKE ? OR description ILIKE ?",
+                             "%#{params[:search]}%", "%#{params[:search]}%")
+    end
+
+    if params[:school_id].present?
+      @events = @events.where(school_id: params[:school_id])
+    end
+
     # Agrupar eventos por data para facilitar a exibição no calendário
     @events_by_date = @calendars.group_by(&:date)
+    @municipal_events_by_date = @events.group_by { |e| e.start_date || e.event_date }
 
     # Dados para os filtros
     @schools = School.order(:name)
@@ -45,10 +62,10 @@ class Admin::CalendarsController < ApplicationController
 
     # Estatísticas do mês
     @month_stats = {
-      total_events: @calendars.count,
+      total_events: @calendars.count + @events.count,
       holidays: @calendars.where(calendar_type: "holiday").count,
       vacations: @calendars.where(calendar_type: "vacation").count,
-      municipal_events: @calendars.municipal.count
+      municipal_events: @calendars.municipal.count + @events.where(is_municipal: true).count
     }
   end
 

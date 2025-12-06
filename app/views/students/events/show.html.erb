@@ -1,0 +1,283 @@
+<% content_for :title, @event.title %>
+
+<div class="container-fluid py-4">
+  <div class="row">
+    <div class="col-12">
+      <!-- Page Header -->
+      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <div>
+          <h1 class="h2">
+            <i class="fas fa-calendar-day text-primary me-2"></i>
+            <%= @event.title %>
+          </h1>
+          <p class="text-muted mb-0">
+            Detalhes do evento escolar
+          </p>
+        </div>
+        <div class="btn-toolbar mb-2 mb-md-0">
+          <%= link_to students_events_path, class: "btn btn-sm btn-outline-secondary" do %>
+            <i class="fas fa-arrow-left"></i> Voltar para Eventos
+          <% end %>
+        </div>
+      </div>
+
+      <div class="row">
+        <!-- Informações principais -->
+        <div class="col-lg-8">
+          <div class="card shadow mb-4">
+            <div class="card-header py-3">
+              <div class="d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">
+                  <i class="fas fa-info-circle"></i> Informações do Evento
+                </h6>
+                <% if @event.event_type.present? %>
+                  <span class="badge bg-<%= case @event.event_type
+                    when 'academico', 'academic' then 'primary'
+                    when 'cultural' then 'success'
+                    when 'esportivo', 'sports' then 'warning'
+                    when 'reuniao', 'meeting' then 'info'
+                    when 'feriado', 'holiday' then 'danger'
+                    else 'secondary'
+                    end %> fs-6">
+                    <%= @event.event_type.humanize %>
+                  </span>
+                <% end %>
+              </div>
+            </div>
+            <div class="card-body">
+              <!-- Descrição -->
+              <% if @event.description.present? %>
+                <div class="mb-4">
+                  <h6 class="text-muted">Descrição</h6>
+                  <p class="mb-0"><%= simple_format(@event.description) %></p>
+                </div>
+              <% end %>
+
+              <!-- Data e Horário -->
+              <div class="row mb-4">
+                <div class="col-md-6">
+                  <div class="card bg-light">
+                    <div class="card-body">
+                      <h6 class="text-primary mb-3">
+                        <i class="fas fa-calendar-alt"></i> Data de Início
+                      </h6>
+                      <p class="h4 mb-2"><%= @event.start_date.strftime("%d de %B de %Y") %></p>
+                      <% if @event.start_time.present? %>
+                        <p class="mb-0 text-muted">
+                          <i class="fas fa-clock"></i> <%= @event.start_time.strftime("%H:%M") %>
+                        </p>
+                      <% end %>
+                    </div>
+                  </div>
+                </div>
+                <% if @event.end_date.present? && @event.end_date != @event.start_date %>
+                  <div class="col-md-6">
+                    <div class="card bg-light">
+                      <div class="card-body">
+                        <h6 class="text-primary mb-3">
+                          <i class="fas fa-calendar-alt"></i> Data de Término
+                        </h6>
+                        <p class="h4 mb-2"><%= @event.end_date.strftime("%d de %B de %Y") %></p>
+                        <% if @event.end_time.present? %>
+                          <p class="mb-0 text-muted">
+                            <i class="fas fa-clock"></i> <%= @event.end_time.strftime("%H:%M") %>
+                          </p>
+                        <% end %>
+                      </div>
+                    </div>
+                  </div>
+                <% elsif @event.end_time.present? %>
+                  <div class="col-md-6">
+                    <div class="card bg-light">
+                      <div class="card-body">
+                        <h6 class="text-primary mb-3">
+                          <i class="fas fa-clock"></i> Horário de Término
+                        </h6>
+                        <p class="h4 mb-0"><%= @event.end_time.strftime("%H:%M") %></p>
+                      </div>
+                    </div>
+                  </div>
+                <% end %>
+              </div>
+
+              <!-- Localização -->
+              <% if @event.location.present? %>
+                <div class="mb-4">
+                  <h6 class="text-muted">
+                    <i class="fas fa-map-marker-alt"></i> Local
+                  </h6>
+                  <p class="mb-0"><%= @event.location %></p>
+                </div>
+              <% end %>
+
+              <!-- Informações adicionais -->
+              <% if @event.additional_info.present? %>
+                <div class="mb-4">
+                  <h6 class="text-muted">
+                    <i class="fas fa-info-circle"></i> Informações Adicionais
+                  </h6>
+                  <p class="mb-0"><%= simple_format(@event.additional_info) %></p>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+          <!-- Status Card -->
+          <div class="card shadow mb-4">
+            <div class="card-header py-3">
+              <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-check-circle"></i> Status
+              </h6>
+            </div>
+            <div class="card-body">
+              <div class="text-center mb-3">
+                <% if @event.start_date > Date.current %>
+                  <div class="badge bg-success fs-5 p-3">
+                    <i class="fas fa-clock"></i> Próximo Evento
+                  </div>
+                  <p class="mt-2 mb-0 text-muted">
+                    Começa em <%= distance_of_time_in_words(Date.current, @event.start_date) %>
+                  </p>
+                <% elsif @event.start_date == Date.current %>
+                  <div class="badge bg-warning fs-5 p-3">
+                    <i class="fas fa-star"></i> Hoje
+                  </div>
+                  <p class="mt-2 mb-0 text-muted">
+                    O evento é hoje!
+                  </p>
+                <% elsif @event.end_date && @event.end_date >= Date.current %>
+                  <div class="badge bg-info fs-5 p-3">
+                    <i class="fas fa-play"></i> Em Andamento
+                  </div>
+                  <p class="mt-2 mb-0 text-muted">
+                    Termina <%= @event.end_date > Date.current ? "em #{distance_of_time_in_words(Date.current, @event.end_date)}" : "hoje" %>
+                  </p>
+                <% else %>
+                  <div class="badge bg-secondary fs-5 p-3">
+                    <i class="fas fa-check"></i> Finalizado
+                  </div>
+                  <p class="mt-2 mb-0 text-muted">
+                    Terminou há <%= distance_of_time_in_words(@event.end_date || @event.start_date, Date.current) %>
+                  </p>
+                <% end %>
+              </div>
+
+              <hr>
+
+              <div class="d-grid gap-2">
+                <button class="btn btn-primary" onclick="addToCalendar()">
+                  <i class="fas fa-calendar-plus"></i> Adicionar ao Calendário
+                </button>
+                <button class="btn btn-outline-primary" onclick="shareEvent()">
+                  <i class="fas fa-share-alt"></i> Compartilhar
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Informações da Escola -->
+          <% if @event.school %>
+            <div class="card shadow mb-4">
+              <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                  <i class="fas fa-school"></i> Escola
+                </h6>
+              </div>
+              <div class="card-body">
+                <p class="mb-1"><strong><%= @event.school.name %></strong></p>
+                <% if @event.is_municipal %>
+                  <span class="badge bg-info">
+                    <i class="fas fa-building"></i> Evento Municipal
+                  </span>
+                <% end %>
+              </div>
+            </div>
+          <% elsif @event.is_municipal %>
+            <div class="card shadow mb-4">
+              <div class="card-header py-3 bg-info text-white">
+                <h6 class="m-0 font-weight-bold">
+                  <i class="fas fa-building"></i> Evento Municipal
+                </h6>
+              </div>
+              <div class="card-body">
+                <p class="mb-0">Este é um evento da rede municipal de ensino, válido para todas as escolas.</p>
+              </div>
+            </div>
+          <% end %>
+
+          <!-- Duração -->
+          <% if @event.end_date && @event.end_date != @event.start_date %>
+            <div class="card shadow mb-4">
+              <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                  <i class="fas fa-hourglass-half"></i> Duração
+                </h6>
+              </div>
+              <div class="card-body">
+                <p class="mb-0">
+                  <%= (@event.end_date - @event.start_date).to_i + 1 %> 
+                  <%= (@event.end_date - @event.start_date).to_i + 1 == 1 ? 'dia' : 'dias' %>
+                </p>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function addToCalendar() {
+  const title = "<%= j(@event.title) %>";
+  const startDate = "<%= @event.start_date.strftime('%Y-%m-%d') %>";
+  const endDate = "<%= (@event.end_date || @event.start_date).strftime('%Y-%m-%d') %>";
+  const description = "<%= j(@event.description || '') %>";
+  
+  alert('Funcionalidade de adicionar ao calendário será implementada em breve.');
+}
+
+function shareEvent() {
+  const title = "<%= j(@event.title) %>";
+  const text = "Confira este evento: <%= j(@event.title) %>";
+  const url = window.location.href;
+  
+  if (navigator.share) {
+    navigator.share({
+      title: title,
+      text: text,
+      url: url
+    }).then(() => {
+      console.log('Evento compartilhado com sucesso!');
+    }).catch((error) => {
+      console.log('Erro ao compartilhar:', error);
+    });
+  } else {
+    // Fallback: copiar URL
+    navigator.clipboard.writeText(url).then(() => {
+      alert('Link copiado para a área de transferência!');
+    });
+  }
+}
+</script>
+
+<style>
+.font-weight-bold {
+  font-weight: 700;
+}
+
+.shadow {
+  box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15) !important;
+}
+
+.fs-5 {
+  font-size: 1.25rem !important;
+}
+
+.fs-6 {
+  font-size: 1rem !important;
+}
+</style>

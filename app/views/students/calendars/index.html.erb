@@ -1,20 +1,17 @@
-<% content_for :title, "Calendário Acadêmico Municipal" %>
+<% content_for :title, "Calendário Acadêmico" %>
 
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
   <div>
     <h1 class="h2">
       <i class="fas fa-calendar-alt text-primary me-2"></i>
-      Calendário Acadêmico Municipal
+      Calendário Acadêmico
     </h1>
-    <p class="text-muted mb-0">Gerencie feriados, férias, eventos e datas importantes do calendário letivo.</p>
-  </div>
-  <div class="btn-toolbar mb-2 mb-md-0">
-    <%= link_to new_admin_calendar_path, class: "btn btn-primary" do %>
-      <i class="fas fa-plus"></i> Novo Evento
-    <% end %>
-    <%= link_to municipal_admin_calendars_path, class: "btn btn-outline-info" do %>
-      <i class="fas fa-building"></i> Eventos Municipais
-    <% end %>
+    <p class="text-muted mb-0">
+      Consulte feriados, férias, eventos e datas importantes do calendário letivo
+      <% if current_user.school.present? %>
+        - <%= current_user.school.name %>
+      <% end %>
+    </p>
   </div>
 </div>
 
@@ -23,7 +20,7 @@
   <div class="card-header">
     <div class="row align-items-center">
       <div class="col-md-4">
-        <%= link_to admin_calendars_path(date: @prev_month), 
+        <%= link_to students_calendars_path(date: @prev_month), 
                    class: "btn btn-outline-primary" do %>
           <i class="fas fa-chevron-left"></i> <%= @prev_month.strftime("%B %Y") %>
         <% end %>
@@ -35,7 +32,7 @@
         </h4>
       </div>
       <div class="col-md-4 text-end">
-        <%= link_to admin_calendars_path(date: @next_month), 
+        <%= link_to students_calendars_path(date: @next_month), 
                    class: "btn btn-outline-primary" do %>
           <%= @next_month.strftime("%B %Y") %> <i class="fas fa-chevron-right"></i>
         <% end %>
@@ -47,30 +44,25 @@
 <!-- Filtros de Busca -->
 <div class="card mb-4">
   <div class="card-body">
-    <%= form_with url: admin_calendars_path, method: :get, local: true, class: "row g-3" do |form| %>
+    <%= form_with url: students_calendars_path, method: :get, local: true, class: "row g-3" do |form| %>
       <%= form.hidden_field :date, value: @current_date %>
-      <div class="col-md-3">
+      <div class="col-md-6">
         <%= form.text_field :search, value: params[:search], 
                            placeholder: "Buscar eventos...", 
                            class: "form-control" %>
       </div>
-      <div class="col-md-3">
+      <div class="col-md-4">
         <%= form.select :calendar_type, 
                        options_for_select([['Todos os tipos', '']] + 
                        @calendar_types.map { |type| [Calendar.new(calendar_type: type).type_description, type] }, 
                        params[:calendar_type]), 
                        {}, { class: "form-select" } %>
       </div>
-      <div class="col-md-3">
-        <%= form.select :school_id, 
-                       options_for_select([['Todas as escolas', '']] + 
-                       @schools.map { |school| [school.name, school.id] }, 
-                       params[:school_id]), 
-                       {}, { class: "form-select" } %>
+      <div class="col-md-2">
+        <%= form.submit "Filtrar", class: "btn btn-primary w-100" %>
       </div>
-      <div class="col-md-3">
-        <%= form.submit "Filtrar", class: "btn btn-outline-primary me-2" %>
-        <%= link_to "Limpar", admin_calendars_path(date: @current_date), class: "btn btn-outline-secondary" %>
+      <div class="col-md-12 text-end mt-2">
+        <%= link_to "Limpar Filtros", students_calendars_path(date: @current_date), class: "btn btn-sm btn-outline-secondary" %>
       </div>
     <% end %>
   </div>
@@ -197,18 +189,6 @@
                     <% end %>
                   </div>
                 <% end %>
-                
-                <!-- Botão para adicionar evento rápido -->
-                <% if is_current_month %>
-                  <div class="day-actions">
-                    <%= link_to new_admin_calendar_path(date: current_day), 
-                               class: "btn btn-sm btn-outline-primary add-event-btn",
-                               title: "Adicionar evento",
-                               data: { bs_toggle: "tooltip" } do %>
-                      <i class="fas fa-plus"></i>
-                    <% end %>
-                  </div>
-                <% end %>
               </div>
             <% end %>
           </div>
@@ -218,7 +198,7 @@
   </div>
 </div>
 
-<!-- Detalhes dos Eventos do Mês -->
+<!-- Lista de Eventos do Mês -->
 <% total_events = @calendars.count + @events.count %>
 <% if total_events > 0 %>
   <div class="card mb-4">
@@ -274,7 +254,7 @@
                           </div>
                           <% if event.description.present? %>
                             <p class="card-text text-muted small mb-2">
-                              <%= truncate(event.description, length: 60) %>
+                              <%= simple_format(truncate(event.description, length: 120)) %>
                             </p>
                           <% end %>
                           <div class="mb-2">
@@ -293,7 +273,7 @@
                             </span>
                           </div>
                         <% else %>
-                          <!-- Evento Municipal/Escolar -->
+                          <!-- Evento Municipal -->
                           <div class="d-flex justify-content-between align-items-start mb-2">
                             <h6 class="card-title mb-0 small"><%= event.title %></h6>
                             <span class="badge bg-info">
@@ -302,7 +282,7 @@
                           </div>
                           <% if event.description.present? %>
                             <p class="card-text text-muted small mb-2">
-                              <%= truncate(event.description, length: 60) %>
+                              <%= simple_format(truncate(event.description, length: 120)) %>
                             </p>
                           <% end %>
                           <div class="mb-2">
@@ -327,31 +307,6 @@
                             <% end %>
                           </div>
                         <% end %>
-                        <% if event.is_a?(Calendar) %>
-                          <div class="btn-group btn-group-sm" role="group">
-                            <%= link_to admin_calendar_path(event), 
-                                       class: "btn btn-outline-primary btn-sm" do %>
-                              <i class="fas fa-eye"></i>
-                            <% end %>
-                            <%= link_to edit_admin_calendar_path(event), 
-                                       class: "btn btn-outline-warning btn-sm" do %>
-                              <i class="fas fa-edit"></i>
-                            <% end %>
-                            <%= link_to admin_calendar_path(event), 
-                                       method: :delete,
-                                       confirm: "Tem certeza que deseja remover este evento?",
-                                       class: "btn btn-outline-danger btn-sm" do %>
-                              <i class="fas fa-trash"></i>
-                            <% end %>
-                          </div>
-                        <% else %>
-                          <div class="btn-group btn-group-sm" role="group">
-                            <%= link_to admin_event_path(event), 
-                                       class: "btn btn-outline-primary btn-sm" do %>
-                              <i class="fas fa-eye"></i> Ver Detalhes
-                            <% end %>
-                          </div>
-                        <% end %>
                       </div>
                     </div>
                   </div>
@@ -369,7 +324,6 @@
       <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
       <h5 class="text-muted">Nenhum evento encontrado</h5>
       <p class="text-muted">Não há eventos no calendário acadêmico para este mês.</p>
-      <%= link_to "Adicionar Primeiro Evento", new_admin_calendar_path, class: "btn btn-primary" %>
     </div>
   </div>
 <% end %>
@@ -406,41 +360,9 @@
   <div class="col-md-3">
     <div class="card text-center border-info">
       <div class="card-body">
-        <i class="fas fa-building fa-2x text-info mb-2"></i>
-        <h4 class="fw-bold text-info"><%= @month_stats[:municipal_events] %></h4>
-        <p class="card-text text-muted mb-0">Eventos Municipais</p>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Ações Rápidas -->
-<div class="row mt-4">
-  <div class="col-12">
-    <div class="card bg-light">
-      <div class="card-body">
-        <h6 class="card-title">
-          <i class="fas fa-lightning-bolt me-2"></i>
-          Ações Rápidas
-        </h6>
-        <div class="btn-group" role="group">
-          <%= link_to new_admin_calendar_path(calendar_type: 'municipal_holiday'), 
-                     class: "btn btn-outline-danger" do %>
-            <i class="fas fa-calendar-times me-1"></i> Feriado Municipal
-          <% end %>
-          <%= link_to new_admin_calendar_path(calendar_type: 'vacation'), 
-                     class: "btn btn-outline-success" do %>
-            <i class="fas fa-umbrella-beach me-1"></i> Férias
-          <% end %>
-          <%= link_to new_admin_calendar_path(calendar_type: 'school_start'), 
-                     class: "btn btn-outline-primary" do %>
-            <i class="fas fa-play me-1"></i> Início das Aulas
-          <% end %>
-          <%= link_to new_admin_calendar_path(calendar_type: 'pedagogical_day'), 
-                     class: "btn btn-outline-secondary" do %>
-            <i class="fas fa-chalkboard-teacher me-1"></i> Dia Pedagógico
-          <% end %>
-        </div>
+        <i class="fas fa-graduation-cap fa-2x text-info mb-2"></i>
+        <h4 class="fw-bold text-info"><%= @month_stats[:school_events] %></h4>
+        <p class="card-text text-muted mb-0">Eventos Escolares</p>
       </div>
     </div>
   </div>
@@ -545,6 +467,11 @@
   overflow: hidden;
   white-space: nowrap;
   cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.event-item:hover {
+  opacity: 0.8;
 }
 
 .more-events {
@@ -553,23 +480,6 @@
   font-style: italic;
   text-align: center;
   margin-top: 2px;
-}
-
-.day-actions {
-  position: absolute;
-  bottom: 4px;
-  right: 4px;
-  opacity: 0;
-  transition: opacity 0.2s;
-}
-
-.calendar-day:hover .day-actions {
-  opacity: 1;
-}
-
-.add-event-btn {
-  padding: 2px 6px;
-  font-size: 10px;
 }
 
 .bg-purple {
@@ -593,7 +503,7 @@
 }
 </style>
 
-<!-- JavaScript para inicializar tooltips -->
+<!-- JavaScript para funcionalidades do calendário -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
   // Inicializar tooltips do Bootstrap
