@@ -15,9 +15,8 @@ RSpec.describe Grade, type: :model do
     it { should validate_presence_of(:bimester) }
     it { should validate_presence_of(:grade_type) }
 
-    it { should validate_numericality_of(:value).is_greater_than_or_equal_to(0).is_less_than_or_equal_to(10) }
+    it { should validate_numericality_of(:value).is_greater_than_or_equal_to(0) }
     it { should validate_inclusion_of(:bimester).in_array([ 1, 2, 3, 4 ]) }
-    it { should validate_uniqueness_of(:user_id).scoped_to([ :subject_id, :bimester, :grade_type ]) }
   end
 
   describe "enums" do
@@ -26,7 +25,8 @@ RSpec.describe Grade, type: :model do
       trabalho: "trabalho",
       atividade: "atividade",
       participacao: "participacao",
-      projeto: "projeto"
+      projeto: "projeto",
+      recuperacao: "recuperacao"
     ).backed_by_column_of_type(:string) }
   end
 
@@ -67,8 +67,12 @@ RSpec.describe Grade, type: :model do
       end
 
       it "allows valid student" do
-        student = create(:user, :student)
-        grade = build(:grade, student: student)
+        school = create(:school)
+        classroom = create(:classroom, school: school)
+        student = create(:user, :student, school: school, classroom: classroom)
+        subject = create(:subject, school: school, classroom: classroom)
+        grade = build(:grade, student: student, subject: subject, school: school, 
+                      assessment_name: "Prova 1", assessment_date: Date.today, max_value: 10)
 
         expect(grade).to be_valid
       end

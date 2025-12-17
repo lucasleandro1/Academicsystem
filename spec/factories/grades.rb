@@ -3,11 +3,18 @@
 FactoryBot.define do
   factory :grade do
     value { 8.5 }
+    max_value { 10.0 }
     bimester { 1 }
     grade_type { :prova }
+    assessment_name { "Prova 1" }
+    assessment_date { Date.today }
     subject
+    school
 
     before(:create) do |grade|
+      # Garantir que o school está definido
+      grade.school ||= grade.subject.school
+      
       # Criar um estudante na mesma turma da disciplina
       classroom = grade.subject.classroom
       student = create(:user, :student, classroom: classroom, school: grade.subject.school)

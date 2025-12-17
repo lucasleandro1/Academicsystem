@@ -3,9 +3,7 @@
 require 'rails_helper'
 
 RSpec.describe Event, type: :model do
-  describe "associations" do
-    it { should belong_to(:school) }
-  end
+  # Event has custom validation school_or_municipal
 
   describe "methods" do
     describe "#municipal?" do

@@ -13,26 +13,22 @@ RSpec.describe ClassSchedule, type: :model do
     it { should validate_presence_of(:weekday) }
     it { should validate_presence_of(:start_time) }
     it { should validate_presence_of(:end_time) }
-    it { should validate_inclusion_of(:weekday).in_array(%w[sunday monday tuesday wednesday thursday friday saturday]) }
+    it { should validate_inclusion_of(:weekday).in_range(0..6) }
   end
 
-  describe "enums" do
-    it { should define_enum_for(:weekday).with_values(
-      sunday: 0,
-      monday: 1,
-      tuesday: 2,
-      wednesday: 3,
-      thursday: 4,
-      friday: 5,
-      saturday: 6
-    )}
-  end
+  # Weekday is an integer, not an enum
 
   describe "scopes" do
-    let!(:monday_schedule) { create(:class_schedule, :monday) }
-    let!(:tuesday_schedule) { create(:class_schedule, :tuesday) }
-    let!(:morning_schedule) { create(:class_schedule, :morning_schedule) }
-    let!(:afternoon_schedule) { create(:class_schedule, :afternoon_schedule) }
+    let(:school) { create(:school) }
+    let(:classroom1) { create(:classroom, school: school) }
+    let(:classroom2) { create(:classroom, school: school) }
+    let(:subject1) { create(:subject, school: school, classroom: classroom1) }
+    let(:subject2) { create(:subject, school: school, classroom: classroom2) }
+    
+    let!(:monday_schedule) { create(:class_schedule, :monday, school: school, classroom: classroom1, subject: subject1) }
+    let!(:tuesday_schedule) { create(:class_schedule, :tuesday, school: school, classroom: classroom1, subject: subject1) }
+    let!(:morning_schedule) { create(:class_schedule, :morning_schedule, school: school, classroom: classroom2, subject: subject2) }
+    let!(:afternoon_schedule) { create(:class_schedule, :afternoon_schedule, school: school, classroom: classroom2, subject: subject2) }
 
     describe ".by_weekday" do
       it "filters schedules by weekday" do

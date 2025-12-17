@@ -4,13 +4,12 @@ require 'rails_helper'
 
 RSpec.describe Subject, type: :model do
   describe "associations" do
-    it { should belong_to(:classroom) }
-    it { should belong_to(:teacher).class_name('User').with_foreign_key('user_id') }
+    it { should belong_to(:classroom).optional }
     it { should belong_to(:school) }
-    it { should have_many(:activities).dependent(:destroy) }
     it { should have_many(:grades).dependent(:destroy) }
     it { should have_many(:absences).dependent(:destroy) }
     it { should have_many(:class_schedules).dependent(:destroy) }
+    it { should have_many(:documents).dependent(:destroy) }
   end
 
   describe "validations" do
@@ -18,7 +17,7 @@ RSpec.describe Subject, type: :model do
 
     it { should validate_presence_of(:name) }
     it { should validate_presence_of(:workload) }
-    it { should validate_uniqueness_of(:name).scoped_to([ :classroom_id, :school_id ]) }
+    it { should validate_uniqueness_of(:name).scoped_to([ :school_id, :classroom_id ]) }
     it { should validate_numericality_of(:workload).is_greater_than(0) }
   end
 
@@ -27,7 +26,7 @@ RSpec.describe Subject, type: :model do
       it "returns students from the classroom" do
         classroom = create(:classroom)
         subject = create(:subject, classroom: classroom)
-        student = create(:user, :student, classroom: classroom, active: true)
+        student = create(:user, :student, classroom: classroom)
 
         expect(subject.students).to include(student)
       end

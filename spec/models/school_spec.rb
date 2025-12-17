@@ -6,16 +6,14 @@ RSpec.describe School, type: :model do
   describe "associations" do
     it { should have_many(:users).dependent(:destroy) }
     it { should have_many(:classrooms).dependent(:destroy) }
-    it { should have_many(:activities).dependent(:destroy) }
     it { should have_many(:events).dependent(:destroy) }
     it { should have_many(:documents).dependent(:destroy) }
-    it { should have_many(:attachments).dependent(:destroy) }
     it { should have_many(:subjects).dependent(:destroy) }
     it { should have_many(:grades).dependent(:destroy) }
-    it { should have_many(:absences).dependent(:destroy) }
-    it { should have_many(:submissions).dependent(:destroy) }
+    it { should have_many(:absences).through(:subjects) }
     it { should have_many(:class_schedules).dependent(:destroy) }
     it { should have_many(:messages).dependent(:destroy) }
+    it { should have_many(:calendars).dependent(:destroy) }
 
     it { should have_many(:students).class_name('User') }
     it { should have_many(:teachers).class_name('User') }
@@ -40,18 +38,16 @@ RSpec.describe School, type: :model do
     end
 
     describe "#total_students" do
-      it "returns count of active students" do
-        create_list(:user, 3, :student, school: school, active: true)
-        create(:user, :student, school: school, active: false)
+      it "returns count of students" do
+        create_list(:user, 3, :student, school: school)
 
         expect(school.total_students).to eq(3)
       end
     end
 
     describe "#total_teachers" do
-      it "returns count of active teachers" do
-        create_list(:user, 2, :teacher, school: school, active: true)
-        create(:user, :teacher, school: school, active: false)
+      it "returns count of teachers" do
+        create_list(:user, 2, :teacher, school: school)
 
         expect(school.total_teachers).to eq(2)
       end

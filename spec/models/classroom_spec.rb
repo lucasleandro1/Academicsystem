@@ -40,7 +40,7 @@ RSpec.describe Classroom, type: :model do
     describe "#student_count" do
       it "returns the number of students" do
         classroom = create(:classroom)
-        create_list(:user, 3, :student, classroom: classroom, active: true)
+        create_list(:user, 3, :student, classroom: classroom)
 
         expect(classroom.student_count).to eq(3)
       end

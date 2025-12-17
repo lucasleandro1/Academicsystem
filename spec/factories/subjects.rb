@@ -8,7 +8,10 @@ FactoryBot.define do
     school
 
     before(:create) do |subject|
-      subject.user = create(:user, :teacher, school: subject.school)
+      # Só criar um teacher se não foi fornecido um
+      unless subject.user
+        subject.user = create(:user, :teacher, school: subject.school)
+      end
     end
 
     trait :with_high_workload do
